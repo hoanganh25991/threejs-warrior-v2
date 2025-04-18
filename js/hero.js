@@ -566,7 +566,7 @@ class Hero {
     // Create visual effect for wing flapping
     createWingFlapEffect(color, intensity) {
         // Skip if wings aren't visible
-        if (!this.wings || !this.wings.visible) return;
+        if (!this.wings || !this.wings.visible || !this.leftWingGroup || !this.rightWingGroup) return;
         
         // Create particles at wing positions
         const particleCount = Math.floor(5 + intensity * 10); // More particles with higher intensity
@@ -574,8 +574,8 @@ class Hero {
         const particleLifetime = 500 + intensity * 500; // Longer lifetime with higher intensity
         
         // Create particles for both wings
-        this.createWingParticles(this.leftWing.position, color, particleCount, particleSize, particleLifetime);
-        this.createWingParticles(this.rightWing.position, color, particleCount, particleSize, particleLifetime);
+        this.createWingParticles(this.leftWingGroup.position, color, particleCount, particleSize, particleLifetime);
+        this.createWingParticles(this.rightWingGroup.position, color, particleCount, particleSize, particleLifetime);
     }
     
     // Create particles at wing position

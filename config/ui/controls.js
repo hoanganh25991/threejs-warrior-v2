@@ -2,7 +2,8 @@
  * UI controls configuration
  */
 
-const ControlsConfig = {
+// Define the ControlsConfig in the global scope (window)
+window.ControlsConfig = {
     // Keyboard controls
     keyboard: {
         movement: {
@@ -180,7 +181,7 @@ const ControlsConfig = {
     }
 };
 
-// Export the configuration
+// For module compatibility
 if (typeof module !== 'undefined') {
-    module.exports = ControlsConfig;
+    module.exports = window.ControlsConfig;
 }
