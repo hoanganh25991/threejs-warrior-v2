@@ -77,3 +77,4 @@
 [2024-05-10T17:00:00.000Z] Created hero avatar images for the hero selection screen
 [2024-05-10T17:15:00.000Z] Updated player portrait in game UI to use hero images
 [2024-05-10T17:30:00.000Z] Enhanced CSS styling for hero portraits and selection screen
+[2024-05-11T09:00:00.000Z] Enhanced camera movement during jump/fly to provide better view of ground and sky while keeping player centered

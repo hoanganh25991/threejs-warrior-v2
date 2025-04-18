@@ -1,3 +1,3 @@
-- [x] when jump/fly, i want camera move, so that like when you on high position, you must be able to see large area, see the sky more than normal.
-- [x] skills button's name must be first character of skill name. Add small small circle on skill button to indicate skill key, ex: 1,2,3,...
-- [x] skills button show cool down effect
+- [x] when jump/fly, i want camera move, so that like when you on high position, you must be able to see larger ground, see the sky more than normal. The camera move so that player always as center of screen.
+- [] skills button's name must be first character of skill name, ex: skills "chain-frost" button name should be "C", and have small small circle on skill button to indicate skill key to press, ex: 1
+- [] skills button show cool down effect, now it still see nothing, only a button can press, but no indication about cool down time left.

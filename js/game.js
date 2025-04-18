@@ -151,9 +151,11 @@ class Game {
                 maxJumpHeight: 15,
                 cameraJumpOffset: 0.7,
                 cameraTiltFactor: 0.3, // How much to tilt the camera (0-1)
-                cameraBackOffset: 0.5, // How much to move camera back as height increases
-                cameraFovIncrease: 10, // How much to increase field of view at max height
-                cameraSkyViewFactor: 0.4 // How much to adjust camera to see more sky (0-1)
+                cameraBackOffset: 0.8, // How much to move camera back as height increases (increased for better view)
+                cameraFovIncrease: 15, // How much to increase field of view at max height (increased for wider view)
+                cameraSkyViewFactor: 0.6, // How much to adjust camera to see more sky (0-1) (increased for better sky view)
+                cameraGroundViewEnhancement: 0.5, // How much to enhance ground visibility at height
+                cameraAlwaysCenterPlayer: true // Always keep player at center of screen
             };
             
             // Calculate normalized height (0-1 range)
@@ -163,60 +165,77 @@ class Game {
             const heightAdjustment = hero.jumpHeight * offsetFactor;
             offset.y += heightAdjustment;
             
-            // Move camera back as hero goes higher to see more of the area
-            if (normalizedHeight > 0.2) {
-                // Calculate how much to move back based on height
+            // Enhanced camera positioning for better view at height
+            if (normalizedHeight > 0.1) {
+                // Calculate how much to move back based on height - more aggressive scaling for better view
                 const backFactor = normalizedHeight * jumpConfig.cameraBackOffset;
                 
                 // Get camera direction vector (normalized)
                 const direction = new THREE.Vector3().subVectors(hero.position, this.camera.position).normalize();
                 
-                // Move camera back in the opposite direction
-                offset.addScaledVector(direction, -backFactor * 10); // Multiply by 10 for more noticeable effect
+                // Move camera back in the opposite direction with enhanced scaling
+                offset.addScaledVector(direction, -backFactor * 15); // Increased multiplier for more dramatic effect
+                
+                // Add slight lateral movement for a more dynamic view as height increases
+                const lateralOffset = Math.sin(hero.jumpHeight * 0.1) * normalizedHeight * 2;
+                offset.x += lateralOffset;
+                
+                // Log significant camera adjustments
+                if (hero.jumpHeight > 5 && Math.floor(hero.jumpHeight) % 2 === 0) {
+                    Logger.log(`Enhanced camera view for height: ${hero.jumpHeight.toFixed(1)}`);
+                }
             }
             
             // Calculate tilt based on height relative to max jump height
             let tiltFactor = 0;
             if (hero.jumpHeight > 0) {
+                // Enhanced tilt calculation for better ground visibility at height
                 tiltFactor = normalizedHeight * (jumpConfig.cameraTiltFactor || 0.3);
                 
-                // Log camera adjustment for significant height changes
-                if (hero.jumpHeight > 5 && Math.floor(hero.jumpHeight) % 2 === 0) {
-                    Logger.log(`Camera adjusting for height: ${hero.jumpHeight.toFixed(1)}`);
-                }
+                // Add ground view enhancement - look more downward as height increases to see more ground
+                const groundViewEnhancement = normalizedHeight * jumpConfig.cameraGroundViewEnhancement;
+                tiltFactor += groundViewEnhancement;
                 
                 // Adjust field of view based on height to see more of the area
                 const baseFOV = 60; // Default FOV
-                const maxFOVIncrease = jumpConfig.cameraFovIncrease || 10;
+                const maxFOVIncrease = jumpConfig.cameraFovIncrease || 15;
                 const newFOV = baseFOV + (normalizedHeight * maxFOVIncrease);
                 
                 // Only update if FOV has changed significantly to avoid constant updates
                 if (Math.abs(this.camera.fov - newFOV) > 0.5) {
                     this.camera.fov = newFOV;
                     this.camera.updateProjectionMatrix();
-                    Logger.log(`Camera FOV adjusted to: ${newFOV.toFixed(1)}`);
+                    Logger.log(`Enhanced camera FOV adjusted to: ${newFOV.toFixed(1)}`);
                 }
             }
             
-            // Update camera position
-            this.camera.position.copy(hero.position).add(offset);
+            // Always center the player in the screen
+            if (jumpConfig.cameraAlwaysCenterPlayer) {
+                // Reset the camera position to be centered on the hero
+                this.camera.position.copy(hero.position).add(offset);
+            } else {
+                // Update camera position with standard offset
+                this.camera.position.copy(hero.position).add(offset);
+            }
             
             // Create a look target that's adjusted based on height
-            // As hero goes higher, adjust the look target to see more of the sky
-            const skyViewAdjustment = normalizedHeight * (jumpConfig.cameraSkyViewFactor || 0.4);
+            // Enhanced to provide better view of both ground and sky
+            const skyViewAdjustment = normalizedHeight * (jumpConfig.cameraSkyViewFactor || 0.6);
             const lookTarget = new THREE.Vector3(
-                hero.position.x,
-                // When low, look down more; when high, look more toward horizon
+                hero.position.x, // Always look at player's x position
+                // Enhanced formula for better view:
+                // When low, look down more; when high, look more toward horizon and see more sky
                 hero.position.y - (hero.jumpHeight * tiltFactor) + (skyViewAdjustment * hero.jumpHeight),
-                hero.position.z
+                hero.position.z // Always look at player's z position
             );
             
             // Look at the adjusted target
             this.camera.lookAt(lookTarget);
             
-            // Add a subtle camera roll effect based on height if enabled
-            if (jumpConfig.cameraRollEnabled && hero.jumpHeight > 3) {
-                const rollAmount = Math.sin(hero.jumpHeight * 0.1) * 0.02;
+            // Enhanced camera roll effect based on height
+            if (jumpConfig.cameraRollEnabled && hero.jumpHeight > 2) { // Lower threshold for earlier effect
+                // More dynamic roll effect that increases with height
+                const rollAmount = Math.sin(hero.jumpHeight * 0.15) * 0.03 * normalizedHeight;
                 this.camera.rotation.z = rollAmount;
             } else {
                 this.camera.rotation.z = 0;
