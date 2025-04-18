@@ -1,0 +1,249 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Loading Screen */
+#loading-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+#loading-screen h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    color: #f8d000;
+    text-shadow: 0 0 10px rgba(248, 208, 0, 0.7);
+}
+
+.loading-bar-container {
+    width: 50%;
+    height: 20px;
+    background-color: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+#loading-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f8d000, #ff6b00);
+    transition: width 0.3s ease;
+}
+
+#loading-text {
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+/* Hero Selection Screen */
+#hero-selection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../assets/images/hero-selection-bg.jpg');
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    z-index: 90;
+}
+
+#hero-selection h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #f8d000;
+    text-shadow: 0 0 10px rgba(248, 208, 0, 0.7);
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    width: 80%;
+    max-width: 1200px;
+}
+
+.hero-card {
+    background-color: rgba(30, 30, 30, 0.8);
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.hero-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(248, 208, 0, 0.3);
+    border-color: #f8d000;
+}
+
+.hero-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.hero-image {
+    width: 150px;
+    height: 150px;
+    background-color: #333;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-card p {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #ccc;
+}
+
+.select-hero-btn {
+    background-color: #f8d000;
+    color: #000;
+    border: none;
+    padding: 0.5rem 2rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.select-hero-btn:hover {
+    background-color: #ff6b00;
+    transform: scale(1.05);
+}
+
+/* Game UI */
+#game-ui {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+#health-bar-container, #mana-bar-container {
+    height: 25px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+#health-bar {
+    height: 100%;
+    width: 100%;
+    background-color: #ff3333;
+    transition: width 0.3s ease;
+}
+
+#mana-bar {
+    height: 100%;
+    width: 100%;
+    background-color: #3366ff;
+    transition: width 0.3s ease;
+}
+
+#health-text, #mana-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+#abilities-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.ability {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid #666;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ability:hover {
+    border-color: #f8d000;
+    box-shadow: 0 0 10px rgba(248, 208, 0, 0.5);
+}
+
+/* Placeholder for hero images - will be replaced with actual assets */
+.hero-image.axe {
+    background-color: #a83232;
+}
+
+.hero-image.crystal-maiden {
+    background-color: #32a8a8;
+}
+
+.hero-image.lich {
+    background-color: #3232a8;
+}
+
+.hero-image.storm-spirit {
+    background-color: #32a832;
+}

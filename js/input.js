@@ -1,0 +1,314 @@
+/**
+ * Input handling system for the game
+ */
+
+class InputManager {
+    constructor(camera, renderer) {
+        this.camera = camera;
+        this.renderer = renderer;
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.keys = {};
+        this.mouseButtons = {
+            left: false,
+            middle: false,
+            right: false
+        };
+        this.mousePosition = { x: 0, y: 0 };
+        this.targetPosition = null;
+        
+        // Initialize event listeners
+        this.initEventListeners();
+        
+        Logger.log('Input manager initialized');
+    }
+    
+    initEventListeners() {
+        // Keyboard events
+        window.addEventListener('keydown', this.handleKeyDown.bind(this));
+        window.addEventListener('keyup', this.handleKeyUp.bind(this));
+        
+        // Mouse events
+        const canvas = this.renderer.domElement;
+        canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        canvas.addEventListener('wheel', this.handleMouseWheel.bind(this));
+        
+        // Prevent context menu on right-click
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
+        canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+        canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
+    }
+    
+    handleKeyDown(event) {
+        this.keys[event.key.toLowerCase()] = true;
+        
+        // Emit key press event
+        Events.emit('keyPressed', { key: event.key.toLowerCase() });
+    }
+    
+    handleKeyUp(event) {
+        this.keys[event.key.toLowerCase()] = false;
+        
+        // Emit key release event
+        Events.emit('keyReleased', { key: event.key.toLowerCase() });
+    }
+    
+    handleMouseDown(event) {
+        event.preventDefault();
+        
+        // Update mouse button states
+        switch (event.button) {
+            case 0: // Left button
+                this.mouseButtons.left = true;
+                this.handleGroundClick(event);
+                break;
+            case 1: // Middle button
+                this.mouseButtons.middle = true;
+                break;
+            case 2: // Right button
+                this.mouseButtons.right = true;
+                this.handleAbilityClick(event);
+                break;
+        }
+        
+        // Emit mouse down event
+        Events.emit('mouseDown', { 
+            button: event.button,
+            position: this.mousePosition
+        });
+    }
+    
+    handleMouseUp(event) {
+        event.preventDefault();
+        
+        // Update mouse button states
+        switch (event.button) {
+            case 0: // Left button
+                this.mouseButtons.left = false;
+                break;
+            case 1: // Middle button
+                this.mouseButtons.middle = false;
+                break;
+            case 2: // Right button
+                this.mouseButtons.right = false;
+                break;
+        }
+        
+        // Emit mouse up event
+        Events.emit('mouseUp', { 
+            button: event.button,
+            position: this.mousePosition
+        });
+    }
+    
+    handleMouseMove(event) {
+        event.preventDefault();
+        
+        // Update mouse position
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        this.mousePosition.x = event.clientX - rect.left;
+        this.mousePosition.y = event.clientY - rect.top;
+        
+        // Update normalized mouse coordinates for raycaster
+        this.mouse.x = (this.mousePosition.x / this.renderer.domElement.clientWidth) * 2 - 1;
+        this.mouse.y = -(this.mousePosition.y / this.renderer.domElement.clientHeight) * 2 + 1;
+        
+        // Emit mouse move event
+        Events.emit('mouseMove', { position: this.mousePosition });
+        
+        // Handle camera rotation if middle mouse button is pressed
+        if (this.mouseButtons.middle) {
+            this.handleCameraRotation(event);
+        }
+    }
+    
+    handleMouseWheel(event) {
+        event.preventDefault();
+        
+        // Determine zoom direction
+        const zoomDirection = Math.sign(event.deltaY);
+        
+        // Emit zoom event
+        Events.emit('zoom', { direction: zoomDirection });
+    }
+    
+    handleTouchStart(event) {
+        event.preventDefault();
+        
+        if (event.touches.length === 1) {
+            // Single touch - treat as left mouse button
+            this.mouseButtons.left = true;
+            
+            const touch = event.touches[0];
+            const rect = this.renderer.domElement.getBoundingClientRect();
+            this.mousePosition.x = touch.clientX - rect.left;
+            this.mousePosition.y = touch.clientY - rect.top;
+            
+            // Update normalized mouse coordinates for raycaster
+            this.mouse.x = (this.mousePosition.x / this.renderer.domElement.clientWidth) * 2 - 1;
+            this.mouse.y = -(this.mousePosition.y / this.renderer.domElement.clientHeight) * 2 + 1;
+            
+            this.handleGroundClick({ clientX: touch.clientX, clientY: touch.clientY });
+            
+            // Emit touch start event
+            Events.emit('touchStart', { position: this.mousePosition });
+        } else if (event.touches.length === 2) {
+            // Two finger touch - for pinch zoom or rotation
+            this.touchStartDistance = this.getTouchDistance(event.touches);
+            
+            // Emit multi-touch start event
+            Events.emit('multiTouchStart', { 
+                touches: Array.from(event.touches).map(t => ({ x: t.clientX, y: t.clientY }))
+            });
+        }
+    }
+    
+    handleTouchEnd(event) {
+        event.preventDefault();
+        
+        // Reset touch states
+        this.mouseButtons.left = false;
+        
+        // Emit touch end event
+        Events.emit('touchEnd', {});
+    }
+    
+    handleTouchMove(event) {
+        event.preventDefault();
+        
+        if (event.touches.length === 1) {
+            // Single touch movement
+            const touch = event.touches[0];
+            const rect = this.renderer.domElement.getBoundingClientRect();
+            this.mousePosition.x = touch.clientX - rect.left;
+            this.mousePosition.y = touch.clientY - rect.top;
+            
+            // Update normalized mouse coordinates for raycaster
+            this.mouse.x = (this.mousePosition.x / this.renderer.domElement.clientWidth) * 2 - 1;
+            this.mouse.y = -(this.mousePosition.y / this.renderer.domElement.clientHeight) * 2 + 1;
+            
+            // Emit touch move event
+            Events.emit('touchMove', { position: this.mousePosition });
+        } else if (event.touches.length === 2) {
+            // Two finger touch movement - handle pinch zoom
+            const currentDistance = this.getTouchDistance(event.touches);
+            const deltaDistance = currentDistance - this.touchStartDistance;
+            
+            // Determine if zooming in or out
+            const zoomDirection = Math.sign(deltaDistance);
+            
+            // Emit zoom event
+            Events.emit('zoom', { direction: -zoomDirection });
+            
+            // Update touch start distance for next move
+            this.touchStartDistance = currentDistance;
+            
+            // Emit multi-touch move event
+            Events.emit('multiTouchMove', { 
+                touches: Array.from(event.touches).map(t => ({ x: t.clientX, y: t.clientY }))
+            });
+        }
+    }
+    
+    getTouchDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    handleGroundClick(event) {
+        // Cast a ray from the camera through the mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        
+        // Find intersections with the ground plane
+        const groundObjects = []; // This should be populated with ground objects from the scene
+        
+        // Emit ground click event with intersection point
+        Events.emit('groundClick', { 
+            position: this.mousePosition,
+            raycaster: this.raycaster
+        });
+    }
+    
+    handleAbilityClick(event) {
+        // Cast a ray from the camera through the mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        
+        // Emit ability click event with intersection point
+        Events.emit('abilityClick', { 
+            position: this.mousePosition,
+            raycaster: this.raycaster
+        });
+    }
+    
+    handleCameraRotation(event) {
+        // Calculate movement delta
+        const movementX = event.movementX || 0;
+        
+        // Emit camera rotation event
+        Events.emit('cameraRotate', { deltaX: movementX });
+    }
+    
+    isKeyPressed(key) {
+        return this.keys[key.toLowerCase()] === true;
+    }
+    
+    isMouseButtonPressed(button) {
+        switch (button) {
+            case 'left':
+                return this.mouseButtons.left;
+            case 'middle':
+                return this.mouseButtons.middle;
+            case 'right':
+                return this.mouseButtons.right;
+            default:
+                return false;
+        }
+    }
+    
+    getMousePosition() {
+        return { ...this.mousePosition };
+    }
+    
+    getNormalizedMousePosition() {
+        return { x: this.mouse.x, y: this.mouse.y };
+    }
+    
+    getRaycaster() {
+        // Update raycaster with current mouse position
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        return this.raycaster;
+    }
+    
+    update() {
+        // Handle WASD movement
+        const moveDirection = new THREE.Vector3(0, 0, 0);
+        
+        if (this.isKeyPressed('w')) moveDirection.z -= 1;
+        if (this.isKeyPressed('s')) moveDirection.z += 1;
+        if (this.isKeyPressed('a')) moveDirection.x -= 1;
+        if (this.isKeyPressed('d')) moveDirection.x += 1;
+        
+        // Only emit movement event if there's actual movement
+        if (moveDirection.x !== 0 || moveDirection.z !== 0) {
+            // Normalize the direction vector
+            moveDirection.normalize();
+            
+            // Emit movement event
+            Events.emit('movement', { direction: moveDirection });
+        }
+        
+        // Handle ability key presses
+        if (this.isKeyPressed('q')) Events.emit('abilityActivated', { ability: 'q' });
+        if (this.isKeyPressed('w') && !this.isKeyPressed('a') && !this.isKeyPressed('s') && !this.isKeyPressed('d')) {
+            Events.emit('abilityActivated', { ability: 'w' });
+        }
+        if (this.isKeyPressed('e')) Events.emit('abilityActivated', { ability: 'e' });
+        if (this.isKeyPressed('r')) Events.emit('abilityActivated', { ability: 'r' });
+    }
+}

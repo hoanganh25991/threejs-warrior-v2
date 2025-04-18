@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legends of the Ancient Realms</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading-screen">
+            <h1>Legends of the Ancient Realms</h1>
+            <div class="loading-bar-container">
+                <div id="loading-bar"></div>
+            </div>
+            <p id="loading-text">Loading...</p>
+        </div>
+        
+        <div id="hero-selection" class="screen">
+            <h2>Select Your Hero</h2>
+            <div class="hero-grid">
+                <div class="hero-card" data-hero="axe">
+                    <h3>Axe (Mogul Khan)</h3>
+                    <div class="hero-image axe"></div>
+                    <p>A bloodthirsty warrior who thrives in the chaos of battle.</p>
+                    <p><strong>Playstyle:</strong> Tank/Berserker</p>
+                    <button class="select-hero-btn" data-hero="axe">Select</button>
+                </div>
+                <div class="hero-card" data-hero="crystal-maiden">
+                    <h3>Crystal Maiden (Rylai)</h3>
+                    <div class="hero-image crystal-maiden"></div>
+                    <p>An ice sorceress with a gentle heart and frosty powers.</p>
+                    <p><strong>Playstyle:</strong> Support/Elemental Mage</p>
+                    <button class="select-hero-btn" data-hero="crystal-maiden">Select</button>
+                </div>
+                <div class="hero-card" data-hero="lich">
+                    <h3>Lich (Kel'Thuzad)</h3>
+                    <div class="hero-image lich"></div>
+                    <p>An undead sorcerer who commands the chilling power of frost.</p>
+                    <p><strong>Playstyle:</strong> Necromancer/Crowd Control</p>
+                    <button class="select-hero-btn" data-hero="lich">Select</button>
+                </div>
+                <div class="hero-card" data-hero="storm-spirit">
+                    <h3>Storm Spirit (Raijin Thunderkeg)</h3>
+                    <div class="hero-image storm-spirit"></div>
+                    <p>A jovial elemental spirit who rides the storm with electrifying speed.</p>
+                    <p><strong>Playstyle:</strong> Mobile Caster/Assassin</p>
+                    <button class="select-hero-btn" data-hero="storm-spirit">Select</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="game-ui" class="hidden">
+            <div id="health-bar-container">
+                <div id="health-bar"></div>
+                <span id="health-text">100/100</span>
+            </div>
+            <div id="mana-bar-container">
+                <div id="mana-bar"></div>
+                <span id="mana-text">100/100</span>
+            </div>
+            <div id="abilities-container">
+                <div class="ability" id="ability-q">Q</div>
+                <div class="ability" id="ability-w">W</div>
+                <div class="ability" id="ability-e">E</div>
+                <div class="ability" id="ability-r">R</div>
+            </div>
+        </div>
+        
+        <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- Load Three.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <!-- Load game scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/hero.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
