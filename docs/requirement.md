@@ -4,7 +4,7 @@ This document serves as the central hub for all game requirements and documentat
 
 ## Game Overview
 
-Legends of the Ancient Realms is an isometric action RPG built with PlayCanvas that combines the quest-driven, dungeon-crawling gameplay of classic ARPGs with the diverse hero roster inspired by DotA. Players select from iconic heroes representing either the Sentinel or Scourge factions, each with unique abilities and playstyles, as they embark on a journey through a war-torn world.
+Legends of the Ancient Realms is an isometric action RPG built with Three.js that combines the quest-driven, dungeon-crawling gameplay of classic ARPGs with the diverse hero roster inspired by DotA. Players select from iconic heroes representing either the Sentinel or Scourge factions, each with unique abilities and playstyles, as they embark on a journey through a war-torn world.
 
 ## Game Concept
 
