@@ -30,7 +30,10 @@ const JumpConfig = {
     landSoundEffect: '/System/Library/Sounds/Blow.aiff'
 };
 
-// Export the configuration
+// Make the config available in the global scope for the config loader
+window.JumpConfig = JumpConfig;
+
+// Export the configuration for module systems
 if (typeof module !== 'undefined') {
     module.exports = JumpConfig;
 }

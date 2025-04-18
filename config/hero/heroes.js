@@ -2,9 +2,7 @@
  * Hero configuration settings
  */
 
-// Import skills configuration
-const SkillsConfig = require('../skills');
-
+// Define the HeroesConfig object
 const HeroesConfig = {
     // Available heroes
     availableHeroes: [
@@ -44,30 +42,23 @@ const HeroesConfig = {
             abilities: {
                 '1': {
                     skillId: 'berserkers-call',
-                    // Reference to the skill in SkillsConfig
-                    ...SkillsConfig['berserkers-call'],
                     // Hero-specific overrides can be added here
                     // For example: cooldown: 7 would override the default cooldown
                 },
                 '2': {
                     skillId: 'battle-hunger',
-                    ...SkillsConfig['battle-hunger']
                 },
                 '3': {
                     skillId: 'counter-helix',
-                    ...SkillsConfig['counter-helix']
                 },
                 '4': {
                     skillId: 'culling-blade',
-                    ...SkillsConfig['culling-blade']
                 },
                 '5': {
                     skillId: 'war-cry',
-                    ...SkillsConfig['war-cry']
                 },
                 '6': {
                     skillId: 'berserkers-rage',
-                    ...SkillsConfig['berserkers-rage']
                 }
             }
         },
@@ -85,27 +76,21 @@ const HeroesConfig = {
             abilities: {
                 '1': {
                     skillId: 'crystal-nova',
-                    ...SkillsConfig['crystal-nova']
                 },
                 '2': {
                     skillId: 'frostbite',
-                    ...SkillsConfig['frostbite']
                 },
                 '3': {
                     skillId: 'brilliance-aura',
-                    ...SkillsConfig['brilliance-aura']
                 },
                 '4': {
                     skillId: 'freezing-field',
-                    ...SkillsConfig['freezing-field']
                 },
                 '5': {
                     skillId: 'frost-armor',
-                    ...SkillsConfig['frost-armor']
                 },
                 '6': {
                     skillId: 'frost-nova',
-                    ...SkillsConfig['frost-nova']
                 }
             }
         },
@@ -123,27 +108,21 @@ const HeroesConfig = {
             abilities: {
                 '1': {
                     skillId: 'frost-nova-lich',
-                    ...SkillsConfig['frost-nova-lich']
                 },
                 '2': {
                     skillId: 'frost-armor-lich',
-                    ...SkillsConfig['frost-armor-lich']
                 },
                 '3': {
                     skillId: 'dark-ritual',
-                    ...SkillsConfig['dark-ritual']
                 },
                 '4': {
                     skillId: 'chain-frost',
-                    ...SkillsConfig['chain-frost']
                 },
                 '5': {
                     skillId: 'frost-blast',
-                    ...SkillsConfig['frost-blast']
                 },
                 '6': {
                     skillId: 'ice-barrier',
-                    ...SkillsConfig['ice-barrier']
                 }
             }
         },
@@ -160,34 +139,31 @@ const HeroesConfig = {
             abilities: {
                 '1': {
                     skillId: 'static-remnant',
-                    ...SkillsConfig['static-remnant']
                 },
                 '2': {
                     skillId: 'electric-vortex',
-                    ...SkillsConfig['electric-vortex']
                 },
                 '3': {
                     skillId: 'overload',
-                    ...SkillsConfig['overload']
                 },
                 '4': {
                     skillId: 'ball-lightning',
-                    ...SkillsConfig['ball-lightning']
                 },
                 '5': {
                     skillId: 'lightning-rush',
-                    ...SkillsConfig['lightning-rush']
                 },
                 '6': {
                     skillId: 'electric-field',
-                    ...SkillsConfig['electric-field']
                 }
             }
         }
     }
 };
 
-// Export the configuration
+// Make the config available in the global scope for the config loader
+window.HeroesConfig = HeroesConfig;
+
+// Export the configuration for module systems
 if (typeof module !== 'undefined') {
     module.exports = HeroesConfig;
 }

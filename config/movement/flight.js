@@ -36,7 +36,10 @@ const FlightConfig = {
     flightLoopSoundEffect: null // Path to looping sound during flight
 };
 
-// Export the configuration
+// Make the config available in the global scope for the config loader
+window.FlightConfig = FlightConfig;
+
+// Export the configuration for module systems
 if (typeof module !== 'undefined') {
     module.exports = FlightConfig;
 }
