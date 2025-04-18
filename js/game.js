@@ -45,6 +45,9 @@ class Game {
         // Show loading screen
         this.uiManager.showLoadingScreen();
         
+        // Load configurations
+        await this.loadConfigurations();
+        
         // Initialize Three.js
         this.initThreeJS();
         
@@ -72,6 +75,31 @@ class Game {
         this.animate();
         
         Logger.log('Game initialized');
+    }
+    
+    /**
+     * Load game configurations
+     */
+    async loadConfigurations() {
+        Logger.log('Loading game configurations');
+        
+        try {
+            // Load all configurations
+            await window.configLoader.loadAllConfigs();
+            
+            // Log successful loading
+            Logger.log('Game configurations loaded successfully');
+            return true;
+        } catch (error) {
+            Logger.error('Failed to load game configurations:', error);
+            
+            // Show error message to user
+            if (this.uiManager) {
+                this.uiManager.showMessage('Failed to load game configurations. Some features may not work correctly.', 5000);
+            }
+            
+            return false;
+        }
     }
     
     async loadAssets() {

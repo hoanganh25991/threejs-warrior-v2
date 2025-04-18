@@ -36,10 +36,15 @@ class Hero {
         this.jumpVelocity = 0;
         this.jumpStartTime = 0;
         this.jumpCount = 0;
-        this.maxJumpCount = 2; // Double jump by default
+        this.maxJumpCount = window.configLoader?.getConfig('jumpConfig')?.maxJumpCount || 2; // Double jump by default
         this.isFlying = false;
         this.flightHeight = 0;
         this.flightTargetHeight = 0;
+        
+        // Long press tracking for flight
+        this.longPressActive = false;
+        this.longPressDirection = 0; // 1 for up, -1 for down
+        this.longPressInterval = null;
         
         // Combat state
         this.isAttacking = false;
