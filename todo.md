@@ -1,3 +1,0 @@
-- [x] Fix: THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values. yl {uuid: '9F7D71BA-4FAE-496F-993F-5782BCC1A2AF', name: '', type: 'SphereGeometry', index: on, attributes: {…}, …}
-- [x] On fly, can touch / click jump to maintain the high
-- [x] play sounds and stop properly
