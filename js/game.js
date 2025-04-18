@@ -238,9 +238,6 @@ class Game {
         
         // Log progress
         Logger.log(`Game started with hero: ${this.hero.name}`);
-        
-        // Play notification sound
-        notifyTaskComplete();
     }
     
     handleGroundClick(data) {

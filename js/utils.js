@@ -229,15 +229,3 @@ class EventSystem {
 
 // Create a global event system instance
 const Events = new EventSystem();
-
-// Notification function to play sound when task is completed
-function notifyTaskComplete() {
-    // In a browser environment, we can't directly execute shell commands
-    // Instead, we'll play a sound using the Web Audio API
-    const audio = new Audio('/System/Library/Sounds/Glass.aiff');
-    audio.play().catch(error => {
-        console.error('Failed to play notification sound:', error);
-    });
-    
-    Logger.log('Task completed: Notification sound played');
-}
