@@ -152,8 +152,8 @@ const FlightConfig = {
     wingSize: 2,                // Size of wings
     wingFlapSpeed: 0.5,         // Speed of wing flapping animation
     wingEffectColor: 0x66ccff,  // Color for wing effect
-    takeoffSoundEffect: '/System/Library/Sounds/Submarine.aiff',
-    landingSoundEffect: '/System/Library/Sounds/Basso.aiff'
+    takeoffSoundEffect: 'sounds/submarine.mp3',
+    landingSoundEffect: 'sounds/basso.mp3'
 };
 ```
 
