@@ -217,12 +217,28 @@ class SkillUIManager {
         const overlay = element.querySelector('.cooldown-overlay');
         if (!overlay) return;
         
+        // Create cooldown sweep element for the circular animation
+        let cooldownSweep = overlay.querySelector('.cooldown-sweep');
+        if (!cooldownSweep) {
+            cooldownSweep = document.createElement('div');
+            cooldownSweep.className = 'cooldown-sweep';
+            overlay.appendChild(cooldownSweep);
+        }
+        
         // Create or update cooldown text element
         let cooldownText = overlay.querySelector('.cooldown-text');
         if (!cooldownText) {
             cooldownText = document.createElement('div');
             cooldownText.className = 'cooldown-text';
             overlay.appendChild(cooldownText);
+        }
+        
+        // Create cooldown ready effect element
+        let cooldownReady = element.querySelector('.cooldown-ready');
+        if (!cooldownReady) {
+            cooldownReady = document.createElement('div');
+            cooldownReady.className = 'cooldown-ready';
+            element.appendChild(cooldownReady);
         }
         
         const startTime = performance.now();
@@ -234,8 +250,22 @@ class SkillUIManager {
                 overlay.remove();
                 this.cooldowns[elementId] = 0;
                 
+                // Show the ready effect
+                cooldownReady.style.display = 'block';
+                
+                // Hide the ready effect after 2 seconds
+                setTimeout(() => {
+                    if (cooldownReady.parentNode === element) {
+                        cooldownReady.style.display = 'none';
+                    }
+                }, 2000);
+                
                 // Emit cooldown complete event
                 Events.emit('abilityCooldownComplete', { abilityId: elementId });
+                
+                // Play a sound effect when cooldown completes
+                this.playCooldownCompleteSound();
+                
                 return;
             }
             
@@ -243,12 +273,23 @@ class SkillUIManager {
             const elapsed = currentTime - startTime;
             const remainingTime = duration - (elapsed / 1000);
             const remaining = 1 - (elapsed / (duration * 1000));
+            const percent = remaining * 100;
             
-            // Update cooldown display with pie animation
-            overlay.style.clipPath = `polygon(50% 50%, 50% 0%, ${this.getClipPathCoordinates(remaining)})`;
+            // Update cooldown sweep using CSS variable
+            cooldownSweep.style.setProperty('--cooldown-percent', `${percent}%`);
             
             // Update cooldown text
             cooldownText.textContent = remainingTime.toFixed(1);
+            
+            // Add a color effect based on remaining time
+            if (remainingTime < 1) {
+                // Last second - add a pulsing effect
+                cooldownText.style.color = '#ffcc00';
+                cooldownText.style.transform = `scale(${1 + Math.sin(elapsed * 0.01) * 0.1})`;
+            } else {
+                cooldownText.style.color = 'white';
+                cooldownText.style.transform = 'scale(1)';
+            }
             
             // Update cooldown time in tracking object
             this.cooldowns[elementId] = remainingTime;
@@ -258,6 +299,31 @@ class SkillUIManager {
         };
         
         requestAnimationFrame(updateCooldown);
+    }
+    
+    playCooldownCompleteSound() {
+        // Create a simple audio feedback when cooldown completes
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5
+            oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.2); // A4
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {
+            // Fallback if Web Audio API is not supported
+            console.log('Audio feedback not supported');
+        }
     }
     
     getClipPathCoordinates(percentage) {
@@ -395,8 +461,21 @@ class SkillUIManager {
         // Create key hint element
         const keyHint = document.createElement('div');
         keyHint.className = 'key-hint';
-        keyHint.textContent = key;
+        keyHint.textContent = key.toUpperCase(); // Make key uppercase for better visibility
+        
+        // Add tooltip to explain the key hint
+        element.setAttribute('data-keyhint', `Press ${key.toUpperCase()} key to activate`);
+        
+        // Add the key hint to the element
         element.appendChild(keyHint);
+        
+        // Add a subtle pulse animation to draw attention to the key hint
+        setTimeout(() => {
+            keyHint.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                keyHint.style.transform = 'scale(1)';
+            }, 200);
+        }, 100);
     }
     
     updateWingsVisibility(data) {

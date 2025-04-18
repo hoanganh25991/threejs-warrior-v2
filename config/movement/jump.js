@@ -28,6 +28,9 @@ const JumpConfig = {
     cameraJumpOffset: 0.7,      // How much camera follows the jump (0-1, where 1 is full follow)
     cameraTiltFactor: 0.3,      // How much camera tilts down as height increases (0-1)
     cameraRollEnabled: true,    // Whether to add subtle roll effect during jumps
+    cameraBackOffset: 0.5,      // How much to move camera back as height increases
+    cameraFovIncrease: 10,      // How much to increase field of view at max height
+    cameraSkyViewFactor: 0.4,   // How much to adjust camera to see more sky (0-1)
     
     // Sound effects
     jumpSoundEffect: 'sounds/pop.mp3',

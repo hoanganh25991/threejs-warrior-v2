@@ -1,3 +1,3 @@
-- [] when jump/fly, i want camera move, so that like when you on high position, you must be able to see large area, see the sky more than normal.
-- [] skills button's name must be first character of skill name. Add small small circle on skill button to indicate skill key, ex: 1,2,3,...
-- [] skills button show cool down effect
+- [x] when jump/fly, i want camera move, so that like when you on high position, you must be able to see large area, see the sky more than normal.
+- [x] skills button's name must be first character of skill name. Add small small circle on skill button to indicate skill key, ex: 1,2,3,...
+- [x] skills button show cool down effect

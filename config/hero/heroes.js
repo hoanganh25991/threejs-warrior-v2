@@ -6,10 +6,10 @@
 const HeroesConfig = {
     // Available heroes
     availableHeroes: [
-        'axe',
         'crystal-maiden',
         'lich',
-        'storm-spirit'
+        'storm-spirit',
+        'axe',
     ],
     
     // Default hero stats
