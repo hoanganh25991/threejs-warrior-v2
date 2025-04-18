@@ -28,3 +28,10 @@
 [2024-05-03T10:00:00.000Z] Enhanced flying mechanics: space key now makes hero fly higher when in flight mode
 [2024-05-03T10:30:00.000Z] Modified fly button to toggle between flying up and down
 [2024-05-03T11:00:00.000Z] Added visual effects for flying higher and lower
+[2024-05-03T14:00:00.000Z] Created configuration system with config folder for game settings
+[2024-05-03T14:30:00.000Z] Implemented multiple jump functionality with increasing height
+[2024-05-03T15:00:00.000Z] Added flight jump for small boosts during flight
+[2024-05-03T15:30:00.000Z] Implemented long press support for continuous height change during flight
+[2024-05-03T16:00:00.000Z] Added mouse control for flight direction and height adjustment
+[2024-05-03T16:30:00.000Z] Enhanced visual effects for all movement mechanics
+[2024-05-03T17:00:00.000Z] Completed Phase 3: Advanced Movement Controls

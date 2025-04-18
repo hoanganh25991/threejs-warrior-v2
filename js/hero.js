@@ -1748,17 +1748,54 @@ class Hero {
     
     // Toggle flight mode
     toggleFlight() {
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            initialHeight: 5,
+            maxHeight: 20,
+            minHeight: 1,
+            heightChangeRate: {
+                keyPress: 2,
+                longPress: 1.5,
+                mouseWheel: 1
+            },
+            cameraFollowFlight: true,
+            cameraFlightOffset: 0.8,
+            mouseLookSensitivity: 0.5,
+            upwardEffectColor: 0x00ffff,
+            downwardEffectColor: 0xff9900,
+            wingEffectColor: 0x66ccff,
+            showWings: true,
+            wingSize: 2,
+            wingFlapSpeed: 0.5
+        };
+        
         if (this.isFlying) {
             // Land
             this.isFlying = false;
             this.flightTargetHeight = 0;
+            this.stopLongPress(); // Stop any ongoing long press
             
             // Play landing animation if available
             this.playAnimation('land');
             
+            // Create landing effect
+            this.createFlightEffect(flightConfig.downwardEffectColor, 'landing');
+            
             // Show message
             if (window.game && window.game.ui) {
                 window.game.ui.showMessage("Landing...");
+            }
+            
+            // Play landing sound if configured
+            if (flightConfig.landingSoundEffect) {
+                const audio = new Audio(flightConfig.landingSoundEffect);
+                audio.volume = 0.3;
+                audio.play().catch(e => console.warn('Could not play landing sound:', e));
+            }
+            
+            // Update UI button
+            if (window.game && window.game.ui && window.game.ui.flyAbility) {
+                window.game.ui.flyAbility.textContent = "FLY";
             }
             
             Logger.log(`Hero ${this.name} stopped flying`);
@@ -1766,20 +1803,381 @@ class Hero {
             // Take off
             this.isFlying = true;
             this.isJumping = false; // Cancel any jump in progress
-            this.flightTargetHeight = 5; // Target height for flight
+            this.flightTargetHeight = flightConfig.initialHeight; // Target height for flight
             
             // Play flight animation if available
             this.playAnimation('fly');
             
             // Create takeoff effect
-            this.createTakeoffEffect();
+            this.createFlightEffect(flightConfig.upwardEffectColor, 'takeoff');
             
             // Show message
             if (window.game && window.game.ui) {
                 window.game.ui.showMessage("Taking Flight!");
             }
             
-            Logger.log(`Hero ${this.name} started flying`);
+            // Play takeoff sound if configured
+            if (flightConfig.takeoffSoundEffect) {
+                const audio = new Audio(flightConfig.takeoffSoundEffect);
+                audio.volume = 0.3;
+                audio.play().catch(e => console.warn('Could not play takeoff sound:', e));
+            }
+            
+            // Update UI button
+            if (window.game && window.game.ui && window.game.ui.flyAbility) {
+                window.game.ui.flyAbility.textContent = "FLY DOWN";
+            }
+            
+            Logger.log(`Hero ${this.name} started flying at height ${this.flightTargetHeight}`);
+        }
+    }
+    
+    // Fly higher (increase flight height)
+    flyHigher() {
+        if (!this.isFlying) return;
+        
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            maxHeight: 20,
+            heightChangeRate: { keyPress: 2 },
+            upwardEffectColor: 0x00ffff
+        };
+        
+        // Increase target height up to a maximum
+        const prevHeight = this.flightTargetHeight;
+        this.flightTargetHeight = Math.min(
+            flightConfig.maxHeight, 
+            this.flightTargetHeight + flightConfig.heightChangeRate.keyPress
+        );
+        
+        // Only create effect if height actually changed
+        if (this.flightTargetHeight > prevHeight) {
+            // Create a boost effect
+            this.createFlightEffect(flightConfig.upwardEffectColor, 'ascend');
+            
+            // Show message for significant height changes
+            if (this.flightTargetHeight >= flightConfig.maxHeight && window.game && window.game.ui) {
+                window.game.ui.showMessage("Maximum altitude reached!");
+            }
+            
+            Logger.log(`Hero ${this.name} flying higher: ${this.flightTargetHeight.toFixed(1)}`);
+        }
+    }
+    
+    // Fly lower (decrease flight height)
+    flyLower() {
+        if (!this.isFlying) return;
+        
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            minHeight: 1,
+            heightChangeRate: { keyPress: 2 },
+            downwardEffectColor: 0xff9900
+        };
+        
+        // Decrease target height down to a minimum
+        const prevHeight = this.flightTargetHeight;
+        this.flightTargetHeight = Math.max(
+            flightConfig.minHeight, 
+            this.flightTargetHeight - flightConfig.heightChangeRate.keyPress
+        );
+        
+        // Only create effect if height actually changed
+        if (this.flightTargetHeight < prevHeight) {
+            // Create a descent effect
+            this.createFlightEffect(flightConfig.downwardEffectColor, 'descend');
+            
+            // Show message when close to ground
+            if (this.flightTargetHeight <= flightConfig.minHeight && window.game && window.game.ui) {
+                window.game.ui.showMessage("Minimum altitude reached!");
+                
+                // Update UI button
+                if (window.game && window.game.ui && window.game.ui.flyAbility) {
+                    window.game.ui.flyAbility.textContent = "LAND";
+                }
+            }
+            
+            Logger.log(`Hero ${this.name} flying lower: ${this.flightTargetHeight.toFixed(1)}`);
+        }
+    }
+    
+    // Start long press for continuous height change
+    startLongPress(direction) {
+        // Stop any existing long press
+        this.stopLongPress();
+        
+        // Set direction (1 for up, -1 for down)
+        this.longPressActive = true;
+        this.longPressDirection = direction;
+        
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            heightChangeRate: { longPress: 1.5 }
+        };
+        const controlsConfig = window.configLoader?.getConfig('controlsConfig') || {
+            touch: { longPressInterval: 100 }
+        };
+        
+        // Start interval for continuous height change
+        this.longPressInterval = setInterval(() => {
+            if (this.longPressDirection > 0) {
+                // Fly higher
+                const prevHeight = this.flightTargetHeight;
+                this.flyHigher();
+                
+                // Create continuous effect at intervals
+                if (Math.floor(prevHeight) !== Math.floor(this.flightTargetHeight)) {
+                    this.createFlightEffect(flightConfig.upwardEffectColor, 'continuous-ascend', 0.5);
+                }
+            } else {
+                // Fly lower
+                const prevHeight = this.flightTargetHeight;
+                this.flyLower();
+                
+                // Create continuous effect at intervals
+                if (Math.floor(prevHeight) !== Math.floor(this.flightTargetHeight)) {
+                    this.createFlightEffect(flightConfig.downwardEffectColor, 'continuous-descend', 0.5);
+                }
+            }
+        }, controlsConfig.touch.longPressInterval);
+        
+        Logger.log(`Hero ${this.name} started long press flight adjustment, direction: ${this.longPressDirection > 0 ? 'up' : 'down'}`);
+    }
+    
+    // Stop long press
+    stopLongPress() {
+        if (this.longPressInterval) {
+            clearInterval(this.longPressInterval);
+            this.longPressInterval = null;
+        }
+        this.longPressActive = false;
+    }
+    
+    // Create visual effect for flight changes
+    createFlightEffect(color, type = 'default', scale = 1.0) {
+        // Different effect based on type
+        switch (type) {
+            case 'takeoff':
+                // Create a burst effect for takeoff
+                this.createBurstEffect(color, 2.0 * scale);
+                break;
+                
+            case 'landing':
+                // Create a ring effect for landing
+                this.createRingEffect(color, 2.0 * scale);
+                break;
+                
+            case 'ascend':
+                // Create upward particles
+                this.createDirectionalParticles(color, 1.0 * scale, 'up');
+                break;
+                
+            case 'descend':
+                // Create downward particles
+                this.createDirectionalParticles(color, 1.0 * scale, 'down');
+                break;
+                
+            case 'continuous-ascend':
+            case 'continuous-descend':
+                // Smaller effect for continuous changes
+                this.createDirectionalParticles(color, 0.5 * scale, 
+                    type === 'continuous-ascend' ? 'up' : 'down');
+                break;
+                
+            default:
+                // Default simple effect
+                this.createBurstEffect(color, 1.0 * scale);
+        }
+    }
+    
+    // Create burst effect (radial particles)
+    createBurstEffect(color, scale = 1.0) {
+        const particleCount = Math.floor(20 * scale);
+        const particleSize = 0.1 * scale;
+        const particleLifetime = 1000 * scale; // ms
+        const particleSpeed = 0.05 * scale;
+        
+        // Create particles
+        for (let i = 0; i < particleCount; i++) {
+            // Create particle geometry and material
+            const geometry = new THREE.SphereGeometry(particleSize, 8, 8);
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // Create particle mesh
+            const particle = new THREE.Mesh(geometry, material);
+            
+            // Position at hero's position
+            particle.position.copy(this.position);
+            particle.position.y = this.model.position.y;
+            
+            // Add to scene
+            this.scene.add(particle);
+            
+            // Calculate direction (radial)
+            const angle = (i / particleCount) * Math.PI * 2;
+            const dirX = Math.cos(angle);
+            const dirZ = Math.sin(angle);
+            
+            // Animate particle
+            const startTime = performance.now();
+            
+            const animate = (time) => {
+                const elapsed = time - startTime;
+                const progress = Math.min(1, elapsed / particleLifetime);
+                
+                if (progress < 1) {
+                    // Move outward
+                    particle.position.x += dirX * particleSpeed;
+                    particle.position.z += dirZ * particleSpeed;
+                    
+                    // Move upward with curve
+                    particle.position.y += 0.02 * Math.sin(progress * Math.PI);
+                    
+                    // Fade out
+                    particle.material.opacity = 0.8 * (1 - progress);
+                    
+                    requestAnimationFrame(animate);
+                } else {
+                    // Remove particle
+                    this.scene.remove(particle);
+                    particle.geometry.dispose();
+                    particle.material.dispose();
+                }
+            };
+            
+            requestAnimationFrame(animate);
+        }
+    }
+    
+    // Create ring effect
+    createRingEffect(color, scale = 1.0) {
+        const ringCount = Math.floor(3 * scale);
+        const ringSpacing = 0.2 * scale;
+        const ringLifetime = 1000 * scale; // ms
+        const ringExpansionRate = 0.05 * scale;
+        
+        // Create multiple expanding rings
+        for (let i = 0; i < ringCount; i++) {
+            // Delay each ring
+            setTimeout(() => {
+                // Create ring geometry and material
+                const geometry = new THREE.RingGeometry(0.5, 0.6, 32);
+                const material = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.7,
+                    side: THREE.DoubleSide
+                });
+                
+                // Create ring mesh
+                const ring = new THREE.Mesh(geometry, material);
+                
+                // Position at hero's feet
+                ring.position.copy(this.position);
+                ring.position.y = 0.1;
+                
+                // Rotate to be horizontal
+                ring.rotation.x = Math.PI / 2;
+                
+                // Add to scene
+                this.scene.add(ring);
+                
+                // Animate ring
+                const startTime = performance.now();
+                
+                const animate = (time) => {
+                    const elapsed = time - startTime;
+                    const progress = Math.min(1, elapsed / ringLifetime);
+                    
+                    if (progress < 1) {
+                        // Expand ring
+                        ring.scale.set(
+                            1 + progress * 5 * ringExpansionRate,
+                            1 + progress * 5 * ringExpansionRate,
+                            1
+                        );
+                        
+                        // Fade out
+                        ring.material.opacity = 0.7 * (1 - progress);
+                        
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Remove ring
+                        this.scene.remove(ring);
+                        ring.geometry.dispose();
+                        ring.material.dispose();
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }, i * 200); // Stagger the rings
+        }
+    }
+    
+    // Create directional particles (up/down)
+    createDirectionalParticles(color, scale = 1.0, direction = 'up') {
+        const particleCount = Math.floor(10 * scale);
+        const particleSize = 0.08 * scale;
+        const particleLifetime = 800 * scale; // ms
+        const particleSpeed = direction === 'up' ? 0.03 * scale : -0.03 * scale;
+        
+        // Create particles
+        for (let i = 0; i < particleCount; i++) {
+            // Create particle geometry and material
+            const geometry = new THREE.SphereGeometry(particleSize, 8, 8);
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            // Create particle mesh
+            const particle = new THREE.Mesh(geometry, material);
+            
+            // Position around hero
+            const angle = (i / particleCount) * Math.PI * 2;
+            const radius = 0.5 * scale;
+            particle.position.set(
+                this.position.x + Math.cos(angle) * radius,
+                this.model.position.y,
+                this.position.z + Math.sin(angle) * radius
+            );
+            
+            // Add to scene
+            this.scene.add(particle);
+            
+            // Animate particle
+            const startTime = performance.now();
+            
+            const animate = (time) => {
+                const elapsed = time - startTime;
+                const progress = Math.min(1, elapsed / particleLifetime);
+                
+                if (progress < 1) {
+                    // Move in direction
+                    particle.position.y += particleSpeed;
+                    
+                    // Slight outward movement
+                    particle.position.x += Math.cos(angle) * 0.01;
+                    particle.position.z += Math.sin(angle) * 0.01;
+                    
+                    // Fade out
+                    particle.material.opacity = 0.7 * (1 - progress);
+                    
+                    requestAnimationFrame(animate);
+                } else {
+                    // Remove particle
+                    this.scene.remove(particle);
+                    particle.geometry.dispose();
+                    particle.material.dispose();
+                }
+            };
+            
+            requestAnimationFrame(animate);
         }
     }
     

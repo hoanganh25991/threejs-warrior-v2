@@ -146,6 +146,40 @@ class InputManager {
         // Emit mouse move event
         Events.emit('mouseMove', { position: this.mousePosition });
         
+        // Handle flight camera control when flying
+        if (window.game && window.game.hero && window.game.hero.isFlying) {
+            // Get flight configuration
+            const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+                mouseLookSensitivity: 0.5
+            };
+            
+            // Check if mouse look is enabled
+            if (flightConfig.mouseLookSensitivity > 0) {
+                // Calculate camera look direction based on mouse position
+                const centerX = this.renderer.domElement.clientWidth / 2;
+                const centerY = this.renderer.domElement.clientHeight / 2;
+                
+                // Calculate offset from center
+                const offsetX = (this.mousePosition.x - centerX) / centerX;
+                const offsetY = (this.mousePosition.y - centerY) / centerY;
+                
+                // Emit flight look event
+                Events.emit('flightLook', { 
+                    offsetX: offsetX * flightConfig.mouseLookSensitivity,
+                    offsetY: offsetY * flightConfig.mouseLookSensitivity
+                });
+                
+                // Handle flight height change with mouse buttons
+                if (this.mouseButtons.left) {
+                    // Left mouse button - fly higher
+                    window.game.hero.flyHigher();
+                } else if (this.mouseButtons.right) {
+                    // Right mouse button - fly lower
+                    window.game.hero.flyLower();
+                }
+            }
+        }
+        
         // Handle camera rotation if middle mouse button is pressed
         if (this.mouseButtons.middle) {
             this.handleCameraRotation(event);
