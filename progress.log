@@ -45,5 +45,7 @@
 [2024-05-07T12:00:00.000Z] Implemented 3D wings effect for heroes during flight and jump
 [2024-05-08T09:00:00.000Z] Enhanced wing effects to keep wings visible during flight
 [2024-05-08T10:15:00.000Z] Added camera view changes that follow hero's height during jump and flight
-[2024-05-08T11:00:00.000Z] Fixed ReferenceError: HeroFactory is not defined in game.js
-[2024-05-08T11:15:00.000Z] Made HeroFactory available globally to fix hero selection error
+[2024-05-08T11:00:00.000Z] Attempted to fix ReferenceError: HeroFactory is not defined in game.js
+[2024-05-08T11:15:00.000Z] Tried making HeroFactory available globally but issue persisted
+[2024-05-08T11:30:00.000Z] Fixed hero selection error by modifying Game class to create heroes directly
+[2024-05-08T11:45:00.000Z] Updated documentation to reflect the final solution for the HeroFactory reference error

@@ -224,8 +224,26 @@ class Game {
         // Store selected hero type
         this.selectedHeroType = heroType;
         
-        // Create hero
-        this.hero = HeroFactory.createHero(heroType, this.scene);
+        // Create hero directly instead of using HeroFactory
+        let heroName;
+        switch (heroType) {
+            case 'axe':
+                heroName = 'Axe';
+                break;
+            case 'crystal-maiden':
+                heroName = 'Crystal Maiden';
+                break;
+            case 'lich':
+                heroName = 'Lich';
+                break;
+            case 'storm-spirit':
+                heroName = 'Storm Spirit';
+                break;
+            default:
+                heroName = heroType;
+        }
+        
+        this.hero = new Hero(heroName, heroType, this.scene);
         await this.hero.init();
         
         // Position hero at center of world

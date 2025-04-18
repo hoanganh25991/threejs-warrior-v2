@@ -28,20 +28,50 @@ await this.hero.init();
 
 However, the `HeroFactory` class was defined in `hero.js` but was not exported or made available globally, so it couldn't be accessed from `game.js`.
 
-## Solution
+## Initial Solution Attempt
 
-The solution was to make the `HeroFactory` class available globally by adding it to the `window` object at the end of `hero.js`:
+Initially, we tried to make the `HeroFactory` class available globally by adding it to the `window` object at the end of `hero.js`:
 
 ```javascript
 // Make HeroFactory available globally
 window.HeroFactory = HeroFactory;
 ```
 
-This makes the `HeroFactory` class accessible from any JavaScript file in the application, including `game.js`.
+However, this approach didn't resolve the issue, possibly due to script loading order or other factors.
+
+## Final Solution
+
+The final solution was to modify the `Game` class to create heroes directly instead of using the `HeroFactory`:
+
+```javascript
+// Create hero directly instead of using HeroFactory
+let heroName;
+switch (heroType) {
+    case 'axe':
+        heroName = 'Axe';
+        break;
+    case 'crystal-maiden':
+        heroName = 'Crystal Maiden';
+        break;
+    case 'lich':
+        heroName = 'Lich';
+        break;
+    case 'storm-spirit':
+        heroName = 'Storm Spirit';
+        break;
+    default:
+        heroName = heroType;
+}
+
+this.hero = new Hero(heroName, heroType, this.scene);
+await this.hero.init();
+```
+
+This approach eliminates the dependency on the `HeroFactory` class entirely, resolving the reference error.
 
 ## Files Modified
 
-1. `/js/hero.js` - Added code to make `HeroFactory` available globally
+1. `/js/game.js` - Modified to create heroes directly instead of using HeroFactory
 
 ## Testing
 
@@ -53,4 +83,6 @@ After implementing the fix, the hero selection process works correctly without a
 
 2. **Dependency Injection**: Another approach would be to pass the `HeroFactory` as a dependency to the `Game` class. This would make the dependency explicit but would require more significant changes to the codebase.
 
-The current solution was chosen for its simplicity and minimal impact on the existing codebase, while still resolving the immediate issue.
+3. **Ensuring Correct Script Loading Order**: We could have investigated further to ensure that `hero.js` is fully loaded and processed before `game.js` tries to use the `HeroFactory`.
+
+The current solution was chosen for its simplicity, reliability, and minimal impact on the existing codebase, while still resolving the immediate issue.
