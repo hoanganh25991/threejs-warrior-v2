@@ -13,6 +13,27 @@ class Logger {
         this.appendToLog(logMessage);
     }
     
+    static warn(message) {
+        const timestamp = new Date().toISOString();
+        const logMessage = `[${timestamp}] WARNING: ${message}`;
+        console.warn(logMessage);
+        
+        // Append to progress.log
+        this.appendToLog(logMessage);
+    }
+    
+    static error(message, error) {
+        const timestamp = new Date().toISOString();
+        let logMessage = `[${timestamp}] ERROR: ${message}`;
+        if (error) {
+            logMessage += ` ${error.message || error}`;
+        }
+        console.error(logMessage);
+        
+        // Append to progress.log
+        this.appendToLog(logMessage);
+    }
+    
     static appendToLog(message) {
         // In a real implementation, this would use a server-side API to write to the file
         // For now, we'll just log to console with a note
