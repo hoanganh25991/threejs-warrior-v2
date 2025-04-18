@@ -16,14 +16,15 @@ const HeroesConfig = {
     defaultStats: {
         health: 100,
         maxHealth: 100,
-        mana: 100,
+        mana: 100_000,
         maxMana: 100,
         strength: 10,
         agility: 10,
         intelligence: 10,
         movementSpeed: 5,
         attackSpeed: 1,
-        attackDamage: 10
+        attackDamage: 10,
+        attackRange: 3 // Default attack range
     },
     
     // Hero-specific stats and abilities

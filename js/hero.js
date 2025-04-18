@@ -10,19 +10,7 @@ class Hero {
         this.scene = scene;
         
         // Stats
-        this.stats = {
-            health: 100,
-            maxHealth: 100,
-            mana: 100,
-            maxMana: 100,
-            strength: 10,
-            agility: 10,
-            intelligence: 10,
-            movementSpeed: 5,
-            attackSpeed: 1,
-            attackDamage: 10,
-            attackRange: 3 // Default attack range
-        };
+        this.stats = window.HeroesConfig.defaultStats;
         
         // Position and movement
         this.position = new THREE.Vector3(0, 0, 0);
@@ -396,13 +384,21 @@ class Hero {
             wingEffectColor: 0x66ccff,
             upwardEffectColor: 0x00ffff,
             downwardEffectColor: 0xff9900,
-            wingOpenDuration: 0.8 // seconds to fully open wings
+            wingOpenDuration: 0.8, // seconds to fully open wings
+            wingFlapIntensity: 0.3  // base intensity for wing flapping
         };
         
         // Set wing color based on direction
-        const wingColor = direction === 'up' ? 
-            flightConfig.upwardEffectColor : 
-            flightConfig.downwardEffectColor;
+        let wingColor;
+        if (direction === 'hover') {
+            // For hover state, use the default wing effect color
+            wingColor = flightConfig.wingEffectColor;
+        } else {
+            // For up/down movement, use directional colors
+            wingColor = direction === 'up' ? 
+                flightConfig.upwardEffectColor : 
+                flightConfig.downwardEffectColor;
+        }
         
         // Update wing colors for all feathers
         const featherLayers = this.leftWingFeathers.length;
@@ -432,9 +428,36 @@ class Hero {
                     rightFeather.material.color.copy(featherColor);
                     rightFeather.material.emissive.copy(featherColor);
                     rightFeather.material.emissiveIntensity = 0.3 + intensity * 0.7;
+                    
+                    // For hover state, add gentle oscillation to feathers
+                    if (direction === 'hover') {
+                        // Calculate a unique phase for each feather for natural movement
+                        const featherPhase = (i / layerFeathers.length) * Math.PI * 2;
+                        const layerPhase = layer * 0.5; // Different phase for each layer
+                        
+                        // Apply gentle oscillation based on time
+                        const time = performance.now() / 1000; // Current time in seconds
+                        const oscillation = Math.sin(time * flightConfig.wingFlapSpeed + featherPhase + layerPhase) * 0.1 * intensity;
+                        
+                        // Apply oscillation to rotation
+                        feather.rotation.z = oscillation;
+                        rightFeather.rotation.z = oscillation;
+                    }
                 }
             }
         }
+        
+        // For hover state, animate the entire wing with a gentle flapping motion
+        if (direction === 'hover') {
+            // Calculate wing flap based on time
+            const time = performance.now() / 1000;
+            const flapAngle = Math.sin(time * flightConfig.wingFlapSpeed) * 0.1 * intensity;
+            
+            // Apply to wing groups
+            this.leftWingGroup.rotation.z = flapAngle;
+            this.rightWingGroup.rotation.z = -flapAngle; // Mirror for right wing
+        }
+    }
         
         // Determine target wing open state based on direction and intensity
         let targetOpenState = 0.3 + (intensity * 0.7); // More open with higher intensity
@@ -2166,7 +2189,10 @@ class Hero {
             cameraFollowJump: true,
             cameraJumpOffset: 0.7,
             showWings: true,
-            wingAppearThreshold: 5
+            wingAppearThreshold: 5,
+            wingOpenDuration: 0.8,
+            flightTransitionThreshold: 5,
+            flightTransitionEnabled: true
         };
         
         // Check if we can jump (either on ground or have double jump available)
@@ -2190,6 +2216,17 @@ class Hero {
                 
                 // Show regular jump effect
                 this.createJumpEffect(jumpConfig.jumpEffectColor);
+                
+                // Hide wings if they were visible and we're starting a new jump
+                if (this.wings && this.wings.visible) {
+                    // Animate wings closing
+                    this.animateWingOpenTransition(this.wingOpenState, 0, jumpConfig.wingOpenDuration);
+                    
+                    // Hide wings after animation completes
+                    setTimeout(() => {
+                        this.wings.visible = false;
+                    }, jumpConfig.wingOpenDuration * 1000);
+                }
             }
             
             // Set jump parameters
@@ -2223,7 +2260,12 @@ class Hero {
             holdJumpEnabled: true,
             holdJumpAcceleration: 5,
             holdJumpMaxVelocity: 15,
-            holdJumpEffectColor: 0x66ccff
+            holdJumpEffectColor: 0x66ccff,
+            showWings: true,
+            wingAppearThreshold: 5,
+            wingOpenDuration: 0.8,
+            flightTransitionThreshold: 5,
+            flightTransitionEnabled: true
         };
         
         // Only enable if hold jump is configured
@@ -2240,6 +2282,23 @@ class Hero {
             window.game.ui.showMessage("Holding Jump!");
         }
         
+        // Check if we need to show wings based on current height
+        if (jumpConfig.showWings && this.jumpHeight >= jumpConfig.wingAppearThreshold) {
+            if (!this.wings.visible) {
+                // Show wings with opening animation
+                this.wings.visible = true;
+                this.wingOpenState = 0; // Start from closed position
+                
+                // Animate wings opening
+                this.animateWingOpenTransition(0, 1, jumpConfig.wingOpenDuration);
+                
+                // Emit event for UI
+                Events.emit('wingsVisibilityChanged', { visible: true });
+                
+                Logger.log(`Wings appeared at height ${this.jumpHeight.toFixed(1)}`);
+            }
+        }
+        
         Logger.log(`Hero ${this.name} started holding jump`);
     }
     
@@ -2247,7 +2306,10 @@ class Hero {
     stopHoldJump() {
         // Get jump configuration
         const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
-            holdJumpDecay: 0.8
+            holdJumpDecay: 0.8,
+            showWings: true,
+            wingAppearThreshold: 5,
+            wingOpenDuration: 0.8
         };
         
         // Set holding jump state
@@ -2256,6 +2318,24 @@ class Hero {
         // Apply decay to velocity to create a natural arc
         if (this.isJumping && this.jumpVelocity > 0) {
             this.jumpVelocity *= jumpConfig.holdJumpDecay;
+        }
+        
+        // If we're below the wing threshold and wings are visible, animate them closing
+        if (jumpConfig.showWings && this.wings && this.wings.visible && this.jumpHeight < jumpConfig.wingAppearThreshold) {
+            // Animate wings closing
+            this.animateWingOpenTransition(this.wingOpenState, 0, jumpConfig.wingOpenDuration);
+            
+            // Hide wings after animation completes
+            setTimeout(() => {
+                if (this.jumpHeight < jumpConfig.wingAppearThreshold && !this.isFlying) {
+                    this.wings.visible = false;
+                    
+                    // Emit event for UI
+                    Events.emit('wingsVisibilityChanged', { visible: false });
+                    
+                    Logger.log(`Wings disappeared at height ${this.jumpHeight.toFixed(1)}`);
+                }
+            }, jumpConfig.wingOpenDuration * 1000);
         }
         
         Logger.log(`Hero ${this.name} stopped holding jump`);
@@ -2395,6 +2475,25 @@ class Hero {
                 const audio = new Audio(flightConfig.landingSoundEffect);
                 audio.volume = 0.3;
                 audio.play().catch(e => console.warn('Could not play landing sound:', e));
+            }
+            
+            // Animate wings closing before hiding
+            if (this.wings && this.wings.visible) {
+                // Animate wings closing
+                this.animateWingOpenTransition(this.wingOpenState, 0, flightConfig.wingOpenDuration);
+                
+                // Hide wings after animation completes
+                setTimeout(() => {
+                    this.wings.visible = false;
+                    
+                    // Clear any ongoing wing animations
+                    if (this.wingFlapAnimationId) {
+                        cancelAnimationFrame(this.wingFlapAnimationId);
+                        this.wingFlapAnimationId = null;
+                    }
+                    
+                    Logger.log(`Wings closed as hero landed`);
+                }, flightConfig.wingOpenDuration * 1000);
             }
             
             // Update UI button
@@ -2855,7 +2954,9 @@ class Hero {
             holdJumpAcceleration: 5,
             holdJumpMaxVelocity: 15,
             showWings: true,
-            wingAppearThreshold: 5
+            wingAppearThreshold: 5,
+            flightTransitionThreshold: 5,
+            flightTransitionEnabled: true
         };
         
         // Get flight configuration
@@ -2871,16 +2972,57 @@ class Hero {
             showWings: true,
             wingSize: 2,
             wingFlapSpeed: 0.5,
-            wingEffectColor: 0x66ccff
+            wingEffectColor: 0x66ccff,
+            flightThreshold: 5,
+            slowHeightChangeRate: 0.5
         };
         
         // Update jumping
         if (this.isJumping) {
             // If holding jump button, increase velocity up to a maximum
             if (this.isHoldingJump && jumpConfig.holdJumpEnabled) {
+                // Check if we should transition to flight mode
+                if (jumpConfig.flightTransitionEnabled && 
+                    this.jumpHeight >= jumpConfig.flightTransitionThreshold && 
+                    !this.isFlying) {
+                    
+                    // Transition to flight mode
+                    this.isFlying = true;
+                    this.isJumping = false;
+                    this.flightTargetHeight = this.jumpHeight; // Start flight at current height
+                    
+                    // Play flight animation if available
+                    this.playAnimation('fly');
+                    
+                    // Ensure wings are visible and fully open
+                    if (this.wings) {
+                        this.wings.visible = true;
+                        this.animateWingOpenTransition(this.wingOpenState, 1, flightConfig.wingOpenDuration);
+                    }
+                    
+                    // Emit flight state changed event for UI
+                    Events.emit('flightStateChanged', { isFlying: true });
+                    
+                    // Show message
+                    if (window.game && window.game.ui) {
+                        window.game.ui.showMessage("Flying!");
+                    }
+                    
+                    Logger.log(`Hero ${this.name} transitioned to flight mode at height ${this.jumpHeight.toFixed(1)}`);
+                    
+                    // Skip the rest of jump processing
+                    return;
+                }
+                
                 // Add upward acceleration when holding jump
+                // If above threshold, use slower acceleration rate
+                let accelerationRate = jumpConfig.holdJumpAcceleration;
+                if (this.jumpHeight >= flightConfig.flightThreshold) {
+                    accelerationRate = flightConfig.slowHeightChangeRate;
+                }
+                
                 this.jumpVelocity = Math.min(
-                    this.jumpVelocity + jumpConfig.holdJumpAcceleration * deltaTime,
+                    this.jumpVelocity + accelerationRate * deltaTime,
                     jumpConfig.holdJumpMaxVelocity
                 );
                 
@@ -2927,6 +3069,11 @@ class Hero {
             
             // Update jump height
             this.jumpHeight += this.jumpVelocity * deltaTime;
+            
+            // Update camera to follow jump height
+            if (jumpConfig.cameraFollowJump && window.game && window.game.camera) {
+                window.game.camera.followJump(this, jumpConfig.cameraJumpOffset);
+            }
             
             // Check if landed
             if (this.jumpHeight <= 0) {
@@ -3043,7 +3190,13 @@ class Hero {
             
             // Apply smooth movement towards target height
             if (Math.abs(heightDifference) > 0.01) {
-                const heightStep = Math.sign(heightDifference) * Math.min(Math.abs(heightDifference), 5 * deltaTime);
+                // Use slow height change rate when above threshold
+                let heightChangeMultiplier = 5;
+                if (currentHeight >= flightConfig.flightThreshold) {
+                    heightChangeMultiplier = flightConfig.slowHeightChangeRate * 5;
+                }
+                
+                const heightStep = Math.sign(heightDifference) * Math.min(Math.abs(heightDifference), heightChangeMultiplier * deltaTime);
                 const newHeight = currentHeight + heightStep;
                 
                 // Update model height
@@ -3051,7 +3204,12 @@ class Hero {
                     this.model.position.y = newHeight + this.model.geometry.parameters.height / 2;
                 }
                 
-                // Show wings and update wing effect based on direction
+                // Update camera to follow flight height
+                if (flightConfig.cameraFollowFlight && window.game && window.game.camera) {
+                    window.game.camera.followJump(this, flightConfig.cameraFlightOffset);
+                }
+                
+                // Always ensure wings are visible during flight
                 if (flightConfig.showWings) {
                     if (!this.showWings) {
                         this.showWings = true;
@@ -3059,18 +3217,24 @@ class Hero {
                     
                     // Update 3D wings
                     if (this.wings) {
-                        const intensity = Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime));
-                        
-                        // If wings just became visible, animate opening
+                        // Ensure wings are visible
                         if (!this.wings.visible) {
                             this.wings.visible = true;
                             this.wingOpenState = 0; // Start from closed position
+                            
+                            // Animate wings opening
+                            this.animateWingOpenTransition(0, 1, flightConfig.wingOpenDuration);
                         }
+                        
+                        // Calculate flap intensity based on height change
+                        const baseIntensity = flightConfig.wingFlapIntensity || 0.3;
+                        const movementIntensity = Math.min(1.0, Math.abs(heightStep) / (heightChangeMultiplier * deltaTime));
+                        const totalIntensity = baseIntensity + (movementIntensity * 0.7);
                         
                         // Animate wings with direction and intensity
                         this.animateWings(
                             heightStep > 0 ? 'up' : 'down',
-                            intensity
+                            totalIntensity
                         );
                     }
                     
@@ -3078,7 +3242,7 @@ class Hero {
                     Events.emit('wingsVisibilityChanged', { 
                         visible: true,
                         direction: heightStep > 0 ? 'up' : 'down',
-                        intensity: Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime))
+                        intensity: Math.min(1.0, Math.abs(heightStep) / (heightChangeMultiplier * deltaTime))
                     });
                     
                     // Create occasional particle effect for wing flapping
@@ -3086,7 +3250,28 @@ class Hero {
                         const effectColor = heightStep > 0 ? 
                             flightConfig.upwardEffectColor : 
                             flightConfig.downwardEffectColor;
-                        this.createWingFlapEffect(effectColor, Math.abs(heightStep) / (5 * deltaTime));
+                        this.createWingFlapEffect(effectColor, Math.abs(heightStep) / (heightChangeMultiplier * deltaTime));
+                    }
+                }
+            } else {
+                // Even when not changing height, keep wings visible and animate them slightly
+                if (flightConfig.showWings && this.wings) {
+                    // Ensure wings are visible
+                    if (!this.wings.visible) {
+                        this.wings.visible = true;
+                        this.wingOpenState = 0; // Start from closed position
+                        
+                        // Animate wings opening
+                        this.animateWingOpenTransition(0, 1, flightConfig.wingOpenDuration);
+                    }
+                    
+                    // Animate wings with a gentle flapping motion
+                    const baseIntensity = flightConfig.wingFlapIntensity || 0.3;
+                    this.animateWings('hover', baseIntensity);
+                    
+                    // Create occasional particle effect for wing flapping
+                    if (Math.random() < 0.02) {
+                        this.createWingFlapEffect(flightConfig.wingEffectColor, baseIntensity);
                     }
                 }
             }

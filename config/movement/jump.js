@@ -36,7 +36,12 @@ const JumpConfig = {
     wingAppearThreshold: 5,     // Height threshold for wings to appear
     wingSize: 2,                // Size of wings
     wingFlapSpeed: 0.5,         // Speed of wing flapping animation
-    wingEffectColor: 0x66ccff   // Color for wing effect
+    wingEffectColor: 0x66ccff,  // Color for wing effect
+    wingOpenDuration: 0.8,      // Duration of wing open/close animation in seconds
+    
+    // Flight transition
+    flightTransitionThreshold: 5, // Height threshold to transition to flight mode
+    flightTransitionEnabled: true // Whether to automatically transition to flight mode
 };
 
 // Make the config available in the global scope for the config loader

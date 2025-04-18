@@ -72,3 +72,11 @@
 [2024-05-07T13:00:00.000Z] Enhanced wings with multiple feathers and bone structure for more realistic appearance
 [2024-05-07T13:15:00.000Z] Added smooth transition animation for wings opening/closing when changing between normal and flight modes
 [2024-05-07T13:30:00.000Z] Implemented individual feather animation for more natural wing movement
+[2024-05-08T09:00:00.000Z] Enhanced wing effects to keep wings visible during flight
+[2024-05-08T09:15:00.000Z] Added wing open/close animation when transitioning between normal and flight modes
+[2024-05-08T09:30:00.000Z] Implemented wing closing animation when hero lands on the ground
+[2024-05-08T09:45:00.000Z] Added flight threshold to transition from jump to flight when holding jump
+[2024-05-08T10:00:00.000Z] Implemented slow height change when above flight threshold for more realistic flight
+[2024-05-08T10:15:00.000Z] Added camera view changes that follow hero's height during jump and flight
+[2024-05-08T10:30:00.000Z] Implemented hover wing animation for when hero is flying but not changing height
+[2024-05-08T10:45:00.000Z] Enhanced wing feather animation with gentle oscillation during hover state

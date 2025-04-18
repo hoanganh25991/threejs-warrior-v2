@@ -29,6 +29,12 @@ const FlightConfig = {
     showWings: true,            // Whether to show wings during flight
     wingSize: 2,                // Size of wings
     wingFlapSpeed: 0.5,         // Speed of wing flapping animation
+    wingOpenDuration: 0.8,      // Duration of wing open/close animation in seconds
+    wingFlapIntensity: 0.3,     // Base intensity of wing flapping
+    
+    // Flight transition settings
+    flightThreshold: 5,         // Height threshold to transition from jump to flight
+    slowHeightChangeRate: 0.5,  // Slow height change rate when above threshold
     
     // Sound effects
     takeoffSoundEffect: 'sounds/submarine.mp3',

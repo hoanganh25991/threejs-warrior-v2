@@ -42,7 +42,7 @@ The game features a robust movement system that allows heroes to navigate the wo
 ## Jump Mechanics
 
 ### Basic Jump
-- **Controls**: Space key (keyboard) or Jump button (mobile)
+- **Controls**: F key (keyboard) or Jump button (mobile)
 - **Height**: Determined by `initialVelocity` and `gravity` in jump configuration
 - **Default Values**:
   - Initial Velocity: 10
@@ -50,26 +50,44 @@ The game features a robust movement system that allows heroes to navigate the wo
   - Maximum Jump Count: 2 (double jump)
 - **Animation**: Jump animation plays during ascent and descent
 
+### Hold-to-Jump
+- Holding the jump button increases jump height
+- Acceleration applied while holding jump (holdJumpAcceleration: 5)
+- Maximum velocity cap (holdJumpMaxVelocity: 15)
+- Velocity decays when button is released (holdJumpDecay: 0.8)
+- **Visual Feedback**: Continuous effect while holding jump (holdJumpEffectColor: 0x66ccff)
+
 ### Double Jump
 - Pressing jump while already in the air performs a second jump
 - Second jump can reach higher than the first (multiJumpHeightIncrease: 1.5)
 - Maximum of 2 consecutive jumps by default (configurable)
 - **Visual Feedback**: Different effect color for double jump (0x00ffff)
 
+### Jump-to-Flight Transition
+- When holding jump and reaching a threshold height (flightTransitionThreshold: 5)
+- Automatically transitions to flight mode
+- Wings appear and fully open during transition
+- Height change becomes slower for more realistic flight
+- Can be enabled/disabled in configuration (flightTransitionEnabled)
+
 ### Jump Configuration
 Jump mechanics are configured in `config/movement/jump.js`, which includes:
 - Initial velocity and gravity settings
 - Maximum jump count
 - Multi-jump height increase factor
+- Hold-to-jump settings
 - Visual effect colors
 - Camera follow settings
 - Sound effects for jumping and landing
+- Wing appearance threshold and animation settings
+- Flight transition settings
 
 ### Technical Implementation
 - Jump physics are simulated using velocity and gravity
 - Jump state is tracked in the Hero class
 - Camera follows jump with configurable offset (cameraJumpOffset: 0.7)
 - Sound effects play on jump initiation and landing
+- Wing effects appear when passing height threshold
 
 ## Flight Mechanics
 
@@ -120,11 +138,18 @@ Jump mechanics are configured in `config/movement/jump.js`, which includes:
 - Wing color changes based on movement direction:
   - Upward movement: Light blue color (0x00ffff)
   - Downward movement: Orange color (0xff9900)
+  - Hover state: Default wing color (0x66ccff)
 - Wing animation adapts to movement:
   - Flap speed increases with movement intensity
   - Flap amplitude (how wide the wings flap) increases with intensity
   - Wing opacity and glow increase with movement intensity
   - Individual feathers have slight variations in color and movement
+  - Hover state has gentle oscillation of feathers for natural look
+  - Each feather has unique phase offset for more natural movement
+- Wings remain visible during entire flight duration:
+  - Fully open when flying
+  - Gentle flapping animation when hovering
+  - Smooth transition when changing height
 - Particle effects emit from wings during flapping:
   - Particles inherit wing color based on direction
   - More particles generate with higher intensity movement
@@ -136,11 +161,18 @@ Flight mechanics are configured in `config/movement/flight.js`, which includes:
 - Camera follow settings
 - Visual effect colors
 - Wing appearance and animation settings
+- Wing open/close transition duration
+- Wing flap intensity settings
+- Flight threshold settings
+- Slow height change rate settings
 - Sound effects for takeoff and landing
 
 ### Technical Implementation
 - Flight state is tracked in the Hero class
 - Camera follows flight height with configurable offset (cameraFlightOffset: 0.8)
+- Height change rate slows when above flight threshold
+- Wing animations adapt to flight state (ascending, descending, hovering)
+- Smooth transitions between wing states using animation curves
 - Long press detection for continuous height change
 - Sound effects play on takeoff and landing
 
