@@ -74,3 +74,6 @@
 [2024-05-10T16:00:00.000Z] Implemented camera view changes based on hero's jump height
 [2024-05-10T16:15:00.000Z] Added camera tilt effect that increases as hero gains altitude
 [2024-05-10T16:30:00.000Z] Implemented subtle camera roll effect during high jumps
+[2024-05-10T17:00:00.000Z] Created hero avatar images for the hero selection screen
+[2024-05-10T17:15:00.000Z] Updated player portrait in game UI to use hero images
+[2024-05-10T17:30:00.000Z] Enhanced CSS styling for hero portraits and selection screen

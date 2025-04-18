@@ -30,8 +30,8 @@ const JumpConfig = {
     cameraRollEnabled: true,    // Whether to add subtle roll effect during jumps
     
     // Sound effects
-    jumpSoundEffect: '/System/Library/Sounds/Pop.aiff',
-    landSoundEffect: '/System/Library/Sounds/Blow.aiff',
+    jumpSoundEffect: 'sounds/pop.mp3',
+    landSoundEffect: 'sounds/blow.mp3',
     
     // Wing effects during high jumps
     showWings: true,            // Whether to show wings during high jumps

@@ -135,6 +135,31 @@ body {
     margin-bottom: 1rem;
     background-size: cover;
     background-position: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 3px solid #444;
+    transition: all 0.3s ease;
+}
+
+.hero-card:hover .hero-image {
+    border-color: #f8d000;
+    box-shadow: 0 0 15px rgba(248, 208, 0, 0.5);
+}
+
+/* Hero specific images */
+.hero-image.axe {
+    background-image: url('../assets/images/heros/axe.svg');
+}
+
+.hero-image.crystal-maiden {
+    background-image: url('../assets/images/heros/crystal-maiden.svg');
+}
+
+.hero-image.lich {
+    background-image: url('../assets/images/heros/lich.svg');
+}
+
+.hero-image.storm-spirit {
+    background-image: url('../assets/images/heros/storm-spirit.svg');
 }
 
 .hero-card p {
@@ -194,10 +219,19 @@ body {
     width: 60px;
     height: 60px;
     background-color: #333;
-    border: 2px solid #666;
+    border: 3px solid #666;
     border-radius: 50%;
     margin-right: 10px;
     overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+    transition: all 0.3s ease;
+}
+
+#player-portrait:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
 #player-stats {

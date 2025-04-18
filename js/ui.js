@@ -202,23 +202,33 @@ class UIManager {
     updatePlayerPortrait(heroType) {
         if (!this.playerPortrait) return;
         
-        // Set background color based on hero type
+        // Set background image based on hero type
+        const imagePath = `../assets/images/heros/${heroType}.svg`;
+        
+        // Update the portrait with the hero image
+        this.playerPortrait.style.backgroundImage = `url('${imagePath}')`;
+        this.playerPortrait.style.backgroundSize = 'cover';
+        this.playerPortrait.style.backgroundPosition = 'center';
+        
+        // Add a border color based on hero type
         switch (heroType) {
             case 'axe':
-                this.playerPortrait.style.backgroundColor = '#a83232';
+                this.playerPortrait.style.borderColor = '#a83232';
                 break;
             case 'crystal-maiden':
-                this.playerPortrait.style.backgroundColor = '#32a8a8';
+                this.playerPortrait.style.borderColor = '#32a8a8';
                 break;
             case 'lich':
-                this.playerPortrait.style.backgroundColor = '#3232a8';
+                this.playerPortrait.style.borderColor = '#3232a8';
                 break;
             case 'storm-spirit':
-                this.playerPortrait.style.backgroundColor = '#32a832';
+                this.playerPortrait.style.borderColor = '#32a832';
                 break;
             default:
-                this.playerPortrait.style.backgroundColor = '#666666';
+                this.playerPortrait.style.borderColor = '#666666';
         }
+        
+        Logger.log(`Updated player portrait with hero image: ${heroType}`);
     }
     
     updateExperience(data) {

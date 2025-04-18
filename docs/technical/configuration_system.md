@@ -130,8 +130,8 @@ const JumpConfig = {
     doubleJumpEffectColor: 0x00ffff, // Color of double jump effect
     cameraFollowJump: true,     // Whether camera should follow player during jump
     cameraJumpOffset: 0.7,      // How much camera follows the jump
-    jumpSoundEffect: '/System/Library/Sounds/Pop.aiff',
-    landSoundEffect: '/System/Library/Sounds/Blow.aiff'
+    jumpSoundEffect: 'sounds/pop.mp3',
+    landSoundEffect: 'sounds/blow.mp3'
 };
 ```
 
