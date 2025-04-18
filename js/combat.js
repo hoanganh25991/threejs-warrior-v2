@@ -664,6 +664,12 @@ class Enemy {
         // Reduce health by damage amount
         this.stats.health = Math.max(0, this.stats.health - amount);
         
+        // Update health bar
+        this.updateHealthBar();
+        
+        // Show damage number
+        this.showDamageNumber(amount);
+        
         // Check if dead
         if (this.stats.health <= 0) {
             this.die();
@@ -681,6 +687,65 @@ class Enemy {
             source: source,
             remainingHealth: this.stats.health
         });
+    }
+    
+    showDamageNumber(amount) {
+        // Create a canvas for the damage number
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 64;
+        canvas.height = 32;
+        
+        // Draw text
+        context.fillStyle = 'red';
+        context.font = 'bold 24px Arial';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(amount.toString(), canvas.width / 2, canvas.height / 2);
+        
+        // Create texture from canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        
+        // Create sprite material
+        const material = new THREE.SpriteMaterial({ 
+            map: texture,
+            transparent: true
+        });
+        
+        // Create sprite
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(0.5, 0.25, 1);
+        
+        // Position above enemy
+        sprite.position.copy(this.position);
+        sprite.position.y += 2.5; // Above the health bar
+        
+        // Add to scene
+        this.scene.add(sprite);
+        
+        // Animate the damage number
+        const startTime = Date.now();
+        const duration = 1000; // 1 second
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress < 1) {
+                // Move upward and fade out
+                sprite.position.y += 0.01;
+                sprite.material.opacity = 1 - progress;
+                
+                requestAnimationFrame(animate);
+            } else {
+                // Remove when animation is complete
+                this.scene.remove(sprite);
+                sprite.material.map.dispose();
+                sprite.material.dispose();
+            }
+        };
+        
+        animate();
     }
     
     die() {
@@ -743,6 +808,14 @@ class Enemy {
             // Update model position
             this.model.position.x = this.position.x;
             this.model.position.z = this.position.z;
+            
+            // Update health bar position
+            if (this.healthBar && this.healthBarBackground) {
+                this.healthBarBackground.position.x = this.position.x;
+                this.healthBarBackground.position.z = this.position.z;
+                this.healthBar.position.x = this.healthBarBackground.position.x - (1 - this.healthBar.scale.x) * 0.5;
+                this.healthBar.position.z = this.position.z;
+            }
         }
         
         // Update attack cooldown
@@ -765,6 +838,20 @@ class Enemy {
                     this.model.material.dispose();
                 }
             }
+        }
+        
+        // Remove health bar
+        if (this.healthBar) {
+            this.scene.remove(this.healthBar);
+            if (this.healthBar.geometry) this.healthBar.geometry.dispose();
+            if (this.healthBar.material) this.healthBar.material.dispose();
+        }
+        
+        // Remove health bar background
+        if (this.healthBarBackground) {
+            this.scene.remove(this.healthBarBackground);
+            if (this.healthBarBackground.geometry) this.healthBarBackground.geometry.dispose();
+            if (this.healthBarBackground.material) this.healthBarBackground.material.dispose();
         }
     }
 }

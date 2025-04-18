@@ -15,6 +15,16 @@ class UIManager {
         this.manaBar = document.getElementById('mana-bar');
         this.manaText = document.getElementById('mana-text');
         this.abilitiesContainer = document.getElementById('abilities-container');
+        this.playerPortrait = document.getElementById('player-portrait');
+        this.levelText = document.getElementById('level-text');
+        this.xpBar = document.getElementById('xp-bar');
+        this.messageContainer = document.getElementById('message-container');
+        this.jumpAbility = document.getElementById('jump-ability');
+        this.flyAbility = document.getElementById('fly-ability');
+        
+        // Message queue for skill announcements
+        this.messageQueue = [];
+        this.isProcessingMessages = false;
         
         // Bind event listeners
         this.bindEvents();
@@ -32,6 +42,23 @@ class UIManager {
             });
         });
         
+        // Special ability buttons
+        if (this.jumpAbility) {
+            this.jumpAbility.addEventListener('click', () => {
+                if (window.game && window.game.hero) {
+                    window.game.hero.jump();
+                }
+            });
+        }
+        
+        if (this.flyAbility) {
+            this.flyAbility.addEventListener('click', () => {
+                if (window.game && window.game.hero) {
+                    window.game.hero.toggleFlight();
+                }
+            });
+        }
+        
         // Game events
         Events.on('damageTaken', this.updateHealthBar.bind(this));
         Events.on('heroHealed', this.updateHealthBar.bind(this));
@@ -39,6 +66,8 @@ class UIManager {
         Events.on('manaRestored', this.updateManaBar.bind(this));
         Events.on('abilityUsed', this.updateAbilityCooldown.bind(this));
         Events.on('abilityCooldownComplete', this.resetAbilityCooldown.bind(this));
+        Events.on('experienceGained', this.updateExperience.bind(this));
+        Events.on('levelUp', this.updateLevel.bind(this));
     }
     
     showLoadingScreen() {
@@ -78,6 +107,90 @@ class UIManager {
         this.gameUI.classList.remove('hidden');
         this.loadingScreen.classList.add('hidden');
         this.heroSelection.classList.add('hidden');
+        
+        // Update player portrait if hero exists
+        if (window.game && window.game.hero) {
+            this.updatePlayerPortrait(window.game.hero.type);
+        }
+    }
+    
+    updatePlayerPortrait(heroType) {
+        if (!this.playerPortrait) return;
+        
+        // Set background color based on hero type
+        switch (heroType) {
+            case 'axe':
+                this.playerPortrait.style.backgroundColor = '#a83232';
+                break;
+            case 'crystal-maiden':
+                this.playerPortrait.style.backgroundColor = '#32a8a8';
+                break;
+            case 'lich':
+                this.playerPortrait.style.backgroundColor = '#3232a8';
+                break;
+            case 'storm-spirit':
+                this.playerPortrait.style.backgroundColor = '#32a832';
+                break;
+            default:
+                this.playerPortrait.style.backgroundColor = '#666666';
+        }
+    }
+    
+    updateExperience(data) {
+        if (!this.xpBar) return;
+        
+        const { currentXP, requiredXP } = data;
+        const percentage = Math.min(100, (currentXP / requiredXP) * 100);
+        
+        this.xpBar.style.width = `${percentage}%`;
+    }
+    
+    updateLevel(data) {
+        if (!this.levelText) return;
+        
+        const { level } = data;
+        this.levelText.textContent = `Level ${level}`;
+        
+        // Show level up message
+        this.showMessage(`Level Up! You are now level ${level}`);
+    }
+    
+    showMessage(text, duration = 2000) {
+        // Add message to queue
+        this.messageQueue.push({ text, duration });
+        
+        // Process queue if not already processing
+        if (!this.isProcessingMessages) {
+            this.processMessageQueue();
+        }
+    }
+    
+    processMessageQueue() {
+        if (this.messageQueue.length === 0) {
+            this.isProcessingMessages = false;
+            return;
+        }
+        
+        this.isProcessingMessages = true;
+        const { text, duration } = this.messageQueue.shift();
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        messageElement.textContent = text;
+        
+        // Add to container
+        this.messageContainer.appendChild(messageElement);
+        
+        // Remove after duration
+        setTimeout(() => {
+            if (messageElement.parentNode === this.messageContainer) {
+                this.messageContainer.removeChild(messageElement);
+            }
+            
+            // Process next message
+            setTimeout(() => this.processMessageQueue(), 100);
+        }, duration);
     }
     
     updateHealthBar(data) {
