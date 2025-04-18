@@ -12,6 +12,7 @@ window.ControlsConfig = {
             left: 'ArrowLeft',
             right: 'ArrowRight',
             jump: 'f'
+            // Removed WASD controls, using only arrow keys now
         },
         combat: {
             basicAttack: 'a',

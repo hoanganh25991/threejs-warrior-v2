@@ -60,3 +60,9 @@
 [2024-05-10T10:15:00.000Z] Created documentation for the ability.startCooldown fix
 [2024-05-10T11:00:00.000Z] Fixed TypeError: Cannot read properties of undefined (reading 'key') in ui.js by updating the updateAbilityCooldown and resetAbilityCooldown methods to handle both event data formats
 [2024-05-10T11:15:00.000Z] Created documentation for the ability.key TypeError fix
+[2024-05-10T12:00:00.000Z] Fixed skills not triggering on touch by adding touchstart event listeners to skill buttons
+[2024-05-10T12:15:00.000Z] Removed CSS hover styles for skill buttons to improve mobile experience
+[2024-05-10T12:30:00.000Z] Enhanced cooldown effect for skill buttons with countdown timer display
+[2024-05-10T12:45:00.000Z] Updated skill buttons to show first character of skill name and key binding
+[2024-05-10T13:00:00.000Z] Added 'a' key support for basic attack
+[2024-05-10T13:15:00.000Z] Removed WASD movement controls, using only arrow keys now
