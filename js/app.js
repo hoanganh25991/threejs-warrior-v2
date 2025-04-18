@@ -195,11 +195,15 @@ CharacterController.prototype.update = function(dt) {
     }
     
     // Update camera position to follow character
-    const idealOffset = new pc.Vec3();
+    // Create a matrix from the entity's rotation
     const entityRotation = this.entity.getRotation();
-    // Use the correct static method to transform the vector by a quaternion
-    idealOffset.copy(this.targetCameraOffset);
-    idealOffset.transformQuat(entityRotation);
+    const rotMatrix = new pc.Mat4().setFromQuat(entityRotation);
+    
+    // Transform the camera offset using the rotation matrix
+    const idealOffset = new pc.Vec3();
+    rotMatrix.transformPoint(this.targetCameraOffset, idealOffset);
+    
+    // Calculate the final camera position
     const idealPosition = this.entity.getPosition().clone().add(idealOffset);
     
     camera.setPosition(idealPosition);
