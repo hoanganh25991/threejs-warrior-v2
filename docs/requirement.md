@@ -73,10 +73,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 ## Documentation Structure
 
 ### Game Design
-- Game Concept - Core game concept and vision
-- Gameplay Systems - Detailed gameplay mechanics
-- Story & Narrative - Game lore and narrative structure
-- Progression - Character progression and advancement
+- [Game Concept](gameplay/game_concept.md) - Core game concept and vision
+- [Gameplay Systems](gameplay/gameplay_systems.md) - Detailed gameplay mechanics
+- [Story & Narrative](gameplay/story_narrative.md) - Game lore and narrative structure
+- [Progression](gameplay/progression.md) - Character progression and advancement
 
 ## World Design
 
@@ -105,10 +105,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 - **Unique Artifacts**: Legendary items with special properties and lore significance
 
 ### Documentation Structure
-- Environments - World design and areas
-- NPCs - Non-player characters
-- Quests - Quest system and mission structure
-- Items & Loot - Equipment, consumables, and treasures
+- [Environments](world/environments.md) - World design and areas
+- [NPCs](world/npcs.md) - Non-player characters
+- [Quests](world/quests.md) - Quest system and mission structure
+- [Items & Loot](world/items_loot.md) - Equipment, consumables, and treasures
 
 ## Hero System
 
@@ -132,10 +132,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 - **Hero Relationships**: Unique dialogue and interactions between heroes
 
 ### Documentation Structure
-- Hero Mechanics - Hero mechanics and abilities
-- Sentinel Heroes - Heroes of the Sentinel faction
-- Scourge Heroes - Heroes of the Scourge faction
-- Abilities - Detailed ability descriptions
+- [Hero Mechanics](heroes/hero_mechanics.md) - Hero mechanics and abilities
+- [Sentinel Heroes](heroes/sentinel_heroes.md) - Heroes of the Sentinel faction
+- [Scourge Heroes](heroes/scourge_heroes.md) - Heroes of the Scourge faction
+- [Abilities](heroes/abilities.md) - Detailed ability descriptions
 
 ## Technical Specifications
 
@@ -164,10 +164,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 - **Onboarding**: Tutorial system, tooltips, contextual help
 
 ### Documentation Structure
-- Architecture - Game architecture overview
-- Performance - Performance considerations
-- Controls - Input and control systems
-- UI/UX - User interface design
+- [Architecture](technical/architecture.md) - Game architecture overview
+- [Performance](technical/performance.md) - Performance considerations
+- [Controls](technical/controls.md) - Input and control systems
+- [UI/UX](technical/ui_ux.md) - User interface design
 
 ## Asset Requirements
 
