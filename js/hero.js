@@ -30,6 +30,17 @@ class Hero {
         this.isMoving = false;
         this.moveDirection = new THREE.Vector3();
         
+        // Jump and flight properties
+        this.isJumping = false;
+        this.jumpHeight = 0;
+        this.jumpVelocity = 0;
+        this.jumpStartTime = 0;
+        this.jumpCount = 0;
+        this.maxJumpCount = 2; // Double jump by default
+        this.isFlying = false;
+        this.flightHeight = 0;
+        this.flightTargetHeight = 0;
+        
         // Combat state
         this.isAttacking = false;
         this.currentTarget = null;
@@ -1569,8 +1580,221 @@ class Hero {
         animate();
     }
     
+    // Jump method
+    jump() {
+        // Can't jump if already flying
+        if (this.isFlying) return;
+        
+        // Check if we can jump (either on ground or have double jump available)
+        if (!this.isJumping || (this.isJumping && this.jumpCount < this.maxJumpCount)) {
+            // If already jumping, this is a double jump
+            if (this.isJumping) {
+                this.jumpCount++;
+                // Show double jump effect
+                this.createJumpEffect(0x00ffff);
+            } else {
+                this.jumpCount = 1;
+                // Show regular jump effect
+                this.createJumpEffect(0xffffff);
+            }
+            
+            // Set jump parameters
+            this.isJumping = true;
+            this.jumpVelocity = 10; // Initial upward velocity
+            
+            // Play jump animation if available
+            this.playAnimation('jump');
+            
+            // Show message
+            if (window.game && window.game.ui) {
+                if (this.jumpCount > 1) {
+                    window.game.ui.showMessage("Double Jump!");
+                } else {
+                    window.game.ui.showMessage("Jump!");
+                }
+            }
+            
+            Logger.log(`Hero ${this.name} jumped (jump #${this.jumpCount})`);
+        }
+    }
+    
+    // Create visual effect for jumping
+    createJumpEffect(color) {
+        // Create a ring effect at the hero's feet
+        const geometry = new THREE.RingGeometry(0.5, 1, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: color,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide
+        });
+        
+        const ring = new THREE.Mesh(geometry, material);
+        ring.rotation.x = Math.PI / 2; // Make it horizontal
+        ring.position.copy(this.position);
+        ring.position.y = 0.1; // Slightly above ground
+        
+        this.scene.add(ring);
+        
+        // Animate the ring expanding and fading
+        const startTime = Date.now();
+        const duration = 500; // 0.5 seconds
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress < 1) {
+                // Expand and fade
+                ring.scale.set(1 + progress * 2, 1 + progress * 2, 1);
+                ring.material.opacity = 0.7 * (1 - progress);
+                
+                requestAnimationFrame(animate);
+            } else {
+                // Remove when animation is complete
+                this.scene.remove(ring);
+                ring.geometry.dispose();
+                ring.material.dispose();
+            }
+        };
+        
+        animate();
+    }
+    
+    // Toggle flight mode
+    toggleFlight() {
+        if (this.isFlying) {
+            // Land
+            this.isFlying = false;
+            this.flightTargetHeight = 0;
+            
+            // Play landing animation if available
+            this.playAnimation('land');
+            
+            // Show message
+            if (window.game && window.game.ui) {
+                window.game.ui.showMessage("Landing...");
+            }
+            
+            Logger.log(`Hero ${this.name} stopped flying`);
+        } else {
+            // Take off
+            this.isFlying = true;
+            this.isJumping = false; // Cancel any jump in progress
+            this.flightTargetHeight = 5; // Target height for flight
+            
+            // Play flight animation if available
+            this.playAnimation('fly');
+            
+            // Create takeoff effect
+            this.createTakeoffEffect();
+            
+            // Show message
+            if (window.game && window.game.ui) {
+                window.game.ui.showMessage("Taking Flight!");
+            }
+            
+            Logger.log(`Hero ${this.name} started flying`);
+        }
+    }
+    
+    // Create visual effect for takeoff
+    createTakeoffEffect() {
+        // Create a spiral effect around the hero
+        const points = [];
+        const numPoints = 100;
+        const radius = 1;
+        const height = 3;
+        
+        for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 6; // 3 full rotations
+            const x = Math.cos(angle) * radius * (1 - i/numPoints);
+            const y = (i / numPoints) * height;
+            const z = Math.sin(angle) * radius * (1 - i/numPoints);
+            
+            points.push(new THREE.Vector3(x, y, z));
+        }
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.PointsMaterial({ 
+            color: 0x00ffff,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        const particles = new THREE.Points(geometry, material);
+        particles.position.copy(this.position);
+        
+        this.scene.add(particles);
+        
+        // Animate the particles
+        const startTime = Date.now();
+        const duration = 1000; // 1 second
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress < 1) {
+                // Rotate and fade
+                particles.rotation.y += 0.05;
+                particles.material.opacity = 0.8 * (1 - progress);
+                
+                requestAnimationFrame(animate);
+            } else {
+                // Remove when animation is complete
+                this.scene.remove(particles);
+                particles.geometry.dispose();
+                particles.material.dispose();
+            }
+        };
+        
+        animate();
+    }
+    
     // Update method called every frame
     update(deltaTime) {
+        // Update jumping and flying
+        if (this.isJumping && !this.isFlying) {
+            // Apply gravity to jump velocity
+            this.jumpVelocity -= 20 * deltaTime; // Gravity
+            
+            // Update jump height
+            this.jumpHeight += this.jumpVelocity * deltaTime;
+            
+            // Check if landed
+            if (this.jumpHeight <= 0) {
+                this.jumpHeight = 0;
+                this.isJumping = false;
+                this.jumpVelocity = 0;
+                
+                // Reset jump count when landing
+                this.jumpCount = 0;
+                
+                // Play landing animation if available
+                this.playAnimation('land');
+                setTimeout(() => this.playAnimation('idle'), 300);
+            }
+            
+            // Update model height
+            if (this.model) {
+                this.model.position.y = this.jumpHeight + this.model.geometry.parameters.height / 2;
+            }
+        }
+        
+        // Update flying height
+        if (this.isFlying) {
+            // Smoothly adjust height towards target
+            const heightDiff = this.flightTargetHeight - this.flightHeight;
+            this.flightHeight += heightDiff * 2 * deltaTime; // Smooth transition
+            
+            // Update model height
+            if (this.model) {
+                this.model.position.y = this.flightHeight + this.model.geometry.parameters.height / 2;
+            }
+        }
+        
         // Update position if moving
         if (this.isMoving) {
             // Calculate movement distance this frame
@@ -1595,7 +1819,7 @@ class Hero {
                 this.position.add(movement);
             }
             
-            // Update model position
+            // Update model position (x and z only, y is handled by jump/flight)
             this.model.position.x = this.position.x;
             this.model.position.z = this.position.z;
         }
