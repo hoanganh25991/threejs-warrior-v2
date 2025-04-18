@@ -9,6 +9,16 @@ app.setCanvasResolution(pc.RESOLUTION_AUTO);
 // Ensure canvas is resized when window changes size
 window.addEventListener('resize', () => app.resizeCanvas());
 
+// Load our custom scripts
+// Systems
+app.scripts.add('attributeSystem', '/js/systems/attribute-system.js');
+app.scripts.add('abilitySystem', '/js/systems/ability-system.js');
+app.scripts.add('experienceSystem', '/js/systems/experience-system.js');
+
+// Entities
+app.scripts.add('hero', '/js/entities/hero.js');
+app.scripts.add('axe', '/js/entities/heroes/axe.js');
+
 // Create camera entity
 const camera = new pc.Entity('camera');
 camera.addComponent('camera', {
@@ -57,24 +67,24 @@ ground.addComponent('rigidbody', {
 
 app.root.addChild(ground);
 
-// Create character entity
-const character = new pc.Entity('character');
-character.addComponent('render', {
+// Create hero entity (using Axe as the initial hero)
+const hero = new pc.Entity('hero');
+hero.addComponent('render', {
     type: 'box',
     material: new pc.StandardMaterial()
 });
-character.render.material.diffuse = new pc.Color(0, 0.58, 0.86);
-character.render.material.update();
-character.setLocalScale(1, 2, 1);
-character.setPosition(0, 1, 0);
+hero.render.material.diffuse = new pc.Color(0.8, 0.2, 0.2); // Red for Axe
+hero.render.material.update();
+hero.setLocalScale(1.2, 2.2, 1.2);
+hero.setPosition(0, 1, 0);
 
-// Add physics to character
-character.addComponent('collision', {
+// Add physics to hero
+hero.addComponent('collision', {
     type: 'capsule',
     radius: 0.5,
     height: 2
 });
-character.addComponent('rigidbody', {
+hero.addComponent('rigidbody', {
     type: 'dynamic',
     mass: 50,
     linearDamping: 0.9,
@@ -83,7 +93,14 @@ character.addComponent('rigidbody', {
     angularFactor: new pc.Vec3(0, 1, 0)
 });
 
-app.root.addChild(character);
+// Add scripts to hero
+hero.addComponent('script');
+hero.script.create('attributeSystem');
+hero.script.create('abilitySystem');
+hero.script.create('experienceSystem');
+hero.script.create('axe'); // This will also create the 'hero' script
+
+app.root.addChild(hero);
 
 // Character controller script
 const CharacterController = pc.createScript('characterController');
@@ -110,6 +127,9 @@ CharacterController.prototype.initialize = function() {
     app.mouse.on("mousedown", function () {
         app.mouse.enablePointerLock();
     }, this);
+    
+    // Get attribute system for movement speed
+    this.attributeSystem = this.entity.script.attributeSystem;
 };
 
 // update code called every frame
@@ -119,18 +139,24 @@ CharacterController.prototype.update = function(dt) {
     // Reset forces
     this.force.set(0, 0, 0);
     
+    // Get movement speed from attribute system if available
+    let movementSpeed = this.speed;
+    if (this.attributeSystem && this.attributeSystem.movementSpeed) {
+        movementSpeed = this.attributeSystem.movementSpeed;
+    }
+    
     // Movement based on WASD keys
     if (app.keyboard.isPressed(pc.KEY_W)) {
-        this.force.z -= this.speed;
+        this.force.z -= movementSpeed;
     }
     if (app.keyboard.isPressed(pc.KEY_S)) {
-        this.force.z += this.speed;
+        this.force.z += movementSpeed;
     }
     if (app.keyboard.isPressed(pc.KEY_A)) {
-        this.force.x -= this.speed;
+        this.force.x -= movementSpeed;
     }
     if (app.keyboard.isPressed(pc.KEY_D)) {
-        this.force.x += this.speed;
+        this.force.x += movementSpeed;
     }
     
     // Apply movement force
@@ -174,104 +200,155 @@ CharacterController.prototype.onKeyDown = function(event) {
             rigidbody.applyImpulse(0, this.jumpForce, 0);
         }
     }
-};
-
-// Add the character controller script to the character
-character.addComponent('script');
-character.script.create('characterController');
-
-// Add a magic skill system
-const MagicSystem = pc.createScript('magicSystem');
-
-MagicSystem.attributes.add('castingTime', { type: 'number', default: 0.5 });
-
-MagicSystem.prototype.initialize = function() {
-    this.isCasting = false;
-    this.castTimer = 0;
     
-    // Listen for mouse clicks to cast spells
-    app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
-};
-
-MagicSystem.prototype.update = function(dt) {
-    if (this.isCasting) {
-        this.castTimer += dt;
-        
-        if (this.castTimer >= this.castingTime) {
-            this.castSpell();
-            this.isCasting = false;
-            this.castTimer = 0;
+    // Test key for gaining experience (for development purposes)
+    if (event.key === pc.KEY_X) {
+        if (this.entity.script.experienceSystem) {
+            this.entity.script.experienceSystem.addExperience(500, 'enemyDefeat');
+        }
+    }
+    
+    // Test key for taking damage (for development purposes)
+    if (event.key === pc.KEY_Z) {
+        if (this.entity.script.hero) {
+            this.entity.script.hero.takeDamage(20, 'physical');
+        }
+    }
+    
+    // Test key for healing (for development purposes)
+    if (event.key === pc.KEY_H) {
+        if (this.entity.script.hero) {
+            this.entity.script.hero.heal(50);
         }
     }
 };
 
-MagicSystem.prototype.onMouseDown = function(event) {
-    // Right mouse button to cast spell
-    if (event.button === pc.MOUSEBUTTON_RIGHT) {
-        this.startCasting();
-    }
-};
+// Add the character controller script to the hero
+hero.script.create('characterController');
 
-MagicSystem.prototype.startCasting = function() {
-    this.isCasting = true;
-    this.castTimer = 0;
-    
-    // Visual feedback for casting could be added here
-    console.log("Started casting spell...");
-};
-
-MagicSystem.prototype.castSpell = function() {
-    // Create a magic projectile
-    const projectile = new pc.Entity("magicProjectile");
-    projectile.addComponent('render', {
-        type: 'sphere',
-        material: new pc.StandardMaterial()
+// Create a UI for displaying hero stats
+const createStatsUI = function() {
+    // Create a UI entity
+    const ui = new pc.Entity('ui');
+    ui.addComponent('element', {
+        type: 'text',
+        text: 'Loading hero stats...',
+        fontAsset: null, // We'll use the default font
+        fontSize: 16,
+        color: new pc.Color(1, 1, 1),
+        width: 400,
+        height: 200,
+        anchor: new pc.Vec4(0, 1, 0, 1), // Top left
+        pivot: new pc.Vec2(0, 1),
+        margin: new pc.Vec4(10, 10, 0, 0)
     });
     
-    // Set projectile appearance
-    projectile.render.material.emissive = new pc.Color(0.3, 0, 0.8);
-    projectile.render.material.update();
-    projectile.setLocalScale(0.5, 0.5, 0.5);
+    // Create a screen to hold the UI
+    const screen = new pc.Entity('screen');
+    screen.addComponent('screen', { resolution: new pc.Vec2(1280, 720), screenSpace: true });
+    screen.addChild(ui);
+    app.root.addChild(screen);
     
-    // Position the projectile in front of the character
-    const spawnPoint = this.entity.getPosition().clone();
-    spawnPoint.y += 1; // Spawn at character's "hand" level
-    
-    const forward = this.entity.forward.clone().scale(-2);
-    spawnPoint.add(forward);
-    
-    projectile.setPosition(spawnPoint);
-    
-    // Add physics to the projectile
-    projectile.addComponent('collision', {
-        type: 'sphere',
-        radius: 0.5
+    // Update the UI with hero stats
+    app.on('update', function() {
+        if (hero.script.attributeSystem) {
+            const attrs = hero.script.attributeSystem;
+            const heroScript = hero.script.hero;
+            const expSystem = hero.script.experienceSystem;
+            
+            let statsText = '';
+            
+            if (heroScript) {
+                statsText += `Hero: ${heroScript.heroName}\n`;
+            }
+            
+            if (expSystem) {
+                statsText += `Level: ${expSystem.level}\n`;
+                statsText += `XP: ${expSystem.experience}/${expSystem.experienceToNextLevel}\n`;
+                statsText += `Ability Points: ${expSystem.abilityPoints}\n`;
+                statsText += `Talent Points: ${expSystem.talentPoints}\n\n`;
+            }
+            
+            statsText += `Health: ${Math.floor(attrs.currentHealth)}/${Math.floor(attrs.maxHealth)}\n`;
+            statsText += `Mana: ${Math.floor(attrs.currentMana)}/${Math.floor(attrs.maxMana)}\n\n`;
+            
+            statsText += `STR: ${Math.floor(attrs.strength)}\n`;
+            statsText += `AGI: ${Math.floor(attrs.agility)}\n`;
+            statsText += `INT: ${Math.floor(attrs.intelligence)}\n`;
+            statsText += `VIT: ${Math.floor(attrs.vitality)}\n`;
+            statsText += `SPR: ${Math.floor(attrs.spirit)}\n\n`;
+            
+            statsText += `Physical Damage: ${Math.floor(attrs.physicalDamage)}\n`;
+            statsText += `Magical Damage: ${Math.floor(attrs.magicalDamage)}\n`;
+            statsText += `Movement Speed: ${attrs.movementSpeed.toFixed(1)}\n`;
+            
+            statsText += `\nControls:\n`;
+            statsText += `WASD: Move\n`;
+            statsText += `Space: Jump\n`;
+            statsText += `Q/W/E/R: Abilities\n`;
+            statsText += `X: Gain XP (test)\n`;
+            statsText += `Z: Take Damage (test)\n`;
+            statsText += `H: Heal (test)\n`;
+            
+            ui.element.text = statsText;
+        }
     });
-    
-    projectile.addComponent('rigidbody', {
-        type: 'dynamic',
-        mass: 1,
-        linearDamping: 0,
-        angularDamping: 0
-    });
-    
-    // Add the projectile to the scene
-    app.root.addChild(projectile);
-    
-    // Apply force to the projectile in the direction the character is facing
-    const force = this.entity.forward.clone().scale(-1000);
-    projectile.rigidbody.applyImpulse(force);
-    
-    // Destroy the projectile after 3 seconds
-    setTimeout(function() {
-        projectile.destroy();
-    }, 3000);
-    
-    console.log("Spell cast!");
 };
 
-// Add the magic system script to the character
-character.script.create('magicSystem');
+// Create the UI
+createStatsUI();
+
+// Create a progress log file
+const createProgressLog = function() {
+    // Log initial implementation progress
+    const progressLog = `
+# Implementation Progress Log
+
+## ${new Date().toISOString()}
+
+### Initial Implementation
+- Created attribute system based on the requirements in progression.md
+- Implemented hero base class with attribute integration
+- Added Axe as the first playable hero
+- Implemented ability system framework
+- Added experience and leveling system
+- Updated main app to integrate all systems
+- Added basic UI for displaying hero stats
+
+### Next Steps
+- Implement more heroes (Crystal Maiden, Lich, Storm Spirit)
+- Create proper ability implementations
+- Add talent system
+- Implement inventory and item system
+- Create proper game environments and enemies
+- Add quest system
+
+### Current Functionality
+- Character movement with WASD
+- Camera control with mouse
+- Basic attribute system with derived statistics
+- Experience gain and leveling (press X to test)
+- Health and mana management (press Z to take damage, H to heal)
+- Ability framework (press Q/W/E/R to use abilities)
+`;
+
+    return progressLog;
+};
+
+// Create a function to save the progress log
+const saveProgressLog = function(content) {
+    console.log("Progress log created:");
+    console.log(content);
+    
+    // In a real implementation, this would save to a file
+    // For now, we'll just log it to the console
+    
+    // Note: In a browser environment, we can't directly write to the file system
+    // This would need to be handled by a server-side component
+};
+
+// Save the progress log
+saveProgressLog(createProgressLog());
 
 // Start the application
 app.start();
