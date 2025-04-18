@@ -37,8 +37,12 @@ AbilitySystem.prototype.initialize = function() {
     // Ability definitions will be populated by the hero script
     this.abilityDefinitions = {};
     
-    // Listen for keyboard events to cast abilities
-    this.app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    // Listen for keyboard events to cast abilities if keyboard is available
+    if (this.app.keyboard) {
+        this.app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    } else {
+        console.warn("Keyboard input is not available for ability system");
+    }
     
     console.log("Ability system initialized");
 };

@@ -50,8 +50,12 @@ HeroSelection.prototype.initialize = function() {
     // Create UI elements
     this.createUI();
     
-    // Listen for key press to toggle UI
-    this.app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    // Listen for key press to toggle UI if keyboard is available
+    if (this.app.keyboard) {
+        this.app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    } else {
+        console.warn("Keyboard input is not available for hero selection");
+    }
     
     // Hide UI initially
     this.toggleUI(false);

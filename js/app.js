@@ -118,21 +118,31 @@ CharacterController.attributes.add('jumpForce', { type: 'number', default: 400 }
 CharacterController.prototype.initialize = function() {
     this.force = new pc.Vec3();
     
-    // Listen for mouse events
-    app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
+    // Check if mouse is available before adding listeners
+    if (app.mouse) {
+        // Listen for mouse events
+        app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
+        
+        // Lock the mouse pointer when the canvas is clicked
+        app.mouse.on("mousedown", function () {
+            app.mouse.enablePointerLock();
+        }, this);
+    } else {
+        console.warn("Mouse input is not available");
+    }
     
-    // Listen for keyboard events
-    app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    // Check if keyboard is available before adding listeners
+    if (app.keyboard) {
+        // Listen for keyboard events
+        app.keyboard.on(pc.EVENT_KEYDOWN, this.onKeyDown, this);
+    } else {
+        console.warn("Keyboard input is not available");
+    }
     
     // Camera setup
     this.cameraOffset = new pc.Vec3(0, 5, 10);
     this.targetCameraOffset = new pc.Vec3(0, 5, 10);
     this.cameraLookAt = new pc.Vec3();
-    
-    // Lock the mouse pointer when the canvas is clicked
-    app.mouse.on("mousedown", function () {
-        app.mouse.enablePointerLock();
-    }, this);
     
     // Get attribute system for movement speed
     this.attributeSystem = this.entity.script.attributeSystem;
@@ -151,18 +161,20 @@ CharacterController.prototype.update = function(dt) {
         movementSpeed = this.attributeSystem.movementSpeed;
     }
     
-    // Movement based on WASD keys
-    if (app.keyboard.isPressed(pc.KEY_W)) {
-        this.force.z -= movementSpeed;
-    }
-    if (app.keyboard.isPressed(pc.KEY_S)) {
-        this.force.z += movementSpeed;
-    }
-    if (app.keyboard.isPressed(pc.KEY_A)) {
-        this.force.x -= movementSpeed;
-    }
-    if (app.keyboard.isPressed(pc.KEY_D)) {
-        this.force.x += movementSpeed;
+    // Movement based on WASD keys - only if keyboard is available
+    if (app.keyboard) {
+        if (app.keyboard.isPressed(pc.KEY_W)) {
+            this.force.z -= movementSpeed;
+        }
+        if (app.keyboard.isPressed(pc.KEY_S)) {
+            this.force.z += movementSpeed;
+        }
+        if (app.keyboard.isPressed(pc.KEY_A)) {
+            this.force.x -= movementSpeed;
+        }
+        if (app.keyboard.isPressed(pc.KEY_D)) {
+            this.force.x += movementSpeed;
+        }
     }
     
     // Apply movement force
@@ -188,8 +200,8 @@ CharacterController.prototype.update = function(dt) {
 };
 
 CharacterController.prototype.onMouseMove = function(event) {
-    // Only rotate character if pointer is locked
-    if (pc.Mouse.isPointerLocked()) {
+    // Only rotate character if pointer is locked and pc.Mouse is available
+    if (pc.Mouse && pc.Mouse.isPointerLocked()) {
         // Rotate character based on mouse movement
         this.entity.rotate(0, event.dx * 0.2, 0);
     }
