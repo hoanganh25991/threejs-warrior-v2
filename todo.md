@@ -36,7 +36,7 @@ When reflect details things, keep it organized with what layout in "docs" folder
 
 - [x] wing effect from open to close, when user hit back to the ground
 - [x] Jump hold press change hero height fly slowly: define threshold height, when pass that means fly -> show wings close to open effect, then jump on hold press now change height really SLOWLY, like just to fight against the gravity
-- [] On jump, the camera view change with the hero's height
+- [x] On jump, the camera view change with the hero's height
 - [] Add avatar image to hero on selection by image under assets/images/heros
 
 - [x] Fix: error_handler.js:1 [2025-04-18T20:23:03.883Z] ERROR: Error loading configuration files: Config not found in global scope: controlsConfig

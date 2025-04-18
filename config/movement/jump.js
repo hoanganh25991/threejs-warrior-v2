@@ -26,6 +26,8 @@ const JumpConfig = {
     // Camera settings during jump
     cameraFollowJump: true,     // Whether camera should follow player during jump
     cameraJumpOffset: 0.7,      // How much camera follows the jump (0-1, where 1 is full follow)
+    cameraTiltFactor: 0.3,      // How much camera tilts down as height increases (0-1)
+    cameraRollEnabled: true,    // Whether to add subtle roll effect during jumps
     
     // Sound effects
     jumpSoundEffect: '/System/Library/Sounds/Pop.aiff',

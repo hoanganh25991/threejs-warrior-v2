@@ -150,11 +150,50 @@ class Game {
             const heightAdjustment = hero.jumpHeight * offsetFactor;
             offset.y += heightAdjustment;
             
+            // Calculate camera tilt based on hero's height
+            // As the hero goes higher, the camera tilts more to look down
+            let tiltFactor = 0;
+            
+            // Get jump configuration
+            const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+                maxJumpHeight: 15,
+                cameraJumpOffset: 0.7,
+                cameraTiltFactor: 0.3 // How much to tilt the camera (0-1)
+            };
+            
+            // Calculate tilt based on height relative to max jump height
+            if (hero.jumpHeight > 0) {
+                // Normalize height between 0 and 1 based on max jump height
+                const normalizedHeight = Math.min(1, hero.jumpHeight / jumpConfig.maxJumpHeight);
+                tiltFactor = normalizedHeight * (jumpConfig.cameraTiltFactor || 0.3);
+                
+                // Log camera adjustment for significant height changes
+                if (hero.jumpHeight > 5 && Math.floor(hero.jumpHeight) % 2 === 0) {
+                    Logger.log(`Camera adjusting for height: ${hero.jumpHeight.toFixed(1)}`);
+                }
+            }
+            
             // Update camera position
             this.camera.position.copy(hero.position).add(offset);
             
-            // Look at hero
-            this.camera.lookAt(hero.position);
+            // Create a look target that's adjusted based on height
+            // As hero goes higher, camera looks more downward
+            const lookTarget = new THREE.Vector3(
+                hero.position.x,
+                hero.position.y - (hero.jumpHeight * tiltFactor), // Look down more as height increases
+                hero.position.z
+            );
+            
+            // Look at the adjusted target
+            this.camera.lookAt(lookTarget);
+            
+            // Add a subtle camera roll effect based on height if enabled
+            if (jumpConfig.cameraRollEnabled && hero.jumpHeight > 3) {
+                const rollAmount = Math.sin(hero.jumpHeight * 0.1) * 0.02;
+                this.camera.rotation.z = rollAmount;
+            } else {
+                this.camera.rotation.z = 0;
+            }
         };
         
         // Make camera globally accessible for other components
