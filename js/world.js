@@ -8,7 +8,8 @@ class World {
         this.objects = [];
         this.ground = null;
         this.gridSize = 1;
-        this.worldSize = 50; // Size of the world in grid units
+        this.worldSize = 200; // Increased size of the world in grid units
+        this.visibleRange = 100; // How far the player can see
         
         // Lighting
         this.ambientLight = null;
@@ -17,7 +18,12 @@ class World {
         // Environment
         this.skybox = null;
         
-        Logger.log('World created');
+        // Infinite terrain tracking
+        this.currentChunk = { x: 0, z: 0 };
+        this.chunkSize = 50; // Size of each terrain chunk
+        this.loadedChunks = {};
+        
+        Logger.log('World created with infinite terrain support');
     }
     
     init() {
@@ -264,6 +270,49 @@ class World {
         // Update skybox to follow camera
         if (this.skybox && window.camera) {
             this.skybox.position.copy(window.camera.position);
+        }
+        
+        // Check if we need to update terrain for infinite scrolling
+        if (window.game && window.game.hero) {
+            this.updateInfiniteTerrain(window.game.hero.position);
+        }
+    }
+    
+    // Handle infinite terrain by wrapping player position
+    updateInfiniteTerrain(playerPosition) {
+        // Calculate which chunk the player is in
+        const chunkX = Math.floor(playerPosition.x / this.chunkSize);
+        const chunkZ = Math.floor(playerPosition.z / this.chunkSize);
+        
+        // If player has moved to a new chunk, update the world
+        if (chunkX !== this.currentChunk.x || chunkZ !== this.currentChunk.z) {
+            this.currentChunk = { x: chunkX, z: chunkZ };
+            
+            // If player is getting close to the edge of the world, wrap them around
+            const halfWorldSize = this.worldSize / 2;
+            
+            if (Math.abs(playerPosition.x) > halfWorldSize - 20) {
+                // Wrap X position
+                if (playerPosition.x > 0) {
+                    window.game.hero.position.x = -halfWorldSize + 10;
+                } else {
+                    window.game.hero.position.x = halfWorldSize - 10;
+                }
+                window.game.hero.model.position.x = window.game.hero.position.x;
+            }
+            
+            if (Math.abs(playerPosition.z) > halfWorldSize - 20) {
+                // Wrap Z position
+                if (playerPosition.z > 0) {
+                    window.game.hero.position.z = -halfWorldSize + 10;
+                } else {
+                    window.game.hero.position.z = halfWorldSize - 10;
+                }
+                window.game.hero.model.position.z = window.game.hero.position.z;
+            }
+            
+            // Log the chunk transition
+            Logger.log(`Player moved to chunk (${chunkX}, ${chunkZ})`);
         }
     }
     

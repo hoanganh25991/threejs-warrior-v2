@@ -299,53 +299,130 @@ class UIManager {
         if (!hero) return;
         
         // Get ability elements
-        const abilityQ = document.getElementById('ability-q');
-        const abilityW = document.getElementById('ability-w');
-        const abilityE = document.getElementById('ability-e');
-        const abilityR = document.getElementById('ability-r');
+        const ability1 = document.getElementById('ability-1');
+        const ability2 = document.getElementById('ability-2');
+        const ability3 = document.getElementById('ability-3');
+        const ability4 = document.getElementById('ability-4');
+        const ability5 = document.getElementById('ability-5');
+        const ability6 = document.getElementById('ability-6');
         
         // Set ability icons based on hero type
         switch (hero.type) {
             case 'axe':
-                abilityQ.textContent = 'Q';
-                abilityQ.title = 'Berserker\'s Call';
-                abilityW.textContent = 'W';
-                abilityW.title = 'Battle Hunger';
-                abilityE.textContent = 'E';
-                abilityE.title = 'Counter Helix';
-                abilityR.textContent = 'R';
-                abilityR.title = 'Culling Blade';
+                // Set tooltips for abilities
+                ability1.title = 'Berserker\'s Call';
+                ability2.title = 'Battle Hunger';
+                ability3.title = 'Counter Helix (Passive)';
+                ability4.title = 'Culling Blade (Ultimate)';
+                ability5.title = 'War Cry';
+                ability6.title = 'Taunt';
+                
+                // Set colors for abilities
+                ability1.style.borderColor = '#cc3333';
+                ability2.style.borderColor = '#cc3333';
+                ability3.style.borderColor = '#cc3333';
+                ability4.style.borderColor = '#ff0000';
+                ability5.style.borderColor = '#cc3333';
+                ability6.style.borderColor = '#cc3333';
                 break;
+                
             case 'crystal-maiden':
-                abilityQ.textContent = 'Q';
-                abilityQ.title = 'Crystal Nova';
-                abilityW.textContent = 'W';
-                abilityW.title = 'Frostbite';
-                abilityE.textContent = 'E';
-                abilityE.title = 'Arcane Aura';
-                abilityR.textContent = 'R';
-                abilityR.title = 'Freezing Field';
+                ability1.title = 'Crystal Nova';
+                ability2.title = 'Frostbite';
+                ability3.title = 'Brilliance Aura (Passive)';
+                ability4.title = 'Freezing Field (Ultimate)';
+                ability5.title = 'Frost Armor';
+                ability6.title = 'Cold Snap';
+                
+                // Set colors for abilities
+                ability1.style.borderColor = '#33ccff';
+                ability2.style.borderColor = '#33ccff';
+                ability3.style.borderColor = '#33ccff';
+                ability4.style.borderColor = '#0088ff';
+                ability5.style.borderColor = '#33ccff';
+                ability6.style.borderColor = '#33ccff';
                 break;
+                
             case 'lich':
-                abilityQ.textContent = 'Q';
-                abilityQ.title = 'Frost Nova';
-                abilityW.textContent = 'W';
-                abilityW.title = 'Frost Armor';
-                abilityE.textContent = 'E';
-                abilityE.title = 'Dark Ritual';
-                abilityR.textContent = 'R';
-                abilityR.title = 'Chain Frost';
+                ability1.title = 'Frost Nova';
+                ability2.title = 'Frost Armor';
+                ability3.title = 'Dark Ritual';
+                ability4.title = 'Chain Frost (Ultimate)';
+                ability5.title = 'Frost Blast';
+                ability6.title = 'Ice Barrier';
+                
+                // Set colors for abilities
+                ability1.style.borderColor = '#3333cc';
+                ability2.style.borderColor = '#3333cc';
+                ability3.style.borderColor = '#3333cc';
+                ability4.style.borderColor = '#0000ff';
+                ability5.style.borderColor = '#3333cc';
+                ability6.style.borderColor = '#3333cc';
                 break;
+                
             case 'storm-spirit':
-                abilityQ.textContent = 'Q';
-                abilityQ.title = 'Static Remnant';
-                abilityW.textContent = 'W';
-                abilityW.title = 'Electric Vortex';
-                abilityE.textContent = 'E';
-                abilityE.title = 'Overload';
-                abilityR.textContent = 'R';
-                abilityR.title = 'Ball Lightning';
+                ability1.title = 'Static Remnant';
+                ability2.title = 'Electric Vortex';
+                ability3.title = 'Overload (Passive)';
+                ability4.title = 'Ball Lightning (Ultimate)';
+                ability5.title = 'Electric Surge';
+                ability6.title = 'Storm Gust';
+                
+                // Set colors for abilities
+                ability1.style.borderColor = '#33cc33';
+                ability2.style.borderColor = '#33cc33';
+                ability3.style.borderColor = '#33cc33';
+                ability4.style.borderColor = '#00ff00';
+                ability5.style.borderColor = '#33cc33';
+                ability6.style.borderColor = '#33cc33';
                 break;
         }
+        
+        // Add ability icons (placeholder)
+        this.addAbilityIcons(hero);
+    }
+    
+    addAbilityIcons(hero) {
+        // Add small icon images to abilities
+        if (!hero) return;
+        
+        // Get ability elements
+        const abilities = [
+            document.getElementById('ability-1'),
+            document.getElementById('ability-2'),
+            document.getElementById('ability-3'),
+            document.getElementById('ability-4'),
+            document.getElementById('ability-5'),
+            document.getElementById('ability-6')
+        ];
+        
+        // Add background color based on hero type
+        let color;
+        switch (hero.type) {
+            case 'axe':
+                color = '#a83232';
+                break;
+            case 'crystal-maiden':
+                color = '#32a8a8';
+                break;
+            case 'lich':
+                color = '#3232a8';
+                break;
+            case 'storm-spirit':
+                color = '#32a832';
+                break;
+            default:
+                color = '#666666';
+        }
+        
+        // Apply background color to abilities
+        abilities.forEach(ability => {
+            if (ability) {
+                ability.style.backgroundColor = color;
+                ability.style.color = 'white';
+                ability.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8)';
+                ability.style.fontWeight = 'bold';
+            }
+        });
     }
 }

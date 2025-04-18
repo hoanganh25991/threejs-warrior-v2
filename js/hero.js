@@ -35,12 +35,14 @@ class Hero {
         this.currentTarget = null;
         this.attackCooldown = 0;
         
-        // Abilities
+        // Abilities (6 abilities using only number keys 1-6)
         this.abilities = {
-            q: null,
-            w: null,
-            e: null,
-            r: null
+            '1': null, // Primary ability
+            '2': null, // Secondary ability
+            '3': null, // Third ability
+            '4': null, // Ultimate ability
+            '5': null, // Extra ability 1
+            '6': null  // Extra ability 2
         };
         
         // Model and animation
@@ -93,38 +95,56 @@ class Hero {
     setupAbilities() {
         switch (this.type) {
             case 'axe':
-                this.abilities.q = new Ability('Berserker\'s Call', 'q', 10, 8, this.berserkersCall.bind(this));
-                this.abilities.w = new Ability('Battle Hunger', 'w', 15, 5, this.battleHunger.bind(this));
-                this.abilities.e = new Ability('Counter Helix', 'e', 0, 0, this.counterHelix.bind(this), true); // Passive
-                this.abilities.r = new Ability('Culling Blade', 'r', 25, 10, this.cullingBlade.bind(this));
+                // Dota 1 Axe abilities
+                this.abilities['1'] = new Ability('Berserker\'s Call', '1', 10, 8, this.berserkersCall.bind(this));
+                this.abilities['2'] = new Ability('Battle Hunger', '2', 15, 5, this.battleHunger.bind(this));
+                this.abilities['3'] = new Ability('Counter Helix', '3', 0, 0, this.counterHelix.bind(this), true); // Passive
+                this.abilities['4'] = new Ability('Culling Blade', '4', 25, 10, this.cullingBlade.bind(this));
+                this.abilities['5'] = new Ability('War Cry', '5', 15, 12, this.warCry.bind(this));
+                this.abilities['6'] = new Ability('Taunt', '6', 5, 5, this.taunt.bind(this));
                 break;
+                
             case 'crystal-maiden':
-                this.abilities.q = new Ability('Crystal Nova', 'q', 15, 5, this.crystalNova.bind(this));
-                this.abilities.w = new Ability('Frostbite', 'w', 20, 6, this.frostbite.bind(this));
-                this.abilities.e = new Ability('Arcane Aura', 'e', 0, 0, this.arcaneAura.bind(this), true); // Passive
-                this.abilities.r = new Ability('Freezing Field', 'r', 30, 12, this.freezingField.bind(this));
+                // Dota 1 Crystal Maiden abilities
+                this.abilities['1'] = new Ability('Crystal Nova', '1', 15, 5, this.crystalNova.bind(this));
+                this.abilities['2'] = new Ability('Frostbite', '2', 20, 6, this.frostbite.bind(this));
+                this.abilities['3'] = new Ability('Brilliance Aura', '3', 0, 0, this.arcaneAura.bind(this), true); // Passive
+                this.abilities['4'] = new Ability('Freezing Field', '4', 30, 12, this.freezingField.bind(this));
+                this.abilities['5'] = new Ability('Frost Armor', '5', 18, 10, this.frostShield.bind(this));
+                this.abilities['6'] = new Ability('Cold Snap', '6', 22, 8, this.icePath.bind(this));
                 break;
+                
             case 'lich':
-                this.abilities.q = new Ability('Frost Nova', 'q', 15, 5, this.frostNova.bind(this));
-                this.abilities.w = new Ability('Frost Armor', 'w', 10, 8, this.frostArmor.bind(this));
-                this.abilities.e = new Ability('Dark Ritual', 'e', 5, 4, this.darkRitual.bind(this));
-                this.abilities.r = new Ability('Chain Frost', 'r', 30, 12, this.chainFrost.bind(this));
+                // Dota 1 Lich abilities
+                this.abilities['1'] = new Ability('Frost Nova', '1', 15, 5, this.frostNova.bind(this));
+                this.abilities['2'] = new Ability('Frost Armor', '2', 10, 8, this.frostArmor.bind(this));
+                this.abilities['3'] = new Ability('Dark Ritual', '3', 5, 4, this.darkRitual.bind(this));
+                this.abilities['4'] = new Ability('Chain Frost', '4', 30, 12, this.chainFrost.bind(this));
+                this.abilities['5'] = new Ability('Frost Blast', '5', 20, 10, this.iceBlast.bind(this));
+                this.abilities['6'] = new Ability('Ice Barrier', '6', 15, 8, this.frostShield.bind(this));
                 break;
+                
             case 'storm-spirit':
-                this.abilities.q = new Ability('Static Remnant', 'q', 10, 4, this.staticRemnant.bind(this));
-                this.abilities.w = new Ability('Electric Vortex', 'w', 20, 6, this.electricVortex.bind(this));
-                this.abilities.e = new Ability('Overload', 'e', 0, 0, this.overload.bind(this), true); // Passive
-                this.abilities.r = new Ability('Ball Lightning', 'r', 15, 3, this.ballLightning.bind(this));
+                // Dota 1 Storm Spirit abilities
+                this.abilities['1'] = new Ability('Static Remnant', '1', 10, 4, this.staticRemnant.bind(this));
+                this.abilities['2'] = new Ability('Electric Vortex', '2', 20, 6, this.electricVortex.bind(this));
+                this.abilities['3'] = new Ability('Overload', '3', 0, 0, this.overload.bind(this), true); // Passive
+                this.abilities['4'] = new Ability('Ball Lightning', '4', 15, 3, this.ballLightning.bind(this));
+                this.abilities['5'] = new Ability('Electric Surge', '5', 12, 5, this.lightningBolt.bind(this));
+                this.abilities['6'] = new Ability('Storm Gust', '6', 25, 15, this.energyField.bind(this));
                 break;
+                
             default:
                 // Generic abilities if hero type is not recognized
-                this.abilities.q = new Ability('Ability 1', 'q', 10, 5, () => console.log('Ability 1 activated'));
-                this.abilities.w = new Ability('Ability 2', 'w', 15, 8, () => console.log('Ability 2 activated'));
-                this.abilities.e = new Ability('Ability 3', 'e', 20, 10, () => console.log('Ability 3 activated'));
-                this.abilities.r = new Ability('Ultimate', 'r', 30, 15, () => console.log('Ultimate activated'));
+                this.abilities['1'] = new Ability('Ability 1', '1', 10, 5, () => console.log('Ability 1 activated'));
+                this.abilities['2'] = new Ability('Ability 2', '2', 15, 8, () => console.log('Ability 2 activated'));
+                this.abilities['3'] = new Ability('Ability 3', '3', 20, 10, () => console.log('Ability 3 activated'));
+                this.abilities['4'] = new Ability('Ultimate', '4', 30, 15, () => console.log('Ultimate activated'));
+                this.abilities['5'] = new Ability('Ability 5', '5', 20, 12, () => console.log('Ability 5 activated'));
+                this.abilities['6'] = new Ability('Ability 6', '6', 25, 14, () => console.log('Ability 6 activated'));
         }
         
-        Logger.log(`Abilities set up for ${this.name}`);
+        Logger.log(`6 abilities set up for ${this.name} using number keys 1-6`);
     }
     
     // Movement methods
@@ -310,84 +330,1104 @@ class Hero {
     berserkersCall() {
         Logger.log(`${this.name} used Berserker's Call`);
         // Implementation would taunt nearby enemies and increase armor
+        
+        // Find all enemies within range
+        const tauntRange = 5;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(this.position) <= tauntRange
+        );
+        
+        // Taunt them (make them target this hero)
+        enemies.forEach(enemy => {
+            enemy.currentTarget = this;
+            enemy.moveTo(this.position);
+        });
+        
+        // Visual effect
+        this.createAOEEffect(this.position, tauntRange, 0xff0000, 1);
+        
+        // Increase armor temporarily
+        const armorBonus = 10;
+        this.stats.armor = (this.stats.armor || 0) + armorBonus;
+        
+        // Reset armor after duration
+        setTimeout(() => {
+            this.stats.armor = (this.stats.armor || 0) - armorBonus;
+        }, 5000); // 5 seconds
+        
+        return true;
     }
     
     battleHunger() {
         Logger.log(`${this.name} used Battle Hunger`);
         // Implementation would apply a DoT to target
+        
+        // Find closest enemy
+        const target = this.findClosestEnemy();
+        if (!target) return false;
+        
+        // Apply damage over time effect
+        const damagePerTick = 5;
+        const duration = 10; // seconds
+        const tickInterval = 1; // seconds
+        
+        // Visual effect - projectile to target
+        window.game.combatSystem.createProjectile(
+            this.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            target.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            'fire',
+            10,
+            damagePerTick,
+            this
+        );
+        
+        // Apply DoT effect
+        const dotEffect = setInterval(() => {
+            if (target.stats.health > 0) {
+                target.takeDamage(damagePerTick, this);
+            } else {
+                clearInterval(dotEffect);
+            }
+        }, tickInterval * 1000);
+        
+        // Clear interval after duration
+        setTimeout(() => {
+            clearInterval(dotEffect);
+        }, duration * 1000);
+        
+        return true;
     }
     
     counterHelix() {
         Logger.log(`${this.name} triggered Counter Helix`);
         // Implementation would deal damage to nearby enemies when attacked
+        
+        // Find all enemies within range
+        const helixRange = 3;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(this.position) <= helixRange
+        );
+        
+        // Deal damage to each enemy
+        const helixDamage = 15;
+        enemies.forEach(enemy => {
+            enemy.takeDamage(helixDamage, this);
+        });
+        
+        // Visual effect
+        this.createAOEEffect(this.position, helixRange, 0xff6600, 0.5);
+        
+        return true;
     }
     
     cullingBlade() {
         Logger.log(`${this.name} used Culling Blade`);
         // Implementation would execute low health targets
+        
+        // Find closest enemy
+        const target = this.findClosestEnemy();
+        if (!target) return false;
+        
+        // Check if target is below health threshold
+        const executeThreshold = 30;
+        const executeDamage = 250; // High damage to ensure kill
+        const normalDamage = 50;
+        
+        // Visual effect - projectile to target
+        window.game.combatSystem.createProjectile(
+            this.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            target.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            'fire',
+            15,
+            target.stats.health <= executeThreshold ? executeDamage : normalDamage,
+            this
+        );
+        
+        // Apply damage
+        if (target.stats.health <= executeThreshold) {
+            // Execute
+            target.takeDamage(executeDamage, this);
+            Logger.log(`${this.name} executed ${target.name}!`);
+            
+            // Bonus effect on successful execute
+            this.stats.movementSpeed += 2; // Temporary speed boost
+            setTimeout(() => {
+                this.stats.movementSpeed -= 2;
+            }, 5000); // 5 seconds
+        } else {
+            // Normal damage
+            target.takeDamage(normalDamage, this);
+        }
+        
+        return true;
+    }
+    
+    warCry() {
+        Logger.log(`${this.name} used War Cry`);
+        // Implementation would buff allies and self
+        
+        // Buff self
+        const speedBonus = 2;
+        const damageBonus = 10;
+        
+        this.stats.movementSpeed += speedBonus;
+        this.stats.attackDamage += damageBonus;
+        
+        // Visual effect
+        this.createAOEEffect(this.position, 3, 0xffff00, 1);
+        
+        // Reset buffs after duration
+        setTimeout(() => {
+            this.stats.movementSpeed -= speedBonus;
+            this.stats.attackDamage -= damageBonus;
+        }, 8000); // 8 seconds
+        
+        return true;
+    }
+    
+    berserkersRage() {
+        Logger.log(`${this.name} used Berserker's Rage`);
+        // Implementation would increase attack speed but decrease defense
+        
+        // Apply buffs/debuffs
+        const attackSpeedBonus = 0.5;
+        const armorPenalty = 5;
+        
+        this.stats.attackSpeed += attackSpeedBonus;
+        this.stats.armor = Math.max(0, (this.stats.armor || 0) - armorPenalty);
+        
+        // Visual effect - red glow
+        const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.5
+        });
+        const effect = new THREE.Mesh(geometry, material);
+        effect.position.copy(this.position);
+        effect.position.y = 1;
+        this.scene.add(effect);
+        
+        // Reset after duration
+        setTimeout(() => {
+            this.stats.attackSpeed -= attackSpeedBonus;
+            this.stats.armor = (this.stats.armor || 0) + armorPenalty;
+            this.scene.remove(effect);
+            effect.geometry.dispose();
+            effect.material.dispose();
+        }, 10000); // 10 seconds
+        
+        return true;
+    }
+    
+    taunt() {
+        Logger.log(`${this.name} used Taunt`);
+        // Implementation would taunt nearby enemies and increase threat
+        
+        // Visual effect - character animation
+        if (this.model && this.animations['attack']) {
+            this.playAnimation('attack');
+        }
+        
+        // Find all enemies within range
+        const tauntRange = 8;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(this.position) <= tauntRange
+        );
+        
+        // Taunt them (make them target this hero)
+        enemies.forEach(enemy => {
+            enemy.currentTarget = this;
+            enemy.moveTo(this.position);
+        });
+        
+        // Visual effect
+        const geometry = new THREE.RingGeometry(0.5, 1.5, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xff3300,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide
+        });
+        const ring = new THREE.Mesh(geometry, material);
+        ring.rotation.x = -Math.PI / 2; // Make it horizontal
+        ring.position.copy(this.position);
+        ring.position.y = 0.1; // Slightly above ground
+        this.scene.add(ring);
+        
+        // Animate the ring expanding
+        const duration = 1.5; // seconds
+        const startTime = Date.now();
+        
+        const animate = () => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed < duration) {
+                const scale = 1 + (elapsed * 3);
+                ring.scale.set(scale, scale, scale);
+                ring.material.opacity = 0.7 - (elapsed * 0.5);
+                requestAnimationFrame(animate);
+            } else {
+                this.scene.remove(ring);
+                ring.geometry.dispose();
+                ring.material.dispose();
+            }
+        };
+        
+        animate();
+        
+        // Increase threat level (for AI targeting)
+        this.stats.threatLevel = (this.stats.threatLevel || 1) * 2;
+        
+        // Reset threat level after duration
+        setTimeout(() => {
+            this.stats.threatLevel = (this.stats.threatLevel || 2) / 2;
+        }, 5000); // 5 seconds
+        
+        return true;
     }
     
     // Ability methods for Crystal Maiden
     crystalNova() {
         Logger.log(`${this.name} used Crystal Nova`);
         // Implementation would deal AoE damage and slow
+        
+        // Get target position (in front of hero)
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+        const targetPosition = this.position.clone().add(direction.multiplyScalar(5));
+        
+        // Find enemies in AoE
+        const novaRange = 6;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(targetPosition) <= novaRange
+        );
+        
+        // Deal damage and apply slow
+        const novaDamage = 20;
+        enemies.forEach(enemy => {
+            enemy.takeDamage(novaDamage, this);
+            
+            // Apply slow
+            const originalSpeed = enemy.stats.movementSpeed;
+            enemy.stats.movementSpeed *= 0.5; // 50% slow
+            
+            // Reset speed after duration
+            setTimeout(() => {
+                enemy.stats.movementSpeed = originalSpeed;
+            }, 4000); // 4 seconds
+        });
+        
+        // Visual effect
+        this.createAOEEffect(targetPosition, novaRange, 0x00ffff, 1);
+        
+        return true;
     }
     
     frostbite() {
         Logger.log(`${this.name} used Frostbite`);
         // Implementation would root a target and deal damage over time
+        
+        // Find closest enemy
+        const target = this.findClosestEnemy();
+        if (!target) return false;
+        
+        // Apply root and DoT
+        const rootDuration = 3; // seconds
+        const damagePerTick = 8;
+        const tickInterval = 0.5; // seconds
+        
+        // Root target (prevent movement)
+        const originalSpeed = target.stats.movementSpeed;
+        target.stats.movementSpeed = 0;
+        target.stopMovement();
+        
+        // Visual effect - projectile to target
+        window.game.combatSystem.createProjectile(
+            this.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            target.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            'ice',
+            10,
+            damagePerTick,
+            this
+        );
+        
+        // Apply DoT effect
+        const dotEffect = setInterval(() => {
+            if (target.stats.health > 0) {
+                target.takeDamage(damagePerTick, this);
+            } else {
+                clearInterval(dotEffect);
+            }
+        }, tickInterval * 1000);
+        
+        // Reset movement after duration
+        setTimeout(() => {
+            target.stats.movementSpeed = originalSpeed;
+            clearInterval(dotEffect);
+        }, rootDuration * 1000);
+        
+        return true;
     }
     
     arcaneAura() {
         Logger.log(`${this.name} passive Arcane Aura active`);
         // Implementation would provide mana regeneration
+        
+        // This is a passive ability that constantly regenerates mana
+        const manaRegenAmount = 2;
+        
+        // Apply mana regeneration
+        this.restoreMana(manaRegenAmount);
+        
+        return true;
     }
     
     freezingField() {
         Logger.log(`${this.name} used Freezing Field`);
         // Implementation would channel an AoE damage ability
+        
+        // Channel for duration
+        const channelDuration = 5; // seconds
+        const tickInterval = 0.5; // seconds
+        const fieldRange = 8;
+        const damagePerTick = 10;
+        
+        // Visual effect - continuous AoE
+        const effect = this.createAOEEffect(this.position, fieldRange, 0x00ffff, channelDuration);
+        
+        // Apply damage ticks
+        const damageEffect = setInterval(() => {
+            // Find enemies in range
+            const enemies = window.game.combatSystem.enemies.filter(enemy => 
+                enemy.position.distanceTo(this.position) <= fieldRange
+            );
+            
+            // Deal damage
+            enemies.forEach(enemy => {
+                enemy.takeDamage(damagePerTick, this);
+            });
+        }, tickInterval * 1000);
+        
+        // End channel after duration
+        setTimeout(() => {
+            clearInterval(damageEffect);
+        }, channelDuration * 1000);
+        
+        return true;
+    }
+    
+    frostShield() {
+        Logger.log(`${this.name} used Frost Shield`);
+        // Implementation would create a protective shield
+        
+        // Apply shield effect
+        const shieldAmount = 30;
+        const shieldDuration = 8; // seconds
+        
+        // Create temporary shield health
+        this.stats.shield = (this.stats.shield || 0) + shieldAmount;
+        
+        // Visual effect
+        const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const shield = new THREE.Mesh(geometry, material);
+        shield.position.copy(this.position);
+        shield.position.y = 1;
+        this.scene.add(shield);
+        
+        // Remove shield after duration
+        setTimeout(() => {
+            this.stats.shield = Math.max(0, (this.stats.shield || 0) - shieldAmount);
+            this.scene.remove(shield);
+            shield.geometry.dispose();
+            shield.material.dispose();
+        }, shieldDuration * 1000);
+        
+        return true;
+    }
+    
+    icePath() {
+        Logger.log(`${this.name} used Ice Path`);
+        // Implementation would create a line of ice that stuns enemies
+        
+        // Get direction
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+        const pathLength = 10;
+        const pathEnd = this.position.clone().add(direction.multiplyScalar(pathLength));
+        
+        // Create visual effect - line from hero to end point
+        const points = [];
+        points.push(this.position.clone());
+        points.push(pathEnd);
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 5 });
+        const line = new THREE.Line(geometry, material);
+        line.position.y = 0.1; // Slightly above ground
+        this.scene.add(line);
+        
+        // Find enemies in path
+        const pathWidth = 2;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => {
+            // Calculate distance from enemy to line
+            const heroToEnemy = new THREE.Vector3().subVectors(enemy.position, this.position);
+            const projection = heroToEnemy.dot(direction) / direction.length();
+            
+            // Check if enemy is within path length
+            if (projection < 0 || projection > pathLength) return false;
+            
+            // Calculate perpendicular distance to line
+            const projectedPoint = this.position.clone().add(direction.clone().normalize().multiplyScalar(projection));
+            const distance = enemy.position.distanceTo(projectedPoint);
+            
+            return distance <= pathWidth;
+        });
+        
+        // Apply stun to enemies
+        const stunDuration = 2; // seconds
+        const stunDamage = 15;
+        
+        enemies.forEach(enemy => {
+            // Deal damage
+            enemy.takeDamage(stunDamage, this);
+            
+            // Apply stun
+            const originalSpeed = enemy.stats.movementSpeed;
+            enemy.stats.movementSpeed = 0;
+            enemy.stopMovement();
+            
+            // Reset after duration
+            setTimeout(() => {
+                enemy.stats.movementSpeed = originalSpeed;
+            }, stunDuration * 1000);
+        });
+        
+        // Remove line after duration
+        setTimeout(() => {
+            this.scene.remove(line);
+            line.geometry.dispose();
+            line.material.dispose();
+        }, 2000); // 2 seconds
+        
+        return true;
     }
     
     // Ability methods for Lich
     frostNova() {
         Logger.log(`${this.name} used Frost Nova`);
         // Implementation would deal AoE damage and slow
+        
+        // Get target position (in front of hero)
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+        const targetPosition = this.position.clone().add(direction.multiplyScalar(5));
+        
+        // Find enemies in AoE
+        const novaRange = 5;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(targetPosition) <= novaRange
+        );
+        
+        // Deal damage and apply slow
+        const novaDamage = 25;
+        enemies.forEach(enemy => {
+            enemy.takeDamage(novaDamage, this);
+            
+            // Apply slow
+            const originalSpeed = enemy.stats.movementSpeed;
+            enemy.stats.movementSpeed *= 0.6; // 40% slow
+            
+            // Reset speed after duration
+            setTimeout(() => {
+                enemy.stats.movementSpeed = originalSpeed;
+            }, 3000); // 3 seconds
+        });
+        
+        // Visual effect
+        this.createAOEEffect(targetPosition, novaRange, 0x0000ff, 1);
+        
+        return true;
     }
     
     frostArmor() {
         Logger.log(`${this.name} used Frost Armor`);
         // Implementation would increase armor and slow attackers
+        
+        // Apply armor buff
+        const armorBonus = 15;
+        const duration = 10; // seconds
+        
+        this.stats.armor = (this.stats.armor || 0) + armorBonus;
+        
+        // Visual effect
+        const geometry = new THREE.SphereGeometry(1.5, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x0088ff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const effect = new THREE.Mesh(geometry, material);
+        effect.position.copy(this.position);
+        effect.position.y = 1;
+        this.scene.add(effect);
+        
+        // Reset after duration
+        setTimeout(() => {
+            this.stats.armor = Math.max(0, (this.stats.armor || 0) - armorBonus);
+            this.scene.remove(effect);
+            effect.geometry.dispose();
+            effect.material.dispose();
+        }, duration * 1000);
+        
+        return true;
     }
     
     darkRitual() {
         Logger.log(`${this.name} used Dark Ritual`);
         // Implementation would sacrifice a unit to gain mana
+        
+        // Since we don't have allied units to sacrifice, just restore mana
+        const manaRestored = 50;
+        this.restoreMana(manaRestored);
+        
+        // Visual effect
+        const geometry = new THREE.SphereGeometry(1, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x0000ff,
+            transparent: true,
+            opacity: 0.7
+        });
+        const effect = new THREE.Mesh(geometry, material);
+        effect.position.copy(this.position);
+        effect.position.y = 1;
+        this.scene.add(effect);
+        
+        // Animation
+        const duration = 1; // seconds
+        const startTime = Date.now();
+        
+        const animate = () => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed < duration) {
+                effect.scale.set(1 + elapsed, 1 + elapsed, 1 + elapsed);
+                effect.material.opacity = 0.7 - (elapsed * 0.7);
+                requestAnimationFrame(animate);
+            } else {
+                this.scene.remove(effect);
+                effect.geometry.dispose();
+                effect.material.dispose();
+            }
+        };
+        
+        animate();
+        
+        return true;
     }
     
     chainFrost() {
         Logger.log(`${this.name} used Chain Frost`);
         // Implementation would fire a bouncing projectile
+        
+        // Find closest enemy
+        const target = this.findClosestEnemy();
+        if (!target) return false;
+        
+        // Chain frost parameters
+        const damage = 40;
+        const bounces = 4;
+        const bounceRange = 8;
+        
+        // Function to create a bounce
+        const createBounce = (from, to, bouncesLeft) => {
+            // Create projectile
+            const projectile = window.game.combatSystem.createProjectile(
+                from.clone().add(new THREE.Vector3(0, 1, 0)),
+                to.position.clone().add(new THREE.Vector3(0, 1, 0)),
+                'ice',
+                15,
+                damage,
+                this
+            );
+            
+            // When projectile hits
+            setTimeout(() => {
+                // Deal damage
+                to.takeDamage(damage, this);
+                
+                // Find next target if bounces remain
+                if (bouncesLeft > 0) {
+                    // Get all enemies in range except the current target
+                    const nextTargets = window.game.combatSystem.enemies.filter(enemy => 
+                        enemy !== to && 
+                        enemy.stats.health > 0 && 
+                        enemy.position.distanceTo(to.position) <= bounceRange
+                    );
+                    
+                    // If there's a valid next target, bounce to it
+                    if (nextTargets.length > 0) {
+                        // Sort by distance and pick closest
+                        nextTargets.sort((a, b) => 
+                            a.position.distanceTo(to.position) - b.position.distanceTo(to.position)
+                        );
+                        
+                        const nextTarget = nextTargets[0];
+                        createBounce(to.position, nextTarget, bouncesLeft - 1);
+                    }
+                }
+            }, 500); // Time for projectile to reach target
+        };
+        
+        // Start the chain
+        createBounce(this.position, target, bounces);
+        
+        return true;
+    }
+    
+    iceBlast() {
+        Logger.log(`${this.name} used Ice Blast`);
+        // Implementation would fire a large ice projectile
+        
+        // Get target position (in front of hero)
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+        const targetPosition = this.position.clone().add(direction.multiplyScalar(10));
+        
+        // Create projectile
+        const projectile = window.game.combatSystem.createProjectile(
+            this.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            targetPosition.clone().add(new THREE.Vector3(0, 1, 0)),
+            'ice',
+            12,
+            0, // No direct damage from projectile
+            this
+        );
+        
+        // When projectile reaches target position, explode
+        setTimeout(() => {
+            // Find enemies in blast radius
+            const blastRadius = 7;
+            const enemies = window.game.combatSystem.enemies.filter(enemy => 
+                enemy.position.distanceTo(targetPosition) <= blastRadius
+            );
+            
+            // Deal damage
+            const blastDamage = 35;
+            enemies.forEach(enemy => {
+                enemy.takeDamage(blastDamage, this);
+                
+                // Apply slow
+                const originalSpeed = enemy.stats.movementSpeed;
+                enemy.stats.movementSpeed *= 0.5; // 50% slow
+                
+                // Reset speed after duration
+                setTimeout(() => {
+                    enemy.stats.movementSpeed = originalSpeed;
+                }, 4000); // 4 seconds
+            });
+            
+            // Visual effect
+            this.createAOEEffect(targetPosition, blastRadius, 0x00ffff, 1);
+        }, 800); // Time for projectile to reach target
+        
+        return true;
     }
     
     // Ability methods for Storm Spirit
     staticRemnant() {
         Logger.log(`${this.name} used Static Remnant`);
         // Implementation would create an explosive clone
+        
+        // Create remnant at current position
+        const remnantDuration = 12; // seconds
+        const remnantRadius = 3;
+        const remnantDamage = 20;
+        
+        // Visual effect - create a clone
+        const geometry = new THREE.SphereGeometry(0.8, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const remnant = new THREE.Mesh(geometry, material);
+        remnant.position.copy(this.position);
+        remnant.position.y = 1;
+        this.scene.add(remnant);
+        
+        // Check for enemies entering the remnant's radius
+        const checkInterval = setInterval(() => {
+            // Find enemies in range
+            const enemies = window.game.combatSystem.enemies.filter(enemy => 
+                enemy.position.distanceTo(remnant.position) <= remnantRadius && 
+                enemy.stats.health > 0
+            );
+            
+            if (enemies.length > 0) {
+                // Explode the remnant
+                enemies.forEach(enemy => {
+                    enemy.takeDamage(remnantDamage, this);
+                });
+                
+                // Visual effect
+                this.createAOEEffect(remnant.position, remnantRadius, 0x00ff00, 0.5);
+                
+                // Remove remnant
+                this.scene.remove(remnant);
+                remnant.geometry.dispose();
+                remnant.material.dispose();
+                
+                // Clear interval
+                clearInterval(checkInterval);
+            }
+        }, 200); // Check every 200ms
+        
+        // Remove remnant after duration if not triggered
+        setTimeout(() => {
+            if (remnant.parent) {
+                this.scene.remove(remnant);
+                remnant.geometry.dispose();
+                remnant.material.dispose();
+                clearInterval(checkInterval);
+            }
+        }, remnantDuration * 1000);
+        
+        return true;
     }
     
     electricVortex() {
         Logger.log(`${this.name} used Electric Vortex`);
         // Implementation would pull enemies toward Storm Spirit
+        
+        // Find enemies in range
+        const vortexRange = 8;
+        const enemies = window.game.combatSystem.enemies.filter(enemy => 
+            enemy.position.distanceTo(this.position) <= vortexRange
+        );
+        
+        // Pull enemies toward hero
+        const pullDuration = 2; // seconds
+        const pullDamage = 15;
+        
+        enemies.forEach(enemy => {
+            // Deal damage
+            enemy.takeDamage(pullDamage, this);
+            
+            // Pull effect
+            const startPosition = enemy.position.clone();
+            const endPosition = this.position.clone().add(
+                new THREE.Vector3().subVectors(enemy.position, this.position).normalize().multiplyScalar(2)
+            );
+            
+            // Disable enemy movement during pull
+            const originalSpeed = enemy.stats.movementSpeed;
+            enemy.stats.movementSpeed = 0;
+            enemy.stopMovement();
+            
+            // Animate pull
+            const startTime = Date.now();
+            
+            const animatePull = () => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const progress = Math.min(elapsed / pullDuration, 1);
+                
+                // Interpolate position
+                enemy.position.lerpVectors(startPosition, endPosition, progress);
+                enemy.model.position.x = enemy.position.x;
+                enemy.model.position.z = enemy.position.z;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animatePull);
+                } else {
+                    // Restore movement
+                    enemy.stats.movementSpeed = originalSpeed;
+                }
+            };
+            
+            animatePull();
+        });
+        
+        // Visual effect
+        this.createAOEEffect(this.position, vortexRange, 0x00ff00, 1);
+        
+        return true;
     }
     
     overload() {
         Logger.log(`${this.name} triggered Overload`);
         // Implementation would add bonus damage and slow after ability use
+        
+        // This is a passive that triggers after using other abilities
+        // For simplicity, we'll just apply the effect directly
+        
+        // Apply bonus damage
+        const damageBonus = 15;
+        const duration = 5; // seconds
+        
+        this.stats.attackDamage += damageBonus;
+        
+        // Visual effect
+        const geometry = new THREE.SphereGeometry(1.2, 16, 16);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.6
+        });
+        const effect = new THREE.Mesh(geometry, material);
+        effect.position.copy(this.position);
+        effect.position.y = 1;
+        this.scene.add(effect);
+        
+        // Reset after duration
+        setTimeout(() => {
+            this.stats.attackDamage -= damageBonus;
+            this.scene.remove(effect);
+            effect.geometry.dispose();
+            effect.material.dispose();
+        }, duration * 1000);
+        
+        return true;
     }
     
     ballLightning() {
         Logger.log(`${this.name} used Ball Lightning`);
         // Implementation would allow rapid movement across the map
+        
+        // Get direction
+        const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.model.quaternion);
+        const distance = 15; // How far to travel
+        const targetPosition = this.position.clone().add(direction.multiplyScalar(distance));
+        
+        // Check for valid position
+        const validPosition = window.game.world.findValidPosition(targetPosition, 1);
+        
+        // Create trail effect
+        const points = [];
+        points.push(this.position.clone());
+        points.push(validPosition);
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 3 });
+        const trail = new THREE.Line(geometry, material);
+        trail.position.y = 1; // At character height
+        this.scene.add(trail);
+        
+        // Move hero to target position
+        const startPosition = this.position.clone();
+        const startTime = Date.now();
+        const duration = 0.5; // seconds
+        
+        const animate = () => {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Interpolate position
+            this.position.lerpVectors(startPosition, validPosition, progress);
+            this.model.position.x = this.position.x;
+            this.model.position.z = this.position.z;
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                // Remove trail
+                this.scene.remove(trail);
+                trail.geometry.dispose();
+                trail.material.dispose();
+                
+                // Damage enemies along the path
+                const pathWidth = 2;
+                const pathDamage = 25;
+                
+                window.game.combatSystem.enemies.forEach(enemy => {
+                    // Calculate distance from enemy to line
+                    const heroToEnemy = new THREE.Vector3().subVectors(enemy.position, startPosition);
+                    const pathDirection = new THREE.Vector3().subVectors(validPosition, startPosition).normalize();
+                    const projection = heroToEnemy.dot(pathDirection);
+                    
+                    // Check if enemy is within path length
+                    if (projection < 0 || projection > distance) return;
+                    
+                    // Calculate perpendicular distance to line
+                    const projectedPoint = startPosition.clone().add(pathDirection.clone().multiplyScalar(projection));
+                    const perpDistance = enemy.position.distanceTo(projectedPoint);
+                    
+                    if (perpDistance <= pathWidth) {
+                        enemy.takeDamage(pathDamage, this);
+                    }
+                });
+                
+                // Trigger Overload passive
+                this.overload();
+            }
+        };
+        
+        animate();
+        
+        return true;
+    }
+    
+    lightningBolt() {
+        Logger.log(`${this.name} used Lightning Bolt`);
+        // Implementation would fire a lightning bolt at a target
+        
+        // Find closest enemy
+        const target = this.findClosestEnemy();
+        if (!target) return false;
+        
+        // Create lightning bolt
+        const boltDamage = 30;
+        
+        // Visual effect - projectile to target
+        window.game.combatSystem.createProjectile(
+            this.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            target.position.clone().add(new THREE.Vector3(0, 1, 0)),
+            'lightning',
+            20,
+            boltDamage,
+            this
+        );
+        
+        // Apply mini-stun
+        const stunDuration = 0.5; // seconds
+        const originalSpeed = target.stats.movementSpeed;
+        target.stats.movementSpeed = 0;
+        target.stopMovement();
+        
+        // Reset after duration
+        setTimeout(() => {
+            target.stats.movementSpeed = originalSpeed;
+        }, stunDuration * 1000);
+        
+        // Trigger Overload passive
+        setTimeout(() => {
+            this.overload();
+        }, 100);
+        
+        return true;
+    }
+    
+    energyField() {
+        Logger.log(`${this.name} used Energy Field`);
+        // Implementation would create an energy field that damages enemies
+        
+        // Create energy field
+        const fieldRadius = 6;
+        const fieldDuration = 6; // seconds
+        const tickInterval = 0.5; // seconds
+        const damagePerTick = 8;
+        
+        // Visual effect
+        const geometry = new THREE.CircleGeometry(fieldRadius, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.3
+        });
+        const field = new THREE.Mesh(geometry, material);
+        field.rotation.x = -Math.PI / 2; // Make it horizontal
+        field.position.copy(this.position);
+        field.position.y = 0.1; // Slightly above ground
+        this.scene.add(field);
+        
+        // Apply damage over time
+        const damageInterval = setInterval(() => {
+            // Find enemies in field
+            const enemies = window.game.combatSystem.enemies.filter(enemy => 
+                enemy.position.distanceTo(this.position) <= fieldRadius
+            );
+            
+            // Deal damage
+            enemies.forEach(enemy => {
+                enemy.takeDamage(damagePerTick, this);
+            });
+            
+            // Pulse effect
+            const pulse = this.createAOEEffect(this.position, fieldRadius, 0x00ff00, 0.3);
+        }, tickInterval * 1000);
+        
+        // Remove field after duration
+        setTimeout(() => {
+            clearInterval(damageInterval);
+            this.scene.remove(field);
+            field.geometry.dispose();
+            field.material.dispose();
+        }, fieldDuration * 1000);
+        
+        // Trigger Overload passive
+        this.overload();
+        
+        return true;
+    }
+    
+    // Helper method to find closest enemy
+    findClosestEnemy() {
+        if (!window.game || !window.game.combatSystem) return null;
+        
+        const enemies = window.game.combatSystem.enemies.filter(enemy => enemy.stats.health > 0);
+        if (enemies.length === 0) return null;
+        
+        // Sort by distance
+        enemies.sort((a, b) => 
+            a.position.distanceTo(this.position) - b.position.distanceTo(this.position)
+        );
+        
+        return enemies[0];
+    }
+    
+    // Helper method to create AoE visual effect
+    createAOEEffect(position, radius, color, duration) {
+        const geometry = new THREE.CircleGeometry(radius, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: color,
+            transparent: true,
+            opacity: 0.5
+        });
+        const effect = new THREE.Mesh(geometry, material);
+        effect.rotation.x = -Math.PI / 2; // Make it horizontal
+        effect.position.copy(position);
+        effect.position.y = 0.1; // Slightly above ground
+        this.scene.add(effect);
+        
+        // Remove after duration
+        setTimeout(() => {
+            this.scene.remove(effect);
+            effect.geometry.dispose();
+            effect.material.dispose();
+        }, duration * 1000);
+        
+        return effect;
+    }
+    
+    // Use ability by number key (1-6)
+    useAbility(key) {
+        const ability = this.abilities[key];
+        
+        if (!ability) {
+            Logger.log(`No ability assigned to key ${key}`);
+            return false;
+        }
+        
+        if (ability.isOnCooldown) {
+            Logger.log(`${ability.name} is on cooldown`);
+            return false;
+        }
+        
+        // Check if enough mana
+        if (this.stats.mana < ability.manaCost) {
+            Logger.log(`Not enough mana to cast ${ability.name}`);
+            return false;
+        }
+        
+        // Use mana
+        this.stats.mana -= ability.manaCost;
+        
+        // Emit mana used event
+        Events.emit('manaUsed', { hero: this, amount: ability.manaCost });
+        
+        // Start cooldown
+        ability.startCooldown();
+        
+        // Emit ability used event
+        Events.emit('abilityUsed', { hero: this, ability });
+        
+        // Execute ability function
+        return ability.use();
     }
     
     // Update method called every frame

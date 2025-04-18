@@ -45,10 +45,35 @@ class InputManager {
     }
     
     handleKeyDown(event) {
-        this.keys[event.key.toLowerCase()] = true;
+        const key = event.key.toLowerCase();
+        this.keys[key] = true;
+        
+        // Handle number keys 1-6 for abilities
+        if (key >= '1' && key <= '6') {
+            this.handleAbilityKeyPress(key);
+        }
         
         // Emit key press event
-        Events.emit('keyPressed', { key: event.key.toLowerCase() });
+        Events.emit('keyPressed', { key: key });
+    }
+    
+    handleAbilityKeyPress(key) {
+        // If hero exists, try to use the corresponding ability
+        if (window.game && window.game.hero && window.game.hero.abilities[key]) {
+            const ability = window.game.hero.abilities[key];
+            
+            // Check if ability is on cooldown
+            if (!ability.isOnCooldown) {
+                // Use the ability
+                window.game.hero.useAbility(key);
+                
+                // Log ability use
+                Logger.log(`Used ability ${key}: ${ability.name}`);
+            } else {
+                // Notify player that ability is on cooldown
+                Logger.log(`Ability ${ability.name} is on cooldown`);
+            }
+        }
     }
     
     handleKeyUp(event) {
@@ -65,14 +90,14 @@ class InputManager {
         switch (event.button) {
             case 0: // Left button
                 this.mouseButtons.left = true;
-                this.handleGroundClick(event);
+                this.handleAbilityClick(event); // Left click for targeted abilities
                 break;
             case 1: // Middle button
                 this.mouseButtons.middle = true;
                 break;
             case 2: // Right button
                 this.mouseButtons.right = true;
-                this.handleAbilityClick(event);
+                this.handleGroundClick(event); // Right click to move (Dota 1 style)
                 break;
         }
         
@@ -303,12 +328,22 @@ class InputManager {
             Events.emit('movement', { direction: moveDirection });
         }
         
-        // Handle ability key presses
+        // Handle ability key presses (letter keys)
         if (this.isKeyPressed('q')) Events.emit('abilityActivated', { ability: 'q' });
         if (this.isKeyPressed('w') && !this.isKeyPressed('a') && !this.isKeyPressed('s') && !this.isKeyPressed('d')) {
             Events.emit('abilityActivated', { ability: 'w' });
         }
         if (this.isKeyPressed('e')) Events.emit('abilityActivated', { ability: 'e' });
         if (this.isKeyPressed('r')) Events.emit('abilityActivated', { ability: 'r' });
+        if (this.isKeyPressed('t')) Events.emit('abilityActivated', { ability: 't' });
+        if (this.isKeyPressed('f')) Events.emit('abilityActivated', { ability: 'f' });
+        
+        // Handle ability key presses (number keys 1-6)
+        if (this.isKeyPressed('1')) Events.emit('abilityActivated', { ability: '1' });
+        if (this.isKeyPressed('2')) Events.emit('abilityActivated', { ability: '2' });
+        if (this.isKeyPressed('3')) Events.emit('abilityActivated', { ability: '3' });
+        if (this.isKeyPressed('4')) Events.emit('abilityActivated', { ability: '4' });
+        if (this.isKeyPressed('5')) Events.emit('abilityActivated', { ability: '5' });
+        if (this.isKeyPressed('6')) Events.emit('abilityActivated', { ability: '6' });
     }
 }
