@@ -12,6 +12,11 @@ const Axe = pc.createScript('axe');
 Axe.attributes.add('modelAsset', { type: 'asset', assetType: 'model' });
 Axe.attributes.add('textureAsset', { type: 'asset', assetType: 'texture' });
 
+// Load Axe talents
+const AxeTalents = {
+    // Talent definitions will be loaded from the talents file
+};
+
 Axe.prototype.initialize = function() {
     // Ensure the entity has the required components and scripts
     if (!this.entity.script.hero) {
@@ -30,6 +35,9 @@ Axe.prototype.initialize = function() {
     
     // Set up Axe's abilities
     this.setupAxeAbilities();
+    
+    // Set up Axe's talents
+    this.setupAxeTalents();
     
     // Load Axe's model and textures (placeholder for now)
     this.setupVisuals();
@@ -133,6 +141,65 @@ Axe.prototype.setupVisuals = function() {
     }
     
     console.log("Axe visuals configured (placeholder)");
+};
+
+/**
+ * Set up Axe's talents
+ */
+Axe.prototype.setupAxeTalents = function() {
+    // Ensure the entity has the talent system script
+    if (!this.entity.script.talentSystem) {
+        this.entity.script.create('talentSystem');
+    }
+    
+    // Load talent definitions from the external file
+    const talentsScript = this.app.assets.find('axe-talents.js');
+    
+    // If we can't find the script asset, use placeholder talents
+    if (!talentsScript) {
+        console.warn("Axe talents script not found, using placeholder talents");
+        
+        // Set up placeholder talents
+        const placeholderTalents = {
+            offensive: {
+                tier1: {
+                    name: "Battle Rage",
+                    description: "Increases Strength by 5 and physical damage by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        strength: 5
+                    }
+                }
+            },
+            defensive: {
+                tier1: {
+                    name: "Reinforced Armor",
+                    description: "Increases Vitality by 5 and reduces physical damage taken by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        vitality: 5
+                    }
+                }
+            },
+            utility: {
+                tier1: {
+                    name: "Battle Momentum",
+                    description: "Increases Agility by 5 and reduces all ability cooldowns by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        agility: 5
+                    }
+                }
+            }
+        };
+        
+        this.entity.script.talentSystem.setupTalents(placeholderTalents);
+    } else {
+        // Use the loaded talent definitions
+        this.entity.script.talentSystem.setupTalents(AxeTalents);
+    }
+    
+    console.log("Axe talents configured");
 };
 
 /**

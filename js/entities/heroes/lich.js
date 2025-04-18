@@ -12,6 +12,11 @@ const Lich = pc.createScript('lich');
 Lich.attributes.add('modelAsset', { type: 'asset', assetType: 'model' });
 Lich.attributes.add('textureAsset', { type: 'asset', assetType: 'texture' });
 
+// Load Lich talents
+const LichTalents = {
+    // Talent definitions will be loaded from the talents file
+};
+
 Lich.prototype.initialize = function() {
     // Ensure the entity has the required components and scripts
     if (!this.entity.script.hero) {
@@ -30,6 +35,9 @@ Lich.prototype.initialize = function() {
     
     // Set up Lich's abilities
     this.setupLichAbilities();
+    
+    // Set up Lich's talents
+    this.setupLichTalents();
     
     // Load Lich's model and textures (placeholder for now)
     this.setupVisuals();

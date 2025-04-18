@@ -12,6 +12,11 @@ const CrystalMaiden = pc.createScript('crystalMaiden');
 CrystalMaiden.attributes.add('modelAsset', { type: 'asset', assetType: 'model' });
 CrystalMaiden.attributes.add('textureAsset', { type: 'asset', assetType: 'texture' });
 
+// Load Crystal Maiden talents
+const CrystalMaidenTalents = {
+    // Talent definitions will be loaded from the talents file
+};
+
 CrystalMaiden.prototype.initialize = function() {
     // Ensure the entity has the required components and scripts
     if (!this.entity.script.hero) {
@@ -30,6 +35,9 @@ CrystalMaiden.prototype.initialize = function() {
     
     // Set up Crystal Maiden's abilities
     this.setupCrystalMaidenAbilities();
+    
+    // Set up Crystal Maiden's talents
+    this.setupCrystalMaidenTalents();
     
     // Load Crystal Maiden's model and textures (placeholder for now)
     this.setupVisuals();
@@ -145,6 +153,65 @@ CrystalMaiden.prototype.setupVisuals = function() {
     }
     
     console.log("Crystal Maiden visuals configured (placeholder)");
+};
+
+/**
+ * Set up Crystal Maiden's talents
+ */
+CrystalMaiden.prototype.setupCrystalMaidenTalents = function() {
+    // Ensure the entity has the talent system script
+    if (!this.entity.script.talentSystem) {
+        this.entity.script.create('talentSystem');
+    }
+    
+    // Load talent definitions from the external file
+    const talentsScript = this.app.assets.find('crystal-maiden-talents.js');
+    
+    // If we can't find the script asset, use placeholder talents
+    if (!talentsScript) {
+        console.warn("Crystal Maiden talents script not found, using placeholder talents");
+        
+        // Set up placeholder talents
+        const placeholderTalents = {
+            offensive: {
+                tier1: {
+                    name: "Frost Amplification",
+                    description: "Increases Intelligence by 5 and magical damage by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        intelligence: 5
+                    }
+                }
+            },
+            defensive: {
+                tier1: {
+                    name: "Frost Armor",
+                    description: "Increases Vitality by 5 and grants 10% resistance to physical damage.",
+                    type: "attribute",
+                    attributes: {
+                        vitality: 5
+                    }
+                }
+            },
+            utility: {
+                tier1: {
+                    name: "Mana Flow",
+                    description: "Increases Spirit by 5 and increases mana regeneration by 50%.",
+                    type: "attribute",
+                    attributes: {
+                        spirit: 5
+                    }
+                }
+            }
+        };
+        
+        this.entity.script.talentSystem.setupTalents(placeholderTalents);
+    } else {
+        // Use the loaded talent definitions
+        this.entity.script.talentSystem.setupTalents(CrystalMaidenTalents);
+    }
+    
+    console.log("Crystal Maiden talents configured");
 };
 
 /**
