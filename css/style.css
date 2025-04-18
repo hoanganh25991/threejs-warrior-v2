@@ -147,19 +147,19 @@ body {
 
 /* Hero specific images */
 .hero-image.axe {
-    background-image: url('../assets/images/heros/axe.svg');
+    background-image: url('../assets/images/heros/axe.jpg');
 }
 
 .hero-image.crystal-maiden {
-    background-image: url('../assets/images/heros/crystal-maiden.svg');
+    background-image: url('../assets/images/heros/crystal-maiden.jpg');
 }
 
 .hero-image.lich {
-    background-image: url('../assets/images/heros/lich.svg');
+    background-image: url('../assets/images/heros/lich.jpg');
 }
 
 .hero-image.storm-spirit {
-    background-image: url('../assets/images/heros/storm-spirit.svg');
+    background-image: url('../assets/images/heros/storm-spirit.jpg');
 }
 
 .hero-card p {

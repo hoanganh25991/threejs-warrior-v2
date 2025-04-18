@@ -203,7 +203,7 @@ class UIManager {
         if (!this.playerPortrait) return;
         
         // Set background image based on hero type
-        const imagePath = `../assets/images/heros/${heroType}.svg`;
+        const imagePath = `../assets/images/heros/${heroType}.jpg`;
         
         // Update the portrait with the hero image
         this.playerPortrait.style.backgroundImage = `url('${imagePath}')`;

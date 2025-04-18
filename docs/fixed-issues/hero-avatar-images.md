@@ -46,7 +46,7 @@ The hero selection screen and player portrait needed visual improvements with cu
 - Hover effects provide better user feedback
 
 ## Related Files
-- `assets/images/heros/*.svg`: SVG images for each hero type
+- `assets/images/heros/*.jpg`: SVG images for each hero type
 - `css/style.css`: Updated styling for hero images and portraits
 - `js/ui.js`: Modified UI manager to use the hero images
 - `index.html`: Contains the hero selection screen structure

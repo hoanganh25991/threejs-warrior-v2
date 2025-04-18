@@ -690,12 +690,30 @@ class Hero {
         // Convert wing local position to world position
         const worldPosition = new THREE.Vector3();
         worldPosition.copy(wingPosition);
+        
+        // Ensure model exists before trying to transform coordinates
+        if (!this.model) {
+            Logger.warn("Cannot create wing particles: model is not defined");
+            return;
+        }
+        
         this.model.localToWorld(worldPosition);
+        
+        // Validate world position to ensure no NaN values
+        if (isNaN(worldPosition.x) || isNaN(worldPosition.y) || isNaN(worldPosition.z)) {
+            Logger.warn("Cannot create wing particles: invalid world position (NaN values)");
+            return;
+        }
         
         // Create particles
         for (let i = 0; i < count; i++) {
-            // Create particle geometry and material
-            const geometry = new THREE.SphereGeometry(size * (0.5 + Math.random() * 0.5), 4, 4);
+            // Create particle geometry and material with validated size
+            const particleSize = size * (0.5 + Math.random() * 0.5);
+            if (isNaN(particleSize) || particleSize <= 0) {
+                continue; // Skip this particle if size is invalid
+            }
+            
+            const geometry = new THREE.SphereGeometry(particleSize, 4, 4);
             const material = new THREE.MeshBasicMaterial({
                 color: color,
                 transparent: true,
@@ -705,17 +723,30 @@ class Hero {
             // Create particle mesh
             const particle = new THREE.Mesh(geometry, material);
             
-            // Position at wing position with slight randomization
+            // Calculate position with slight randomization
+            const offsetX = (Math.random() - 0.5) * 0.5;
+            const offsetY = (Math.random() - 0.5) * 0.5;
+            const offsetZ = (Math.random() - 0.5) * 0.5;
+            
+            // Position at wing position with validation
             particle.position.set(
-                worldPosition.x + (Math.random() - 0.5) * 0.5,
-                worldPosition.y + (Math.random() - 0.5) * 0.5,
-                worldPosition.z + (Math.random() - 0.5) * 0.5
+                worldPosition.x + offsetX,
+                worldPosition.y + offsetY,
+                worldPosition.z + offsetZ
             );
+            
+            // Ensure scene exists before adding particle
+            if (!this.scene) {
+                Logger.warn("Cannot add particle: scene is not defined");
+                particle.geometry.dispose();
+                particle.material.dispose();
+                continue;
+            }
             
             // Add to scene
             this.scene.add(particle);
             
-            // Calculate initial velocity for different effects
+            // Calculate initial velocity for different effects with validation
             let velocityX = (Math.random() - 0.5) * 0.02;
             let velocityY = -0.01;
             let velocityZ = (Math.random() - 0.5) * 0.02;
@@ -729,6 +760,11 @@ class Hero {
                 // Add some downward bias for gravity effect
                 velocityY -= 0.02;
             }
+            
+            // Validate velocities to ensure no NaN values
+            if (isNaN(velocityX)) velocityX = 0;
+            if (isNaN(velocityY)) velocityY = 0;
+            if (isNaN(velocityZ)) velocityZ = 0;
             
             // For spiral effect, set up initial parameters
             let spiralRadius = 0;
