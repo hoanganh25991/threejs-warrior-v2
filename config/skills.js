@@ -187,16 +187,28 @@ const SkillsConfig = {
         manaCost: 15,
         cooldown: 5,
         passive: false,
-        description: 'Damages and slows enemies in an area',
+        description: 'Summons a burst of ice crystals that damage and slow enemies while creating a lingering frost field',
         effects: [
-            { type: 'damage', damageType: 'magical', value: 25, radius: 5 },
-            { type: 'debuff', stat: 'movementSpeed', value: -2, duration: 4, radius: 5 }
+            { type: 'damage', damageType: 'magical', value: 30, radius: 5 },
+            { type: 'debuff', stat: 'movementSpeed', value: -3, duration: 4, radius: 5 },
+            { 
+                type: 'ground-effect', 
+                effect: 'frost-field', 
+                duration: 5, 
+                radius: 5,
+                tickEffect: {
+                    type: 'damage',
+                    damageType: 'magical',
+                    value: 5,
+                    interval: 1
+                }
+            }
         ],
-        scaling: { intelligence: 0.4 },
+        scaling: { intelligence: 0.45 },
         targeting: { type: 'ground-target', range: 8, radius: 5 },
         animation: 'cm_nova',
         sound: 'cm_nova',
-        visuals: { effect: 'frost_explosion', scale: 1.2 }
+        visuals: { effect: 'frost_explosion', scale: 1.3, particleColor: 0x80e5ff }
     },
     
     'frostbite': {
@@ -206,35 +218,44 @@ const SkillsConfig = {
         manaCost: 20,
         cooldown: 6,
         passive: false,
-        description: 'Freezes an enemy, preventing movement and attack',
+        description: 'Encases an enemy in ice, preventing movement and attacks while dealing damage over time. The target becomes brittle, taking increased magical damage',
         effects: [
-            { type: 'root', duration: 2.5 },
-            { type: 'disarm', duration: 2.5 },
-            { type: 'damage-over-time', damageType: 'magical', value: 8, interval: 0.5, duration: 2.5 }
+            { type: 'root', duration: 3 },
+            { type: 'disarm', duration: 3 },
+            { type: 'damage-over-time', damageType: 'magical', value: 10, interval: 0.5, duration: 3 },
+            { 
+                type: 'debuff', 
+                stat: 'magicalResistance', 
+                value: -20, 
+                duration: 5,
+                description: 'Brittle: Increases magical damage taken'
+            }
         ],
-        scaling: { intelligence: 0.3 },
+        scaling: { intelligence: 0.35 },
         targeting: { type: 'single-target', range: 6 },
         animation: 'cm_frostbite',
         sound: 'cm_frostbite',
-        visuals: { effect: 'ice_encasing', attachToTarget: true }
+        visuals: { effect: 'ice_encasing', attachToTarget: true, particleColor: 0x40c0ff }
     },
     
     'brilliance-aura': {
         id: 'brilliance-aura',
-        name: 'Brilliance Aura',
+        name: 'Arcane Brilliance',
         type: 'aura',
         manaCost: 0,
         cooldown: 0,
         passive: true,
-        description: 'Provides mana regeneration to allies',
+        description: 'Crystal Maiden\'s presence enhances magical energy, providing mana regeneration to all allies and reducing cooldowns of nearby allies\' abilities',
         effects: [
-            { type: 'buff', stat: 'manaRegen', value: 2, duration: -1, radius: 8, affectsAllies: true }
+            { type: 'buff', stat: 'manaRegen', value: 3, duration: -1, radius: 8, affectsAllies: true },
+            { type: 'buff', stat: 'cooldownReduction', value: 0.1, duration: -1, radius: 8, affectsAllies: true },
+            { type: 'buff', stat: 'spellAmplification', value: 0.05, duration: -1, target: 'self' }
         ],
-        scaling: { intelligence: 0.1 },
+        scaling: { intelligence: 0.15 },
         targeting: { type: 'passive', radius: 8 },
         animation: null,
         sound: null,
-        visuals: { effect: 'blue_aura', scale: 0.8, persistent: true }
+        visuals: { effect: 'blue_aura', scale: 0.9, persistent: true, particleColor: 0x00aaff }
     },
     
     'freezing-field': {
@@ -244,137 +265,192 @@ const SkillsConfig = {
         manaCost: 30,
         cooldown: 12,
         passive: false,
-        description: 'Damages enemies in a large area over time',
+        description: 'Crystal Maiden summons a devastating blizzard around her that damages enemies and has a chance to freeze them in place. The cold intensifies over time, increasing damage and slow effects',
         effects: [
             { 
                 type: 'damage-over-time', 
                 damageType: 'magical', 
-                value: 12, 
+                value: 15, 
                 interval: 0.5, 
                 duration: 6,
-                radius: 8
+                radius: 8,
+                increasingEffect: { stat: 'damage', increasePerTick: 1 }
             },
-            { type: 'debuff', stat: 'movementSpeed', value: -1, duration: 1, radius: 8 }
+            { 
+                type: 'debuff', 
+                stat: 'movementSpeed', 
+                value: -2, 
+                duration: 1.5, 
+                radius: 8,
+                increasingEffect: { stat: 'slow', increasePerSecond: 0.5, maxIncrease: 2 }
+            },
+            {
+                type: 'random-effect',
+                chance: 0.15,
+                interval: 0.5,
+                effect: { type: 'stun', duration: 1, radius: 8 }
+            },
+            { type: 'buff', stat: 'armor', value: 10, duration: 6, target: 'self' }
         ],
-        scaling: { intelligence: 0.6 },
+        scaling: { intelligence: 0.7 },
         targeting: { type: 'channeled', radius: 8, duration: 6 },
         animation: 'cm_freezing_field',
         sound: 'cm_freezing_field',
-        visuals: { effect: 'blizzard', scale: 2.0 }
+        visuals: { effect: 'blizzard', scale: 2.2, particleColor: 0xb3e0ff }
     },
     
     'frost-armor': {
         id: 'frost-armor',
-        name: 'Frost Armor',
+        name: 'Glacial Barrier',
         type: 'buff',
         manaCost: 18,
         cooldown: 10,
         passive: false,
-        description: 'Increases armor and provides frost shield',
+        description: 'Creates a protective barrier of ice that increases armor and reflects frost damage to attackers. When the barrier breaks, it releases a burst of cold that slows nearby enemies',
         effects: [
-            { type: 'buff', stat: 'armor', value: 6, duration: 8 },
+            { type: 'buff', stat: 'armor', value: 8, duration: 8 },
+            { type: 'shield', value: 40, duration: 8 },
             { 
                 type: 'counter-effect', 
                 trigger: 'on-hit', 
                 effect: { 
-                    type: 'debuff', 
-                    stat: 'attackSpeed', 
-                    value: -0.2, 
-                    duration: 2 
+                    type: 'damage', 
+                    damageType: 'magical',
+                    value: 10,
+                    target: 'attacker'
+                }
+            },
+            {
+                type: 'trigger-effect',
+                trigger: 'on-shield-break',
+                effect: {
+                    type: 'debuff',
+                    stat: 'movementSpeed',
+                    value: -3,
+                    duration: 3,
+                    radius: 5
                 }
             }
         ],
-        scaling: { intelligence: 0.2 },
+        scaling: { intelligence: 0.3 },
         targeting: { type: 'single-target', range: 6, canTargetSelf: true, canTargetAllies: true },
         animation: 'cm_frost_armor',
         sound: 'cm_frost_armor',
-        visuals: { effect: 'ice_shield', attachToTarget: true }
+        visuals: { effect: 'ice_shield', attachToTarget: true, particleColor: 0x99ddff }
     },
     
-    'cold-snap': {
-        id: 'cold-snap',
-        name: 'Cold Snap',
+    'frost-nova': {
+        id: 'frost-nova',
+        name: 'Frost Nova',
         type: 'utility',
         manaCost: 22,
         cooldown: 8,
         passive: false,
-        description: 'Freezes the ground, creating an ice path',
+        description: 'Crystal Maiden releases a wave of frost in all directions, damaging and briefly freezing enemies while creating a ring of ice shards that block movement',
         effects: [
-            { type: 'ground-effect', effect: 'slippery', duration: 6, length: 10, width: 2 },
-            { type: 'debuff', stat: 'movementSpeed', value: -2, duration: 1.5, condition: 'on-contact' }
+            { type: 'damage', damageType: 'magical', value: 25, radius: 6, shape: 'ring' },
+            { type: 'stun', duration: 1, radius: 6 },
+            { 
+                type: 'create-terrain', 
+                terrainType: 'ice-wall', 
+                shape: 'ring', 
+                radius: 6, 
+                duration: 4,
+                passable: false
+            }
         ],
-        scaling: { intelligence: 0.25 },
-        targeting: { type: 'direction', range: 10, width: 2 },
-        animation: 'cm_cold_snap',
-        sound: 'cm_cold_snap',
-        visuals: { effect: 'ice_path', scale: 1.0 }
+        scaling: { intelligence: 0.4 },
+        targeting: { type: 'self', radius: 6 },
+        animation: 'cm_frost_nova',
+        sound: 'cm_frost_nova',
+        visuals: { effect: 'ice_wave', scale: 1.5, particleColor: 0x80d4ff }
     },
     
     // ===== LICH SKILLS =====
-    'frost-nova': {
-        id: 'frost-nova',
+    'frost-nova-lich': {
+        id: 'frost-nova-lich',
         name: 'Frost Nova',
         type: 'aoe',
         manaCost: 15,
         cooldown: 5,
         passive: false,
-        description: 'Damages and slows enemies in an area',
+        description: 'Unleashes a blast of necromantic frost that damages enemies and drains their life force, healing Lich for a portion of the damage dealt',
         effects: [
-            { type: 'damage', damageType: 'magical', value: 30, radius: 4 },
-            { type: 'debuff', stat: 'movementSpeed', value: -2, duration: 3, radius: 4 }
+            { type: 'damage', damageType: 'magical', value: 35, radius: 4 },
+            { type: 'debuff', stat: 'movementSpeed', value: -2, duration: 3, radius: 4 },
+            { 
+                type: 'life-drain', 
+                percentOfDamage: 0.3, 
+                radius: 4,
+                target: 'self'
+            }
         ],
-        scaling: { intelligence: 0.45 },
+        scaling: { intelligence: 0.5 },
         targeting: { type: 'ground-target', range: 7, radius: 4 },
         animation: 'lich_nova',
         sound: 'lich_nova',
-        visuals: { effect: 'frost_explosion', scale: 1.0 }
+        visuals: { effect: 'frost_explosion', scale: 1.0, particleColor: 0x0033cc }
     },
     
     'frost-armor-lich': {
         id: 'frost-armor-lich',
-        name: 'Frost Armor',
+        name: 'Ice Carapace',
         type: 'buff',
         manaCost: 10,
         cooldown: 8,
         passive: false,
-        description: 'Increases armor and slows attackers',
+        description: 'Encases the target in a shell of necromantic ice that increases armor, grants spell resistance, and inflicts a curse on attackers that slows their attack and movement speed',
         effects: [
-            { type: 'buff', stat: 'armor', value: 8, duration: 10 },
+            { type: 'buff', stat: 'armor', value: 10, duration: 10 },
+            { type: 'buff', stat: 'magicalResistance', value: 15, duration: 10 },
             { 
                 type: 'counter-effect', 
                 trigger: 'on-hit', 
                 effect: { 
                     type: 'debuff', 
+                    name: 'Frost Curse',
                     stat: 'attackSpeed', 
                     value: -0.3, 
-                    duration: 3 
+                    duration: 3,
+                    secondaryEffect: {
+                        type: 'debuff',
+                        stat: 'movementSpeed',
+                        value: -1.5,
+                        duration: 3
+                    }
                 }
             }
         ],
-        scaling: { intelligence: 0.25 },
+        scaling: { intelligence: 0.3 },
         targeting: { type: 'single-target', range: 7, canTargetSelf: true, canTargetAllies: true },
         animation: 'lich_frost_armor',
         sound: 'lich_frost_armor',
-        visuals: { effect: 'ice_armor', attachToTarget: true }
+        visuals: { effect: 'ice_armor', attachToTarget: true, particleColor: 0x0066ff }
     },
     
     'dark-ritual': {
         id: 'dark-ritual',
-        name: 'Dark Ritual',
+        name: 'Soul Sacrifice',
         type: 'utility',
         manaCost: 5,
         cooldown: 4,
         passive: false,
-        description: 'Sacrifices a unit to gain mana',
+        description: 'Sacrifices a friendly unit to absorb its life essence, restoring mana and granting temporary spell amplification. If cast on an enemy corpse, also restores health',
         effects: [
             { type: 'sacrifice', targetType: 'friendly-unit' },
-            { type: 'resource-gain', resource: 'mana', value: 40 }
+            { type: 'resource-gain', resource: 'mana', value: 50 },
+            { type: 'buff', stat: 'spellAmplification', value: 0.15, duration: 8 },
+            { 
+                type: 'conditional-effect',
+                condition: { type: 'target-is', targetType: 'enemy-corpse' },
+                success: { type: 'heal', value: 30 }
+            }
         ],
-        scaling: { intelligence: 0.3 },
-        targeting: { type: 'single-target', range: 5, targetTypes: ['friendly-unit'] },
+        scaling: { intelligence: 0.4 },
+        targeting: { type: 'single-target', range: 5, targetTypes: ['friendly-unit', 'enemy-corpse'] },
         animation: 'lich_ritual',
         sound: 'lich_ritual',
-        visuals: { effect: 'soul_drain', scale: 1.0 }
+        visuals: { effect: 'soul_drain', scale: 1.2, particleColor: 0x3366ff }
     },
     
     'chain-frost': {
@@ -384,59 +460,100 @@ const SkillsConfig = {
         manaCost: 30,
         cooldown: 12,
         passive: false,
-        description: 'Launches a frost orb that bounces between enemies',
+        description: 'Unleashes a powerful orb of frost that bounces between enemies, dealing increasing damage with each bounce and applying a stacking slow effect. Each bounce has a chance to freeze the target',
         effects: [
             { 
                 type: 'chain-damage', 
                 damageType: 'magical', 
-                value: 35, 
-                bounces: 5, 
+                value: 40, 
+                bounces: 7, 
                 bounceRange: 6,
-                slowEffect: { stat: 'movementSpeed', value: -2, duration: 2 }
+                damageIncrease: 10,
+                slowEffect: { 
+                    stat: 'movementSpeed', 
+                    value: -1.5, 
+                    duration: 3,
+                    stackable: true,
+                    maxStacks: 3
+                },
+                secondaryEffect: {
+                    type: 'random-effect',
+                    chance: 0.2,
+                    effect: { type: 'root', duration: 1.5 }
+                }
             }
         ],
-        scaling: { intelligence: 0.5 },
+        scaling: { intelligence: 0.6 },
         targeting: { type: 'single-target', range: 8 },
         animation: 'lich_chain_frost',
         sound: 'lich_chain_frost',
-        visuals: { effect: 'bouncing_ice_orb', scale: 1.2 }
+        visuals: { effect: 'bouncing_ice_orb', scale: 1.4, particleColor: 0x0099ff }
     },
     
     'frost-blast': {
         id: 'frost-blast',
-        name: 'Frost Blast',
+        name: 'Necrotic Frost',
         type: 'aoe',
         manaCost: 20,
         cooldown: 10,
         passive: false,
-        description: 'Damages and slows enemies in a large area',
+        description: 'Channels the power of death and frost to create an explosion of necrotic energy that damages enemies, slows them, and reduces their healing received',
         effects: [
-            { type: 'damage', damageType: 'magical', value: 40, radius: 6 },
-            { type: 'debuff', stat: 'movementSpeed', value: -3, duration: 4, radius: 6 }
+            { type: 'damage', damageType: 'magical', value: 45, radius: 6 },
+            { type: 'debuff', stat: 'movementSpeed', value: -3, duration: 4, radius: 6 },
+            { 
+                type: 'debuff', 
+                stat: 'healingReceived', 
+                value: -0.5, 
+                duration: 5, 
+                radius: 6,
+                name: 'Necrotic Wound'
+            }
         ],
-        scaling: { intelligence: 0.4 },
+        scaling: { intelligence: 0.45 },
         targeting: { type: 'ground-target', range: 9, radius: 6 },
         animation: 'lich_frost_blast',
         sound: 'lich_frost_blast',
-        visuals: { effect: 'ice_explosion', scale: 1.5 }
+        visuals: { effect: 'ice_explosion', scale: 1.5, particleColor: 0x0066cc }
     },
     
     'ice-barrier': {
         id: 'ice-barrier',
-        name: 'Ice Barrier',
+        name: 'Frozen Tomb',
         type: 'defense',
         manaCost: 15,
         cooldown: 8,
         passive: false,
-        description: 'Creates a shield that absorbs damage',
+        description: 'Surrounds the target with a protective barrier of necromantic ice that absorbs damage and creates frost spirits when destroyed. These spirits seek out nearby enemies to damage and slow them',
         effects: [
-            { type: 'shield', value: 50, duration: 6 }
+            { type: 'shield', value: 60, duration: 6 },
+            {
+                type: 'trigger-effect',
+                trigger: 'on-shield-break',
+                effect: {
+                    type: 'summon',
+                    summonType: 'frost-spirit',
+                    count: 3,
+                    duration: 8,
+                    summonEffect: {
+                        type: 'damage',
+                        damageType: 'magical',
+                        value: 15,
+                        secondaryEffect: {
+                            type: 'debuff',
+                            stat: 'movementSpeed',
+                            value: -1,
+                            duration: 2
+                        }
+                    }
+                }
+            }
         ],
-        scaling: { intelligence: 0.35 },
+        scaling: { intelligence: 0.4 },
         targeting: { type: 'single-target', range: 6, canTargetSelf: true, canTargetAllies: true },
         animation: 'lich_barrier',
         sound: 'lich_barrier',
-        visuals: { effect: 'ice_shield', attachToTarget: true }
+        visuals: { effect: 'ice_shield', attachToTarget: true, particleColor: 0x0055cc }
     },
     
     // ===== STORM SPIRIT SKILLS =====
@@ -447,7 +564,7 @@ const SkillsConfig = {
         manaCost: 10,
         cooldown: 4,
         passive: false,
-        description: 'Creates a remnant that damages nearby enemies',
+        description: 'Storm Spirit creates an electrical duplicate of himself that watches for nearby enemies. When triggered, it explodes with lightning, damaging foes and briefly revealing their location',
         effects: [
             { 
                 type: 'summon', 
@@ -457,16 +574,29 @@ const SkillsConfig = {
                 triggerEffect: { 
                     type: 'damage', 
                     damageType: 'magical', 
-                    value: 25, 
-                    radius: 3 
+                    value: 30, 
+                    radius: 3,
+                    secondaryEffect: {
+                        type: 'reveal',
+                        duration: 4,
+                        radius: 3
+                    }
                 }
+            },
+            {
+                type: 'buff',
+                stat: 'movementSpeed',
+                value: 1,
+                duration: 2,
+                target: 'self',
+                condition: 'on-remnant-trigger'
             }
         ],
-        scaling: { intelligence: 0.3 },
+        scaling: { intelligence: 0.35, agility: 0.1 },
         targeting: { type: 'ground-target', range: 3, radius: 0 },
         animation: 'storm_remnant',
         sound: 'storm_remnant',
-        visuals: { effect: 'electric_clone', scale: 1.0 }
+        visuals: { effect: 'electric_clone', scale: 1.0, particleColor: 0x00ff66 }
     },
     
     'electric-vortex': {
@@ -476,16 +606,25 @@ const SkillsConfig = {
         manaCost: 20,
         cooldown: 6,
         passive: false,
-        description: 'Pulls an enemy toward you',
+        description: 'Storm Spirit creates a vortex of electric energy that pulls an enemy toward him while slowing nearby foes. The target is briefly stunned upon reaching Storm Spirit',
         effects: [
-            { type: 'pull', duration: 1.5, speed: 6 },
-            { type: 'damage', damageType: 'magical', value: 15 }
+            { type: 'pull', duration: 1.5, speed: 8 },
+            { type: 'damage', damageType: 'magical', value: 20 },
+            { type: 'stun', duration: 0.5, condition: 'on-pull-complete' },
+            { 
+                type: 'debuff', 
+                stat: 'movementSpeed', 
+                value: -1.5, 
+                duration: 2, 
+                radius: 4,
+                excludeMainTarget: true
+            }
         ],
-        scaling: { intelligence: 0.25 },
+        scaling: { intelligence: 0.3, agility: 0.1 },
         targeting: { type: 'single-target', range: 7 },
         animation: 'storm_vortex',
         sound: 'storm_vortex',
-        visuals: { effect: 'lightning_pull', scale: 1.0 }
+        visuals: { effect: 'lightning_pull', scale: 1.2, particleColor: 0x33ff99 }
     },
     
     'overload': {
@@ -495,31 +634,44 @@ const SkillsConfig = {
         manaCost: 0,
         cooldown: 0,
         passive: true,
-        description: 'Empowers attacks after using abilities',
+        description: 'After using any ability, Storm Spirit\'s next attack is empowered with electric energy, dealing bonus damage in an area around the target and slowing affected enemies. Each consecutive Overload attack increases the damage',
         effects: [
             { 
                 type: 'buff', 
                 trigger: 'after-ability-use',
                 stat: 'attackDamage', 
                 damageType: 'magical',
-                value: 20, 
-                duration: 1,
-                maxStacks: 1
+                value: 25, 
+                duration: 3,
+                maxStacks: 3,
+                stackable: true,
+                areaOfEffect: true,
+                radius: 2
             },
             { 
                 type: 'debuff', 
                 trigger: 'on-attack',
                 condition: 'has-overload-buff',
                 stat: 'movementSpeed', 
-                value: -2, 
-                duration: 1.5 
+                value: -2.5, 
+                duration: 2,
+                radius: 2
+            },
+            {
+                type: 'buff',
+                trigger: 'on-overload-attack',
+                stat: 'attackSpeed',
+                value: 0.1,
+                duration: 3,
+                maxStacks: 3,
+                stackable: true
             }
         ],
-        scaling: { intelligence: 0.2 },
+        scaling: { intelligence: 0.25, agility: 0.15 },
         targeting: { type: 'passive' },
         animation: null,
         sound: 'storm_overload_ready',
-        visuals: { effect: 'electric_charge', attachToHero: true, showOnBuff: true }
+        visuals: { effect: 'electric_charge', attachToHero: true, showOnBuff: true, particleColor: 0x00ff99 }
     },
     
     'ball-lightning': {
@@ -529,51 +681,81 @@ const SkillsConfig = {
         manaCost: 15,
         cooldown: 3,
         passive: false,
-        description: 'Transforms into lightning to travel quickly',
+        description: 'Storm Spirit transforms into a ball of lightning, becoming invulnerable and highly mobile while damaging enemies along his path. Each enemy hit reduces the mana cost of the ability',
         effects: [
-            { type: 'dash', speed: 15, invulnerable: true },
+            { type: 'dash', speed: 20, invulnerable: true },
             { 
                 type: 'damage', 
                 damageType: 'magical', 
-                value: 10, 
-                radius: 2,
-                continuous: true
+                value: 15, 
+                radius: 2.5,
+                continuous: true,
+                uniqueTargets: true
             },
-            { type: 'mana-drain', perSecond: 10, continuous: true }
+            { type: 'mana-drain', perSecond: 12, continuous: true },
+            { 
+                type: 'resource-gain', 
+                resource: 'mana', 
+                value: 5, 
+                condition: 'on-enemy-hit',
+                maxTargets: 5
+            },
+            { type: 'buff', stat: 'movementSpeed', value: 2, duration: 2, condition: 'after-ability-end' }
         ],
-        scaling: { intelligence: 0.15 },
-        targeting: { type: 'ground-target', range: 20, pathfinding: true },
+        scaling: { intelligence: 0.2, agility: 0.2 },
+        targeting: { type: 'ground-target', range: 25, pathfinding: true },
         animation: 'storm_ball',
         sound: 'storm_ball',
-        visuals: { effect: 'lightning_trail', scale: 1.0 }
+        visuals: { effect: 'lightning_trail', scale: 1.2, particleColor: 0x00ffaa }
     },
     
-    'electric-surge': {
-        id: 'electric-surge',
-        name: 'Electric Surge',
+    'lightning-rush': {
+        id: 'lightning-rush',
+        name: 'Lightning Rush',
         type: 'attack',
         manaCost: 12,
         cooldown: 5,
         passive: false,
-        description: 'Damages enemies in a line',
+        description: 'Storm Spirit charges forward, damaging enemies in a line and gaining attack speed for each enemy hit. If at least three enemies are hit, the cooldown is reduced',
         effects: [
-            { type: 'damage', damageType: 'magical', value: 30, shape: 'line', length: 8, width: 2 }
+            { 
+                type: 'dash', 
+                speed: 12, 
+                distance: 8,
+                damageType: 'magical',
+                value: 35,
+                shape: 'line',
+                width: 2
+            },
+            {
+                type: 'buff',
+                stat: 'attackSpeed',
+                value: 0.1,
+                duration: 4,
+                stackPerTarget: true,
+                maxStacks: 5
+            },
+            {
+                type: 'cooldown-reduction',
+                value: 3,
+                condition: { type: 'targets-hit', count: 3 }
+            }
         ],
-        scaling: { intelligence: 0.35 },
+        scaling: { intelligence: 0.3, agility: 0.2 },
         targeting: { type: 'direction', range: 8, width: 2 },
-        animation: 'storm_surge',
-        sound: 'storm_surge',
-        visuals: { effect: 'lightning_beam', scale: 1.0 }
+        animation: 'storm_rush',
+        sound: 'storm_rush',
+        visuals: { effect: 'lightning_dash', scale: 1.0, particleColor: 0x66ffcc }
     },
     
-    'storm-gust': {
-        id: 'storm-gust',
-        name: 'Storm Gust',
+    'electric-field': {
+        id: 'electric-field',
+        name: 'Electric Field',
         type: 'aoe',
         manaCost: 25,
         cooldown: 15,
         passive: false,
-        description: 'Creates a field of energy that damages enemies',
+        description: 'Storm Spirit creates an energized field that damages enemies and increases the attack and movement speed of allies within it. Storm Spirit gains double the benefit while inside the field',
         effects: [
             { 
                 type: 'ground-effect', 
@@ -583,16 +765,52 @@ const SkillsConfig = {
                 tickEffect: {
                     type: 'damage',
                     damageType: 'magical',
-                    value: 8,
+                    value: 10,
                     interval: 1
                 }
+            },
+            {
+                type: 'buff',
+                stat: 'attackSpeed',
+                value: 0.2,
+                duration: 1.5,
+                refreshWhileInArea: true,
+                radius: 5,
+                affectsAllies: true
+            },
+            {
+                type: 'buff',
+                stat: 'movementSpeed',
+                value: 1.5,
+                duration: 1.5,
+                refreshWhileInArea: true,
+                radius: 5,
+                affectsAllies: true
+            },
+            {
+                type: 'buff',
+                stat: 'attackSpeed',
+                value: 0.2,
+                duration: 1.5,
+                refreshWhileInArea: true,
+                target: 'self',
+                condition: 'while-in-field'
+            },
+            {
+                type: 'buff',
+                stat: 'movementSpeed',
+                value: 1.5,
+                duration: 1.5,
+                refreshWhileInArea: true,
+                target: 'self',
+                condition: 'while-in-field'
             }
         ],
-        scaling: { intelligence: 0.4 },
+        scaling: { intelligence: 0.45, agility: 0.1 },
         targeting: { type: 'ground-target', range: 10, radius: 5 },
-        animation: 'storm_gust',
-        sound: 'storm_gust',
-        visuals: { effect: 'electric_field', scale: 1.5 }
+        animation: 'storm_field',
+        sound: 'storm_field',
+        visuals: { effect: 'electric_field', scale: 1.5, particleColor: 0x00ffcc }
     }
 };
 

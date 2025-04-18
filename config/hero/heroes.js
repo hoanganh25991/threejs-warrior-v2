@@ -66,8 +66,8 @@ const HeroesConfig = {
                     ...SkillsConfig['war-cry']
                 },
                 '6': {
-                    skillId: 'taunt',
-                    ...SkillsConfig['taunt']
+                    skillId: 'berserkers-rage',
+                    ...SkillsConfig['berserkers-rage']
                 }
             }
         },
@@ -104,8 +104,8 @@ const HeroesConfig = {
                     ...SkillsConfig['frost-armor']
                 },
                 '6': {
-                    skillId: 'cold-snap',
-                    ...SkillsConfig['cold-snap']
+                    skillId: 'frost-nova',
+                    ...SkillsConfig['frost-nova']
                 }
             }
         },
@@ -122,8 +122,8 @@ const HeroesConfig = {
             },
             abilities: {
                 '1': {
-                    skillId: 'frost-nova',
-                    ...SkillsConfig['frost-nova']
+                    skillId: 'frost-nova-lich',
+                    ...SkillsConfig['frost-nova-lich']
                 },
                 '2': {
                     skillId: 'frost-armor-lich',
@@ -175,12 +175,12 @@ const HeroesConfig = {
                     ...SkillsConfig['ball-lightning']
                 },
                 '5': {
-                    skillId: 'electric-surge',
-                    ...SkillsConfig['electric-surge']
+                    skillId: 'lightning-rush',
+                    ...SkillsConfig['lightning-rush']
                 },
                 '6': {
-                    skillId: 'storm-gust',
-                    ...SkillsConfig['storm-gust']
+                    skillId: 'electric-field',
+                    ...SkillsConfig['electric-field']
                 }
             }
         }
