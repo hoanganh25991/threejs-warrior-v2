@@ -6,12 +6,11 @@ The game features a comprehensive control system that supports multiple input me
 ## Physical Keyboard Controls
 
 ### Movement Controls
-- **W**: Move forward (relative to camera)
-- **A**: Strafe left
-- **S**: Move backward
-- **D**: Strafe right
-- **Space**: Jump
-- **F**: Toggle flight mode
+- **Arrow Up**: Move forward (relative to camera)
+- **Arrow Left**: Strafe left
+- **Arrow Down**: Move backward
+- **Arrow Right**: Strafe right
+- **F**: Jump (hold to increase height)
 
 ### Ability Controls
 - **1-6**: Activate corresponding abilities
@@ -29,7 +28,6 @@ The game features a comprehensive control system that supports multiple input me
 - **X**: Zoom out (alternative)
 
 ### Interaction Controls
-- **F**: Interact with objects (when not flying)
 - **I**: Open inventory
 - **C**: Open character screen
 - **M**: Open map
@@ -43,10 +41,9 @@ The game features a comprehensive control system that supports multiple input me
 - **Middle Click + Drag**: Rotate camera
 - **Mouse Wheel**: Zoom in/out
 
-### Flight Controls
-- **Left Click** (while flying): Ascend
-- **Right Click** (while flying): Descend
-- **Right Click + Drag** (while flying): Look around
+### Jump Controls
+- **Hold F**: Increase jump height
+- **Release F**: Begin descent
 
 ### Targeting
 - Hover over enemies to highlight them

@@ -20,7 +20,6 @@ class UIManager {
         this.xpBar = document.getElementById('xp-bar');
         this.messageContainer = document.getElementById('message-container');
         this.jumpAbility = document.getElementById('jump-ability');
-        this.flyAbility = document.getElementById('fly-ability');
         
         // Message queue for skill announcements
         this.messageQueue = [];
@@ -71,59 +70,59 @@ class UIManager {
                 isLongPress = false;
             });
             
-            // Handle mousedown/touchstart for long press
-            this.jumpAbility.addEventListener('mousedown', startLongPress);
-            this.jumpAbility.addEventListener('touchstart', startLongPress);
+            // Handle mousedown/touchstart for hold-to-jump
+            this.jumpAbility.addEventListener('mousedown', startHoldJump);
+            this.jumpAbility.addEventListener('touchstart', startHoldJump);
             
-            // Handle mouseup/touchend to cancel long press
-            this.jumpAbility.addEventListener('mouseup', endLongPress);
-            this.jumpAbility.addEventListener('touchend', endLongPress);
-            this.jumpAbility.addEventListener('mouseleave', endLongPress);
-            this.jumpAbility.addEventListener('touchcancel', endLongPress);
+            // Handle mouseup/touchend to end hold-to-jump
+            this.jumpAbility.addEventListener('mouseup', endHoldJump);
+            this.jumpAbility.addEventListener('touchend', endHoldJump);
+            this.jumpAbility.addEventListener('mouseleave', endHoldJump);
+            this.jumpAbility.addEventListener('touchcancel', endHoldJump);
             
-            // Start long press timer
-            function startLongPress() {
+            // Start hold-to-jump
+            function startHoldJump() {
                 // Clear any existing timer
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                 }
                 
-                // Reset jump count
-                jumpCount = 0;
+                // First trigger a normal jump if not already jumping
+                if (window.game && window.game.hero && !window.game.hero.isJumping) {
+                    window.game.hero.jump();
+                }
                 
                 // Set flag to track if we're handling a long press
                 isLongPress = false;
                 
-                // Start timer for long press
+                // Start timer for hold-to-jump
                 longPressTimer = setTimeout(() => {
                     isLongPress = true;
                     
-                    // Start continuous jumping
+                    // Start hold-to-jump
                     if (window.game && window.game.hero) {
-                        // Set up interval for repeated jumps
-                        const jumpInterval = setInterval(() => {
-                            if (isLongPress && window.game && window.game.hero) {
-                                window.game.hero.jump();
-                                jumpCount++;
-                                
-                                // Stop after a reasonable number of jumps
-                                if (jumpCount >= 5) {
-                                    clearInterval(jumpInterval);
-                                }
-                            } else {
-                                clearInterval(jumpInterval);
-                            }
-                        }, controlsConfig.touch.longPressInterval * 3); // Slower interval for jumps
+                        window.game.hero.startHoldJump();
+                        
+                        // Add visual feedback
+                        this.jumpAbility.classList.add('active');
                     }
                 }, controlsConfig.touch.longPressThreshold);
             }
             
-            // End long press
-            function endLongPress() {
+            // End hold-to-jump
+            function endHoldJump() {
                 // Clear timer
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
+                }
+                
+                // Stop hold-to-jump if it was active
+                if (isLongPress && window.game && window.game.hero) {
+                    window.game.hero.stopHoldJump();
+                    
+                    // Remove visual feedback
+                    this.jumpAbility.classList.remove('active');
                 }
                 
                 // Reset long press state after a short delay
@@ -133,97 +132,17 @@ class UIManager {
             }
         }
         
-        if (this.flyAbility) {
-            // Get controls configuration
-            const controlsConfig = window.configLoader?.getConfig('controlsConfig') || {
-                touch: { 
-                    longPressThreshold: 300,
-                    longPressInterval: 100
-                }
-            };
-            
-            // Track long press state
-            let longPressTimer = null;
-            let isLongPress = false;
-            
-            // Handle click/tap
-            this.flyAbility.addEventListener('click', (event) => {
-                // Prevent default to avoid double triggering
-                event.preventDefault();
-                
-                // Only handle if not a long press
-                if (!isLongPress && window.game && window.game.hero) {
-                    if (window.game.hero.isFlying) {
-                        // If already flying, pressing the button makes you fly lower
-                        window.game.hero.flyLower();
-                        
-                        // Update button text to show current function
-                        this.flyAbility.textContent = "FLY DOWN";
-                        
-                        // If at minimum height, next click will land
-                        if (window.game.hero.flightTargetHeight <= 1) {
-                            this.flyAbility.textContent = "LAND";
-                        }
-                    } else {
-                        // If not flying, start flying
-                        window.game.hero.toggleFlight();
-                        
-                        // Update button text
-                        this.flyAbility.textContent = "FLY DOWN";
-                    }
-                }
-                
-                // Reset long press state
-                isLongPress = false;
-            });
-            
-            // Handle mousedown/touchstart for long press
-            this.flyAbility.addEventListener('mousedown', startLongPress);
-            this.flyAbility.addEventListener('touchstart', startLongPress);
-            
-            // Handle mouseup/touchend to cancel long press
-            this.flyAbility.addEventListener('mouseup', endLongPress);
-            this.flyAbility.addEventListener('touchend', endLongPress);
-            this.flyAbility.addEventListener('mouseleave', endLongPress);
-            this.flyAbility.addEventListener('touchcancel', endLongPress);
-            
-            // Start long press timer
-            function startLongPress(event) {
-                // Clear any existing timer
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                }
-                
-                // Set flag to track if we're handling a long press
-                isLongPress = false;
-                
-                // Start timer for long press
-                longPressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    
-                    // Start continuous height change
-                    if (window.game && window.game.hero && window.game.hero.isFlying) {
-                        // Direction based on current button text
-                        const direction = event.currentTarget.textContent.includes("DOWN") ? -1 : 1;
-                        window.game.hero.startLongPress(direction);
-                    }
-                }, controlsConfig.touch.longPressThreshold);
-            }
-            
-            // End long press
-            function endLongPress() {
-                // Clear timer
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-                
-                // Stop continuous height change
-                if (isLongPress && window.game && window.game.hero) {
-                    window.game.hero.stopLongPress();
+        // Add event listener for wing visibility changes
+        Events.on('wingsVisibilityChanged', (data) => {
+            const wingsElement = document.querySelector('.wings-container');
+            if (wingsElement) {
+                if (data.visible) {
+                    wingsElement.classList.add('visible');
+                } else {
+                    wingsElement.classList.remove('visible');
                 }
             }
-        }
+        });
         
         // Game events
         Events.on('damageTaken', this.updateHealthBar.bind(this));

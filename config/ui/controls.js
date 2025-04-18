@@ -10,8 +10,7 @@ const ControlsConfig = {
             backward: 'ArrowDown',
             left: 'ArrowLeft',
             right: 'ArrowRight',
-            jump: ' ', // Space key
-            fly: 'f'
+            jump: 'f'
         },
         combat: {
             basicAttack: 'a',

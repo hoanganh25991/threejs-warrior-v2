@@ -53,6 +53,14 @@ class InputManager {
             this.handleAbilityKeyPress(key);
         }
         
+        // Handle jump key (f)
+        if (key === 'f' && window.game && window.game.hero) {
+            if (!window.game.hero.isJumping) {
+                window.game.hero.jump();
+            }
+            window.game.hero.startHoldJump();
+        }
+        
         // Emit key press event
         Events.emit('keyPressed', { key: key });
     }
@@ -77,10 +85,16 @@ class InputManager {
     }
     
     handleKeyUp(event) {
-        this.keys[event.key.toLowerCase()] = false;
+        const key = event.key.toLowerCase();
+        this.keys[key] = false;
+        
+        // Handle jump key release (f)
+        if (key === 'f' && window.game && window.game.hero) {
+            window.game.hero.stopHoldJump();
+        }
         
         // Emit key release event
-        Events.emit('keyReleased', { key: event.key.toLowerCase() });
+        Events.emit('keyReleased', { key: key });
     }
     
     handleMouseDown(event) {
@@ -367,13 +381,13 @@ class InputManager {
     }
     
     update() {
-        // Handle WASD movement
+        // Handle arrow key movement
         const moveDirection = new THREE.Vector3(0, 0, 0);
         
-        if (this.isKeyPressed('w')) moveDirection.z -= 1;
-        if (this.isKeyPressed('s')) moveDirection.z += 1;
-        if (this.isKeyPressed('a')) moveDirection.x -= 1;
-        if (this.isKeyPressed('d')) moveDirection.x += 1;
+        if (this.isKeyPressed('arrowup')) moveDirection.z -= 1;
+        if (this.isKeyPressed('arrowdown')) moveDirection.z += 1;
+        if (this.isKeyPressed('arrowleft')) moveDirection.x -= 1;
+        if (this.isKeyPressed('arrowright')) moveDirection.x += 1;
         
         // Only emit movement event if there's actual movement
         if (moveDirection.x !== 0 || moveDirection.z !== 0) {
@@ -382,19 +396,6 @@ class InputManager {
             
             // Emit movement event
             Events.emit('movement', { direction: moveDirection });
-        }
-        
-        // Handle space key for jump/fly
-        if (this.isKeyPressed(' ')) {
-            if (window.game && window.game.hero) {
-                if (window.game.hero.isFlying) {
-                    // When flying, space makes you fly higher
-                    window.game.hero.flyHigher();
-                } else {
-                    // When not flying, space makes you jump
-                    window.game.hero.jump();
-                }
-            }
         }
         
         // Handle ability key presses (number keys 1-6)

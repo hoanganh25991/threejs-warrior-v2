@@ -12,22 +12,31 @@ const JumpConfig = {
     multiJumpHeightIncrease: 1.5, // Height multiplier for each consecutive jump
     maxJumpHeight: 15,          // Maximum height player can reach with multiple jumps
     
+    // Hold-to-jump settings
+    holdJumpEnabled: true,      // Whether holding jump button increases height
+    holdJumpAcceleration: 5,    // Acceleration when holding jump button
+    holdJumpMaxVelocity: 15,    // Maximum velocity when holding jump button
+    holdJumpDecay: 0.8,         // How quickly jump velocity decays when button is released
+    
     // Jump effects
     jumpEffectColor: 0xffffff,  // Color of regular jump effect
     doubleJumpEffectColor: 0x00ffff, // Color of double jump effect
+    holdJumpEffectColor: 0x66ccff, // Color of hold jump effect
     
     // Camera settings during jump
     cameraFollowJump: true,     // Whether camera should follow player during jump
     cameraJumpOffset: 0.7,      // How much camera follows the jump (0-1, where 1 is full follow)
     
-    // Jump on flight settings
-    flightJumpVelocity: 3,      // Initial velocity when jumping while flying
-    flightJumpGravity: 10,      // Gravity applied during flight jump
-    flightJumpHeightIncrease: 0.5, // How much height is added when jumping during flight
-    
     // Sound effects
     jumpSoundEffect: '/System/Library/Sounds/Pop.aiff',
-    landSoundEffect: '/System/Library/Sounds/Blow.aiff'
+    landSoundEffect: '/System/Library/Sounds/Blow.aiff',
+    
+    // Wing effects during high jumps
+    showWings: true,            // Whether to show wings during high jumps
+    wingAppearThreshold: 5,     // Height threshold for wings to appear
+    wingSize: 2,                // Size of wings
+    wingFlapSpeed: 0.5,         // Speed of wing flapping animation
+    wingEffectColor: 0x66ccff   // Color for wing effect
 };
 
 // Make the config available in the global scope for the config loader

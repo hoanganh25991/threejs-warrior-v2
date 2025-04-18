@@ -31,20 +31,18 @@ class Hero {
         this.isMoving = false;
         this.moveDirection = new THREE.Vector3();
         
-        // Jump and flight properties
+        // Jump properties
         this.isJumping = false;
         this.jumpHeight = 0;
         this.jumpVelocity = 0;
         this.jumpStartTime = 0;
         this.jumpCount = 0;
         this.maxJumpCount = window.configLoader?.getConfig('jumpConfig')?.maxJumpCount || 2; // Double jump by default
-        this.isFlying = false;
-        this.flightHeight = 0;
-        this.flightTargetHeight = 0;
+        this.isHoldingJump = false;
+        this.showWings = false;
         
-        // Long press tracking for flight
+        // Long press tracking for jump
         this.longPressActive = false;
-        this.longPressDirection = 0; // 1 for up, -1 for down
         this.longPressInterval = null;
         
         // Combat state
@@ -1631,21 +1629,18 @@ class Hero {
             maxJumpCount: 2,
             multiJumpHeightIncrease: 1.5,
             maxJumpHeight: 15,
+            holdJumpEnabled: true,
+            holdJumpAcceleration: 5,
+            holdJumpMaxVelocity: 15,
+            holdJumpDecay: 0.8,
             jumpEffectColor: 0xffffff,
             doubleJumpEffectColor: 0x00ffff,
+            holdJumpEffectColor: 0x66ccff,
             cameraFollowJump: true,
             cameraJumpOffset: 0.7,
-            flightJumpVelocity: 3,
-            flightJumpGravity: 10,
-            flightJumpHeightIncrease: 0.5
+            showWings: true,
+            wingAppearThreshold: 5
         };
-        
-        // If flying, perform a small flight jump
-        if (this.isFlying) {
-            // Small jump during flight
-            this.flightJump();
-            return;
-        }
         
         // Check if we can jump (either on ground or have double jump available)
         if (!this.isJumping || (this.isJumping && this.jumpCount < jumpConfig.maxJumpCount)) {
@@ -1692,6 +1687,51 @@ class Hero {
             
             Logger.log(`Hero ${this.name} jumped (jump #${this.jumpCount}, velocity: ${this.jumpVelocity.toFixed(1)})`);
         }
+    }
+    
+    // Start holding jump to increase height
+    startHoldJump() {
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            holdJumpEnabled: true,
+            holdJumpAcceleration: 5,
+            holdJumpMaxVelocity: 15,
+            holdJumpEffectColor: 0x66ccff
+        };
+        
+        // Only enable if hold jump is configured
+        if (!jumpConfig.holdJumpEnabled) return;
+        
+        // Set holding jump state
+        this.isHoldingJump = true;
+        
+        // Create hold jump effect
+        this.createJumpEffect(jumpConfig.holdJumpEffectColor);
+        
+        // Show message
+        if (window.game && window.game.ui) {
+            window.game.ui.showMessage("Holding Jump!");
+        }
+        
+        Logger.log(`Hero ${this.name} started holding jump`);
+    }
+    
+    // Stop holding jump
+    stopHoldJump() {
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            holdJumpDecay: 0.8
+        };
+        
+        // Set holding jump state
+        this.isHoldingJump = false;
+        
+        // Apply decay to velocity to create a natural arc
+        if (this.isJumping && this.jumpVelocity > 0) {
+            this.jumpVelocity *= jumpConfig.holdJumpDecay;
+        }
+        
+        Logger.log(`Hero ${this.name} stopped holding jump`);
     }
     
     // Flight jump - small jump while flying
@@ -2281,10 +2321,34 @@ class Hero {
     
     // Update method called every frame
     update(deltaTime) {
-        // Update jumping and flying
-        if (this.isJumping && !this.isFlying) {
-            // Apply gravity to jump velocity
-            this.jumpVelocity -= 20 * deltaTime; // Gravity
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            gravity: 20,
+            holdJumpEnabled: true,
+            holdJumpAcceleration: 5,
+            holdJumpMaxVelocity: 15,
+            showWings: true,
+            wingAppearThreshold: 5
+        };
+        
+        // Update jumping
+        if (this.isJumping) {
+            // If holding jump button, increase velocity up to a maximum
+            if (this.isHoldingJump && jumpConfig.holdJumpEnabled) {
+                // Add upward acceleration when holding jump
+                this.jumpVelocity = Math.min(
+                    this.jumpVelocity + jumpConfig.holdJumpAcceleration * deltaTime,
+                    jumpConfig.holdJumpMaxVelocity
+                );
+                
+                // Create continuous effect for hold-jumping
+                if (Math.random() < 0.1) { // Occasional effect for performance
+                    this.createJumpEffect(jumpConfig.holdJumpEffectColor, 0.5);
+                }
+            } else {
+                // Apply gravity to jump velocity when not holding jump
+                this.jumpVelocity -= jumpConfig.gravity * deltaTime;
+            }
             
             // Update jump height
             this.jumpHeight += this.jumpVelocity * deltaTime;
@@ -2294,6 +2358,7 @@ class Hero {
                 this.jumpHeight = 0;
                 this.isJumping = false;
                 this.jumpVelocity = 0;
+                this.isHoldingJump = false;
                 
                 // Reset jump count when landing
                 this.jumpCount = 0;
@@ -2301,23 +2366,27 @@ class Hero {
                 // Play landing animation if available
                 this.playAnimation('land');
                 setTimeout(() => this.playAnimation('idle'), 300);
+                
+                // Hide wings if they were showing
+                if (this.showWings) {
+                    this.showWings = false;
+                    Events.emit('wingsVisibilityChanged', { visible: false });
+                }
+            }
+            
+            // Show/hide wings based on height
+            if (jumpConfig.showWings) {
+                const shouldShowWings = this.jumpHeight > jumpConfig.wingAppearThreshold;
+                
+                if (shouldShowWings !== this.showWings) {
+                    this.showWings = shouldShowWings;
+                    Events.emit('wingsVisibilityChanged', { visible: shouldShowWings });
+                }
             }
             
             // Update model height
             if (this.model) {
                 this.model.position.y = this.jumpHeight + this.model.geometry.parameters.height / 2;
-            }
-        }
-        
-        // Update flying height
-        if (this.isFlying) {
-            // Smoothly adjust height towards target
-            const heightDiff = this.flightTargetHeight - this.flightHeight;
-            this.flightHeight += heightDiff * 2 * deltaTime; // Smooth transition
-            
-            // Update model height
-            if (this.model) {
-                this.model.position.y = this.flightHeight + this.model.geometry.parameters.height / 2;
             }
         }
         
