@@ -79,6 +79,9 @@ class Hero {
         this.model.castShadow = true;
         this.model.receiveShadow = true;
         
+        // Create wings (initially hidden)
+        this.createWings();
+        
         // Add to scene
         this.scene.add(this.model);
         
@@ -88,6 +91,252 @@ class Hero {
         Logger.log(`Hero ${this.name} initialized`);
         
         return this;
+    }
+    
+    // Create 3D wings for the hero
+    createWings() {
+        // Get wing configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            wingSize: 2,
+            wingEffectColor: 0x66ccff
+        };
+        
+        // Create wing group to hold both wings
+        this.wings = new THREE.Group();
+        this.model.add(this.wings);
+        
+        // Position wings at the back of the hero
+        this.wings.position.set(0, 0, -0.2);
+        
+        // Create left wing
+        const leftWingGeometry = new THREE.BufferGeometry();
+        const leftWingShape = this.createWingShape(flightConfig.wingSize);
+        const leftWingPoints = leftWingShape.getPoints(12);
+        const leftWingVertices = [];
+        
+        // Create wing vertices (extrude the shape slightly)
+        for (let i = 0; i < leftWingPoints.length; i++) {
+            const point = leftWingPoints[i];
+            leftWingVertices.push(point.x, point.y, 0);
+            leftWingVertices.push(point.x, point.y, 0.1);
+        }
+        
+        // Create wing faces (triangles)
+        const leftWingIndices = [];
+        for (let i = 0; i < leftWingPoints.length - 1; i++) {
+            const a = i * 2;
+            const b = a + 1;
+            const c = a + 2;
+            const d = a + 3;
+            
+            // Create two triangles for each quad
+            leftWingIndices.push(a, b, c);
+            leftWingIndices.push(c, b, d);
+        }
+        
+        // Set geometry attributes
+        leftWingGeometry.setIndex(leftWingIndices);
+        leftWingGeometry.setAttribute('position', new THREE.Float32BufferAttribute(leftWingVertices, 3));
+        leftWingGeometry.computeVertexNormals();
+        
+        // Create wing material with transparency
+        const wingMaterial = new THREE.MeshPhongMaterial({
+            color: flightConfig.wingEffectColor,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide,
+            emissive: flightConfig.wingEffectColor,
+            emissiveIntensity: 0.3,
+            shininess: 50
+        });
+        
+        // Create left wing mesh
+        const leftWing = new THREE.Mesh(leftWingGeometry, wingMaterial);
+        leftWing.position.set(-0.5, 0, 0);
+        this.wings.add(leftWing);
+        
+        // Create right wing (mirror of left wing)
+        const rightWing = leftWing.clone();
+        rightWing.position.set(0.5, 0, 0);
+        rightWing.scale.x = -1; // Mirror along X axis
+        this.wings.add(rightWing);
+        
+        // Initially hide wings
+        this.wings.visible = false;
+        
+        // Store references for animation
+        this.leftWing = leftWing;
+        this.rightWing = rightWing;
+        
+        Logger.log(`Created wings for hero ${this.name}`);
+    }
+    
+    // Create a wing shape
+    createWingShape(size) {
+        const shape = new THREE.Shape();
+        
+        // Start at the wing base
+        shape.moveTo(0, 0);
+        
+        // Draw the wing outline (curved shape)
+        shape.bezierCurveTo(
+            size * 0.2, size * 0.3,  // Control point 1
+            size * 0.4, size * 0.8,  // Control point 2
+            size * 0.5, size        // End point
+        );
+        
+        // Draw the wing tip
+        shape.bezierCurveTo(
+            size * 0.7, size * 0.9,  // Control point 1
+            size * 0.9, size * 0.5,  // Control point 2
+            size, size * 0.2        // End point
+        );
+        
+        // Draw the bottom edge back to the start
+        shape.bezierCurveTo(
+            size * 0.8, size * 0.1,  // Control point 1
+            size * 0.3, -size * 0.1, // Control point 2
+            0, 0                    // End point
+        );
+        
+        return shape;
+    }
+    
+    // Animate wings based on direction and intensity
+    animateWings(direction, intensity) {
+        if (!this.wings || !this.leftWing || !this.rightWing) return;
+        
+        // Get wing configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            wingFlapSpeed: 0.5,
+            wingEffectColor: 0x66ccff,
+            upwardEffectColor: 0x00ffff,
+            downwardEffectColor: 0xff9900
+        };
+        
+        // Set wing color based on direction
+        const wingColor = direction === 'up' ? 
+            flightConfig.upwardEffectColor : 
+            flightConfig.downwardEffectColor;
+        
+        // Update wing material color
+        if (this.leftWing.material) {
+            this.leftWing.material.color.setHex(wingColor);
+            this.leftWing.material.emissive.setHex(wingColor);
+            this.leftWing.material.emissiveIntensity = 0.3 + intensity * 0.7; // Increase glow with intensity
+            this.leftWing.material.opacity = 0.5 + intensity * 0.5; // Increase opacity with intensity
+        }
+        
+        if (this.rightWing.material) {
+            this.rightWing.material.color.setHex(wingColor);
+            this.rightWing.material.emissive.setHex(wingColor);
+            this.rightWing.material.emissiveIntensity = 0.3 + intensity * 0.7;
+            this.rightWing.material.opacity = 0.5 + intensity * 0.5;
+        }
+        
+        // Animate wing flapping
+        const flapSpeed = flightConfig.wingFlapSpeed * (1 + intensity);
+        const flapAmplitude = 0.2 + intensity * 0.3; // Flap more intensely with higher intensity
+        
+        // Clear any existing animation
+        if (this.wingAnimationId) {
+            cancelAnimationFrame(this.wingAnimationId);
+        }
+        
+        // Start time for animation
+        const startTime = performance.now();
+        
+        // Animate wings
+        const animate = (time) => {
+            const elapsed = (time - startTime) / 1000; // Convert to seconds
+            const flapAngle = Math.sin(elapsed * flapSpeed * Math.PI * 2) * flapAmplitude;
+            
+            // Apply rotation to wings
+            this.leftWing.rotation.z = flapAngle;
+            this.rightWing.rotation.z = -flapAngle; // Mirror rotation for right wing
+            
+            // Continue animation
+            this.wingAnimationId = requestAnimationFrame(animate);
+        };
+        
+        // Start animation
+        this.wingAnimationId = requestAnimationFrame(animate);
+    }
+    
+    // Create visual effect for wing flapping
+    createWingFlapEffect(color, intensity) {
+        // Skip if wings aren't visible
+        if (!this.wings || !this.wings.visible) return;
+        
+        // Create particles at wing positions
+        const particleCount = Math.floor(5 + intensity * 10); // More particles with higher intensity
+        const particleSize = 0.05 + intensity * 0.1;
+        const particleLifetime = 500 + intensity * 500; // Longer lifetime with higher intensity
+        
+        // Create particles for both wings
+        this.createWingParticles(this.leftWing.position, color, particleCount, particleSize, particleLifetime);
+        this.createWingParticles(this.rightWing.position, color, particleCount, particleSize, particleLifetime);
+    }
+    
+    // Create particles at wing position
+    createWingParticles(wingPosition, color, count, size, lifetime) {
+        // Convert wing local position to world position
+        const worldPosition = new THREE.Vector3();
+        worldPosition.copy(wingPosition);
+        this.model.localToWorld(worldPosition);
+        
+        // Create particles
+        for (let i = 0; i < count; i++) {
+            // Create particle geometry and material
+            const geometry = new THREE.SphereGeometry(size * (0.5 + Math.random() * 0.5), 4, 4);
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            // Create particle mesh
+            const particle = new THREE.Mesh(geometry, material);
+            
+            // Position at wing position with slight randomization
+            particle.position.set(
+                worldPosition.x + (Math.random() - 0.5) * 0.5,
+                worldPosition.y + (Math.random() - 0.5) * 0.5,
+                worldPosition.z + (Math.random() - 0.5) * 0.5
+            );
+            
+            // Add to scene
+            this.scene.add(particle);
+            
+            // Animate and remove after lifetime
+            const startTime = performance.now();
+            
+            const animate = (time) => {
+                const elapsed = time - startTime;
+                const progress = Math.min(1, elapsed / lifetime);
+                
+                if (progress < 1) {
+                    // Move particle downward and outward
+                    particle.position.y -= 0.01;
+                    particle.position.x += (Math.random() - 0.5) * 0.02;
+                    particle.position.z += (Math.random() - 0.5) * 0.02;
+                    
+                    // Fade out
+                    particle.material.opacity = 0.7 * (1 - progress);
+                    
+                    // Continue animation
+                    requestAnimationFrame(animate);
+                } else {
+                    // Remove particle
+                    this.scene.remove(particle);
+                    particle.geometry.dispose();
+                    particle.material.dispose();
+                }
+            };
+            
+            // Start animation
+            requestAnimationFrame(animate);
+        }
     }
     
     // Get a color based on hero type
@@ -2331,6 +2580,22 @@ class Hero {
             wingAppearThreshold: 5
         };
         
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            initialHeight: 5,
+            maxHeight: 20,
+            minHeight: 1,
+            heightChangeRate: {
+                keyPress: 2,
+                longPress: 1.5,
+                mouseWheel: 1
+            },
+            showWings: true,
+            wingSize: 2,
+            wingFlapSpeed: 0.5,
+            wingEffectColor: 0x66ccff
+        };
+        
         // Update jumping
         if (this.isJumping) {
             // If holding jump button, increase velocity up to a maximum
@@ -2345,9 +2610,41 @@ class Hero {
                 if (Math.random() < 0.1) { // Occasional effect for performance
                     this.createJumpEffect(jumpConfig.holdJumpEffectColor, 0.5);
                 }
+                
+                // Show wings when holding jump and going up
+                if (jumpConfig.showWings && this.jumpVelocity > 0) {
+                    if (!this.showWings) {
+                        this.showWings = true;
+                        // Show 3D wings
+                        if (this.wings) {
+                            this.wings.visible = true;
+                            this.animateWings('up', Math.min(1.0, this.jumpVelocity / jumpConfig.holdJumpMaxVelocity));
+                        }
+                        // Also emit event for UI wings (backward compatibility)
+                        Events.emit('wingsVisibilityChanged', { 
+                            visible: true,
+                            direction: 'up',
+                            intensity: Math.min(1.0, this.jumpVelocity / jumpConfig.holdJumpMaxVelocity)
+                        });
+                    }
+                }
             } else {
                 // Apply gravity to jump velocity when not holding jump
                 this.jumpVelocity -= jumpConfig.gravity * deltaTime;
+                
+                // Update wing effect when falling
+                if (this.showWings && this.jumpVelocity < 0) {
+                    // Animate 3D wings
+                    if (this.wings && this.wings.visible) {
+                        this.animateWings('down', Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity));
+                    }
+                    // Also emit event for UI wings (backward compatibility)
+                    Events.emit('wingsVisibilityChanged', { 
+                        visible: true,
+                        direction: 'down',
+                        intensity: Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity)
+                    });
+                }
             }
             
             // Update jump height
@@ -2370,6 +2667,11 @@ class Hero {
                 // Hide wings if they were showing
                 if (this.showWings) {
                     this.showWings = false;
+                    // Hide 3D wings
+                    if (this.wings) {
+                        this.wings.visible = false;
+                    }
+                    // Also emit event for UI wings (backward compatibility)
                     Events.emit('wingsVisibilityChanged', { visible: false });
                 }
             }
@@ -2380,13 +2682,79 @@ class Hero {
                 
                 if (shouldShowWings !== this.showWings) {
                     this.showWings = shouldShowWings;
-                    Events.emit('wingsVisibilityChanged', { visible: shouldShowWings });
+                    
+                    // Update 3D wings visibility
+                    if (this.wings) {
+                        this.wings.visible = shouldShowWings;
+                        if (shouldShowWings) {
+                            this.animateWings(
+                                this.jumpVelocity > 0 ? 'up' : 'down', 
+                                Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity)
+                            );
+                        }
+                    }
+                    
+                    // Also emit event for UI wings (backward compatibility)
+                    Events.emit('wingsVisibilityChanged', { 
+                        visible: shouldShowWings,
+                        direction: this.jumpVelocity > 0 ? 'up' : 'down',
+                        intensity: Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity)
+                    });
                 }
             }
             
             // Update model height
             if (this.model) {
                 this.model.position.y = this.jumpHeight + this.model.geometry.parameters.height / 2;
+            }
+        }
+        
+        // Update flight
+        if (this.isFlying) {
+            // Smoothly move towards target flight height
+            const currentHeight = this.model.position.y - this.model.geometry.parameters.height / 2;
+            const heightDifference = this.flightTargetHeight - currentHeight;
+            
+            // Apply smooth movement towards target height
+            if (Math.abs(heightDifference) > 0.01) {
+                const heightStep = Math.sign(heightDifference) * Math.min(Math.abs(heightDifference), 5 * deltaTime);
+                const newHeight = currentHeight + heightStep;
+                
+                // Update model height
+                if (this.model) {
+                    this.model.position.y = newHeight + this.model.geometry.parameters.height / 2;
+                }
+                
+                // Show wings and update wing effect based on direction
+                if (flightConfig.showWings) {
+                    if (!this.showWings) {
+                        this.showWings = true;
+                    }
+                    
+                    // Update 3D wings
+                    if (this.wings) {
+                        this.wings.visible = true;
+                        this.animateWings(
+                            heightStep > 0 ? 'up' : 'down',
+                            Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime))
+                        );
+                    }
+                    
+                    // Update wing effect based on direction (UI wings)
+                    Events.emit('wingsVisibilityChanged', { 
+                        visible: true,
+                        direction: heightStep > 0 ? 'up' : 'down',
+                        intensity: Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime))
+                    });
+                    
+                    // Create occasional particle effect for wing flapping
+                    if (Math.random() < 0.05) {
+                        const effectColor = heightStep > 0 ? 
+                            flightConfig.upwardEffectColor : 
+                            flightConfig.downwardEffectColor;
+                        this.createWingFlapEffect(effectColor, Math.abs(heightStep) / (5 * deltaTime));
+                    }
+                }
             }
         }
         

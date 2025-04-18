@@ -31,8 +31,8 @@ const FlightConfig = {
     wingFlapSpeed: 0.5,         // Speed of wing flapping animation
     
     // Sound effects
-    takeoffSoundEffect: '/System/Library/Sounds/Submarine.aiff',
-    landingSoundEffect: '/System/Library/Sounds/Basso.aiff',
+    takeoffSoundEffect: 'sounds/submarine.mp3',
+    landingSoundEffect: 'sounds/basso.mp3',
     flightLoopSoundEffect: null // Path to looping sound during flight
 };
 
