@@ -15,6 +15,7 @@ app.scripts.add('attributeSystem', '/js/systems/attribute-system.js');
 app.scripts.add('abilitySystem', '/js/systems/ability-system.js');
 app.scripts.add('experienceSystem', '/js/systems/experience-system.js');
 app.scripts.add('talentSystem', '/js/systems/talent-system.js');
+app.scripts.add('inventorySystem', '/js/systems/inventory-system.js');
 
 // Entities
 app.scripts.add('hero', '/js/entities/hero.js');
@@ -32,6 +33,7 @@ app.assets.add(new pc.Asset('storm-spirit-talents.js', 'script', { url: '/js/ent
 // UI
 app.scripts.add('heroSelection', '/js/ui/hero-selection.js');
 app.scripts.add('talentUI', '/js/ui/talent-ui.js');
+app.scripts.add('inventoryUI', '/js/ui/inventory-ui.js');
 
 // Create camera entity
 const camera = new pc.Entity('camera');
@@ -112,6 +114,8 @@ hero.addComponent('script');
 hero.script.create('attributeSystem');
 hero.script.create('abilitySystem');
 hero.script.create('experienceSystem');
+hero.script.create('talentSystem');
+hero.script.create('inventorySystem');
 hero.script.create('axe'); // This will also create the 'hero' script
 
 app.root.addChild(hero);
@@ -266,6 +270,113 @@ CharacterController.prototype.onKeyDown = function(event) {
             this.entity.script.hero.heal(50);
         }
     }
+    
+    // Test key for adding items to inventory (for development purposes)
+    if (event.key === pc.KEY_G) {
+        if (this.entity.script.inventorySystem) {
+            this.addTestItems();
+        }
+    }
+};
+
+// Add test items to inventory
+CharacterController.prototype.addTestItems = function() {
+    const inventorySystem = this.entity.script.inventorySystem;
+    if (!inventorySystem) return;
+    
+    // Create test items
+    const testItems = [
+        {
+            id: 'health_potion',
+            name: 'Health Potion',
+            description: 'Restores 100 health points.',
+            type: 'consumable',
+            slot: null,
+            stackable: true,
+            count: 3,
+            value: 50,
+            effect: {
+                type: 'heal',
+                amount: 100
+            }
+        },
+        {
+            id: 'mana_potion',
+            name: 'Mana Potion',
+            description: 'Restores 75 mana points.',
+            type: 'consumable',
+            slot: null,
+            stackable: true,
+            count: 2,
+            value: 40,
+            effect: {
+                type: 'mana',
+                amount: 75
+            }
+        },
+        {
+            id: 'strength_sword',
+            name: 'Sword of Strength',
+            description: 'A powerful sword that increases strength.',
+            type: 'weapon',
+            slot: 'weapon',
+            stackable: false,
+            value: 500,
+            attributes: {
+                strength: 10,
+                physicalDamage: 25
+            }
+        },
+        {
+            id: 'magic_staff',
+            name: 'Staff of Arcane Power',
+            description: 'A staff imbued with magical energy.',
+            type: 'weapon',
+            slot: 'weapon',
+            stackable: false,
+            value: 450,
+            attributes: {
+                intelligence: 15,
+                magicalDamage: 30
+            }
+        },
+        {
+            id: 'leather_armor',
+            name: 'Leather Armor',
+            description: 'Light armor that provides basic protection.',
+            type: 'armor',
+            slot: 'chest',
+            stackable: false,
+            value: 300,
+            attributes: {
+                vitality: 5,
+                agility: 3
+            }
+        },
+        {
+            id: 'magic_amulet',
+            name: 'Amulet of Wisdom',
+            description: 'An ancient amulet that enhances magical abilities.',
+            type: 'accessory',
+            slot: 'accessory1',
+            stackable: false,
+            value: 350,
+            attributes: {
+                intelligence: 8,
+                spirit: 5
+            }
+        }
+    ];
+    
+    // Add items to inventory
+    for (const item of testItems) {
+        inventorySystem.addItem(item);
+    }
+    
+    // Add some gold
+    inventorySystem.addGold(1000);
+    
+    console.log('Added test items to inventory');
 };
 
 // Add the character controller script to the hero
@@ -333,6 +444,7 @@ const createStatsUI = function() {
             statsText += `Q/W/E/R: Abilities\n`;
             statsText += `TAB: Hero Selection\n`;
             statsText += `T: Talent Tree\n`;
+            statsText += `I: Inventory\n`;
             statsText += `X: Gain XP (test)\n`;
             statsText += `Z: Take Damage (test)\n`;
             statsText += `H: Heal (test)\n`;
@@ -356,6 +468,64 @@ const talentUI = new pc.Entity('talentUI');
 talentUI.addComponent('script');
 talentUI.script.create('talentUI');
 app.root.addChild(talentUI);
+
+// Create inventory UI
+const inventoryUI = new pc.Entity('inventoryUI');
+inventoryUI.addComponent('script');
+inventoryUI.script.create('inventoryUI');
+app.root.addChild(inventoryUI);
+
+// Create a progress log file
+const createProgressLog = function() {
+    // Log initial implementation progress
+    const progressLog = `
+# Implementation Progress Log
+
+## ${new Date().toISOString()}
+
+### Initial Implementation
+- Created attribute system based on the requirements in progression.md
+- Implemented hero base class with attribute integration
+- Added Axe as the first playable hero
+- Implemented ability system framework
+- Added experience and leveling system
+- Updated main app to integrate all systems
+- Added basic UI for displaying hero stats
+
+### Next Steps
+- Implement more heroes (Crystal Maiden, Lich, Storm Spirit)
+- Create proper ability implementations
+- Add talent system
+- Implement inventory and item system
+- Create proper game environments and enemies
+- Add quest system
+
+### Current Functionality
+- Character movement with WASD
+- Camera control with mouse
+- Basic attribute system with derived statistics
+- Experience gain and leveling (press X to test)
+- Health and mana management (press Z to take damage, H to heal)
+- Ability framework (press Q/W/E/R to use abilities)
+`;
+
+    return progressLog;
+};
+
+// Create a function to save the progress log
+const saveProgressLog = function(content) {
+    console.log("Progress log created:");
+    console.log(content);
+    
+    // In a real implementation, this would save to a file
+    // For now, we'll just log it to the console
+    
+    // Note: In a browser environment, we can't directly write to the file system
+    // This would need to be handled by a server-side component
+};
+
+// Save the progress log
+saveProgressLog(createProgressLog());
 
 // Start the application
 app.start();

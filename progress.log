@@ -147,12 +147,57 @@
 - Talent point allocation at specific level thresholds
 - Talent effects that modify hero attributes, abilities, and gameplay
 
+## Phase 4: Inventory System Implementation
+
+### Date: 2024-06-15
+
+#### Completed Tasks
+- Implemented inventory system with item management
+- Created inventory UI for viewing and managing items
+- Added equipment system with different equipment slots
+- Integrated inventory system with existing hero and attribute systems
+- Added test items for development and testing
+
+#### Implementation Details
+
+1. **Inventory System Core**
+   - Created a grid-based inventory system with 24 slots (6x4 grid)
+   - Implemented item stacking for consumable items
+   - Added gold as a currency
+   - Created item movement and management functionality
+   - Implemented equipment slots for different item types
+
+2. **Item Types and Effects**
+   - **Consumables**: Items that can be used for immediate effects (potions, scrolls)
+   - **Equipment**: Weapons, armor, and accessories that provide attribute bonuses
+   - **Quest Items**: Special items related to quests (placeholder for future implementation)
+   - **Materials**: Resources for crafting (placeholder for future implementation)
+
+3. **Equipment System**
+   - Implemented 9 equipment slots: weapon, offhand, head, chest, hands, legs, feet, and two accessory slots
+   - Added attribute bonuses from equipped items
+   - Created equip/unequip functionality with inventory integration
+   - Implemented item requirements based on hero attributes
+
+4. **Inventory UI**
+   - Created a comprehensive UI for viewing and managing inventory
+   - Added equipment display with visual indicators
+   - Implemented item details panel with descriptions and stats
+   - Added keyboard shortcut (I) to access the inventory
+
+#### Current Functionality
+- All previous functionality
+- Inventory system with item management
+- Equipment system with attribute bonuses
+- Item usage for consumables
+- Test items can be added with the G key
+
 #### Next Steps
 - Create proper ability visual effects
-- Add inventory and item system
 - Implement proper game environments and enemies
 - Add quest system
 - Create proper hero models and animations
+- Implement crafting system
 
 #### Technical Debt
 - Need to implement proper asset loading for hero models and textures
@@ -161,3 +206,4 @@
 - Need to implement proper collision detection for abilities
 - Progress saving/loading not yet implemented
 - Talent effects need better integration with gameplay mechanics
+- Item icons and visual representation needed
