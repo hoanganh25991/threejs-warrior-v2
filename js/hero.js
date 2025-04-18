@@ -2003,8 +2003,8 @@ class Hero {
             return false;
         }
         
-        if (ability.isOnCooldown) {
-            Logger.log(`${ability.name} is on cooldown`);
+        if (ability.cooldown > 0) {
+            Logger.log(`${ability.name} is on cooldown: ${ability.cooldown.toFixed(1)}s remaining`);
             return false;
         }
         
@@ -2020,17 +2020,13 @@ class Hero {
         // Emit mana used event
         Events.emit('manaUsed', { hero: this, amount: ability.manaCost });
         
-        // Start cooldown
-        ability.startCooldown();
-        
-        // Emit ability used event
-        Events.emit('abilityUsed', { hero: this, ability });
+        // Execute ability function and set cooldown internally
+        const result = ability.use();
         
         // Show skill name shout out
         this.showSkillShoutOut(ability.name);
         
-        // Execute ability function
-        return ability.use();
+        return result;
     }
     
     // Show a visual shout out when a skill is cast

@@ -56,3 +56,5 @@
 [2024-05-09T11:00:00.000Z] Fixed TypeError in hero.js: corrected wing particle effect by using leftWingGroup and rightWingGroup instead of undefined leftWing and rightWing
 [2024-05-10T09:00:00.000Z] Fixed error: "Config not found in global scope: controlsConfig" by explicitly assigning ControlsConfig to the window object
 [2024-05-10T09:15:00.000Z] Created documentation for the controls configuration global scope fix
+[2024-05-10T10:00:00.000Z] Fixed TypeError: ability.startCooldown is not a function by properly using the Ability class's use() method
+[2024-05-10T10:15:00.000Z] Created documentation for the ability.startCooldown fix
