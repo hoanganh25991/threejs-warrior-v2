@@ -29,16 +29,18 @@ const SkillsConfig = {
         manaCost: 10,
         cooldown: 8,
         passive: false,
-        description: 'Taunts nearby enemies and increases armor',
+        description: 'Taunts nearby enemies and increases armor while entering a battle rage',
         effects: [
             { type: 'taunt', radius: 5, duration: 3 },
-            { type: 'buff', stat: 'armor', value: 10, duration: 3 }
+            { type: 'buff', stat: 'armor', value: 15, duration: 3 },
+            { type: 'buff', stat: 'attackSpeed', value: 0.3, duration: 3 },
+            { type: 'visual-effect', effect: 'rage_aura', duration: 3 }
         ],
-        scaling: { strength: 0.2 },
+        scaling: { strength: 0.25 },
         targeting: { type: 'self', radius: 5 },
         animation: 'axe_call',
         sound: 'axe_call',
-        visuals: { effect: 'red_pulse', scale: 1.0 }
+        visuals: { effect: 'red_pulse', scale: 1.2, particleColor: 0xff0000 }
     },
     
     'battle-hunger': {
@@ -48,16 +50,18 @@ const SkillsConfig = {
         manaCost: 15,
         cooldown: 5,
         passive: false,
-        description: 'Damages an enemy over time until they kill a unit',
+        description: 'Enrages an enemy with hunger for battle, causing damage over time and granting Axe movement speed if the target doesn\'t kill a unit',
         effects: [
             { type: 'damage-over-time', damageType: 'physical', value: 5, interval: 1, duration: 10 },
-            { type: 'debuff', stat: 'movementSpeed', value: -1, duration: 10 }
+            { type: 'debuff', stat: 'movementSpeed', value: -1, duration: 10 },
+            { type: 'debuff', stat: 'attackDamage', value: -5, duration: 10 },
+            { type: 'buff', stat: 'movementSpeed', value: 1, duration: 10, target: 'self', condition: 'while-debuff-active' }
         ],
-        scaling: { strength: 0.15 },
+        scaling: { strength: 0.2 },
         targeting: { type: 'single-target', range: 8 },
         animation: 'axe_hunger',
         sound: 'axe_hunger',
-        visuals: { effect: 'red_debuff', attachToTarget: true }
+        visuals: { effect: 'red_debuff', attachToTarget: true, particleColor: 0xcc0000 }
     },
     
     'counter-helix': {
@@ -67,15 +71,24 @@ const SkillsConfig = {
         manaCost: 0,
         cooldown: 0.5,
         passive: true,
-        description: 'Automatically counterattacks when hit',
+        description: 'When attacked, Axe performs a furious counterattack, dealing damage to all nearby enemies and gaining a stack of Berserker\'s Fury',
         effects: [
-            { type: 'damage', damageType: 'physical', value: 15, radius: 3 }
+            { type: 'damage', damageType: 'physical', value: 15, radius: 3 },
+            { 
+                type: 'buff', 
+                stat: 'attackDamage', 
+                value: 2, 
+                duration: 5, 
+                maxStacks: 5, 
+                stackable: true,
+                target: 'self'
+            }
         ],
-        scaling: { strength: 0.3 },
+        scaling: { strength: 0.35 },
         targeting: { type: 'passive', radius: 3 },
         animation: 'axe_helix',
         sound: 'axe_helix',
-        visuals: { effect: 'spin_attack', scale: 1.0 }
+        visuals: { effect: 'spin_attack', scale: 1.0, particleColor: 0xff3300 }
     },
     
     'culling-blade': {
@@ -85,21 +98,39 @@ const SkillsConfig = {
         manaCost: 25,
         cooldown: 10,
         passive: false,
-        description: 'Instantly kills low-health enemies',
+        description: 'Axe delivers a killing blow that instantly executes low-health enemies. On successful execution, Axe and nearby allies gain attack and movement speed',
         effects: [
             { 
                 type: 'conditional-damage', 
                 condition: { type: 'health-below', threshold: 30 },
                 success: { type: 'execute' },
-                failure: { type: 'damage', damageType: 'physical', value: 40 }
+                failure: { type: 'damage', damageType: 'physical', value: 50 }
             },
-            { type: 'buff', stat: 'movementSpeed', value: 2, duration: 4, condition: 'on-kill' }
+            { 
+                type: 'buff', 
+                stat: 'movementSpeed', 
+                value: 3, 
+                duration: 6, 
+                condition: 'on-kill',
+                radius: 5,
+                affectsAllies: true
+            },
+            { 
+                type: 'buff', 
+                stat: 'attackSpeed', 
+                value: 0.4, 
+                duration: 6, 
+                condition: 'on-kill',
+                radius: 5,
+                affectsAllies: true
+            },
+            { type: 'cooldown-reset', condition: 'on-kill' }
         ],
-        scaling: { strength: 0.5 },
+        scaling: { strength: 0.6 },
         targeting: { type: 'single-target', range: 3 },
         animation: 'axe_cull',
         sound: 'axe_cull',
-        visuals: { effect: 'execute_slash', scale: 1.5 }
+        visuals: { effect: 'execute_slash', scale: 1.8, particleColor: 0xff0000 }
     },
     
     'war-cry': {
@@ -109,34 +140,43 @@ const SkillsConfig = {
         manaCost: 15,
         cooldown: 12,
         passive: false,
-        description: 'Increases armor and movement speed',
+        description: 'Axe lets out a mighty battle cry, increasing armor and movement speed while striking fear into enemies',
         effects: [
-            { type: 'buff', stat: 'armor', value: 8, duration: 6 },
-            { type: 'buff', stat: 'movementSpeed', value: 1.5, duration: 6 }
+            { type: 'buff', stat: 'armor', value: 10, duration: 6 },
+            { type: 'buff', stat: 'movementSpeed', value: 2, duration: 6 },
+            { type: 'buff', stat: 'damageReduction', value: 0.15, duration: 6 },
+            { type: 'debuff', stat: 'attackDamage', value: -5, duration: 3, radius: 6, affectsEnemies: true }
         ],
-        scaling: { strength: 0.2 },
-        targeting: { type: 'self', radius: 0 },
+        scaling: { strength: 0.25 },
+        targeting: { type: 'self', radius: 6 },
         animation: 'axe_warcry',
         sound: 'axe_warcry',
-        visuals: { effect: 'buff_aura', scale: 1.0 }
+        visuals: { effect: 'buff_aura', scale: 1.2, particleColor: 0xcc3300 }
     },
     
-    'taunt': {
-        id: 'taunt',
-        name: 'Taunt',
-        type: 'utility',
+    'berserkers-rage': {
+        id: 'berserkers-rage',
+        name: 'Berserker\'s Rage',
+        type: 'toggle',
         manaCost: 5,
         cooldown: 5,
         passive: false,
-        description: 'Taunts enemies, making them attack you',
+        description: 'Axe enters a frenzied rage, sacrificing health for increased damage and attack speed',
         effects: [
-            { type: 'taunt', radius: 4, duration: 2 }
+            { type: 'toggle-effect', 
+              activeEffects: [
+                { type: 'buff', stat: 'attackDamage', value: 15, duration: -1 },
+                { type: 'buff', stat: 'attackSpeed', value: 0.3, duration: -1 },
+                { type: 'health-drain', perSecond: 2, continuous: true }
+              ],
+              deactivateOn: { type: 'health-below', threshold: 15 }
+            }
         ],
-        scaling: {},
-        targeting: { type: 'self', radius: 4 },
-        animation: 'axe_taunt',
-        sound: 'axe_taunt',
-        visuals: { effect: 'taunt_emote', scale: 1.0 }
+        scaling: { strength: 0.3 },
+        targeting: { type: 'self' },
+        animation: 'axe_rage',
+        sound: 'axe_rage',
+        visuals: { effect: 'rage_aura', scale: 1.0, particleColor: 0xff0000, persistent: true }
     },
     
     // ===== CRYSTAL MAIDEN SKILLS =====
