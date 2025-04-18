@@ -41,7 +41,12 @@ const JumpConfig = {
     
     // Flight transition
     flightTransitionThreshold: 5, // Height threshold to transition to flight mode
-    flightTransitionEnabled: true // Whether to automatically transition to flight mode
+    flightTransitionEnabled: true, // Whether to automatically transition to flight mode
+    
+    // Slow flight settings
+    slowFlightThreshold: 5, // Height threshold for slow flight mode
+    slowFlightAcceleration: 1.0, // Reduced acceleration when in slow flight mode (fighting gravity)
+    slowFlightMaxVelocity: 5 // Maximum velocity when in slow flight mode
 };
 
 // Make the config available in the global scope for the config loader

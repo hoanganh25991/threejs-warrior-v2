@@ -598,8 +598,95 @@ class Hero {
         Logger.log(`Created wing closing effect as hero landed`);
     }
     
+    // Create a special effect when transitioning to slow flight mode
+    createWingTransitionEffect(color) {
+        // Skip if wings aren't visible
+        if (!this.wings || !this.wings.visible || !this.leftWingGroup || !this.rightWingGroup) return;
+        
+        // Create a special effect for wing transition to slow flight
+        const particleCount = 40; // More particles for a dramatic effect
+        const particleSize = 0.08;
+        const particleLifetime = 1500; // Longer lifetime for the effect to be visible
+        
+        // Create a spiral of particles from both wings
+        this.createWingParticles(this.leftWingGroup.position, color, particleCount, particleSize, particleLifetime, false, true);
+        this.createWingParticles(this.rightWingGroup.position, color, particleCount, particleSize, particleLifetime, false, true);
+        
+        // Create a glow effect around the hero
+        this.createGlowEffect(color, 2.0, 1000);
+        
+        Logger.log(`Created wing transition effect for slow flight mode`);
+    }
+    
+    // Create a pulse effect for wings when already in slow flight mode
+    createWingPulseEffect(color) {
+        // Skip if wings aren't visible
+        if (!this.wings || !this.wings.visible || !this.leftWingGroup || !this.rightWingGroup) return;
+        
+        // Create a pulsing glow effect
+        this.createGlowEffect(color, 1.5, 800);
+        
+        // Create subtle particles from wings
+        const particleCount = 15;
+        const particleSize = 0.05;
+        const particleLifetime = 800;
+        
+        // Create particles with a gentle outward motion
+        this.createWingParticles(this.leftWingGroup.position, color, particleCount, particleSize, particleLifetime);
+        this.createWingParticles(this.rightWingGroup.position, color, particleCount, particleSize, particleLifetime);
+        
+        Logger.log(`Created wing pulse effect for slow flight mode`);
+    }
+    
+    // Create a glow effect around the hero
+    createGlowEffect(color, size = 1.0, duration = 1000) {
+        // Create a sphere geometry for the glow
+        const geometry = new THREE.SphereGeometry(this.radius * size, 16, 16);
+        const material = new THREE.MeshBasicMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        
+        // Create the glow mesh
+        const glow = new THREE.Mesh(geometry, material);
+        glow.position.copy(this.model.position);
+        
+        // Add to scene
+        this.scene.add(glow);
+        
+        // Animate the glow
+        const startTime = performance.now();
+        
+        const animateGlow = (time) => {
+            const elapsed = time - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            
+            if (progress < 1) {
+                // Pulse the glow
+                const scale = 1 + 0.2 * Math.sin(progress * Math.PI * 4);
+                glow.scale.set(scale, scale, scale);
+                
+                // Fade out gradually
+                glow.material.opacity = 0.3 * (1 - progress);
+                
+                // Continue animation
+                requestAnimationFrame(animateGlow);
+            } else {
+                // Remove glow
+                this.scene.remove(glow);
+                glow.geometry.dispose();
+                glow.material.dispose();
+            }
+        };
+        
+        // Start animation
+        requestAnimationFrame(animateGlow);
+    }
+    
     // Create particles at wing position
-    createWingParticles(wingPosition, color, count, size, lifetime, burstEffect = false) {
+    createWingParticles(wingPosition, color, count, size, lifetime, burstEffect = false, spiralEffect = false) {
         // Convert wing local position to world position
         const worldPosition = new THREE.Vector3();
         worldPosition.copy(wingPosition);
@@ -628,7 +715,7 @@ class Hero {
             // Add to scene
             this.scene.add(particle);
             
-            // Calculate initial velocity for burst effect
+            // Calculate initial velocity for different effects
             let velocityX = (Math.random() - 0.5) * 0.02;
             let velocityY = -0.01;
             let velocityZ = (Math.random() - 0.5) * 0.02;
@@ -643,6 +730,13 @@ class Hero {
                 velocityY -= 0.02;
             }
             
+            // For spiral effect, set up initial parameters
+            let spiralRadius = 0;
+            let spiralAngle = Math.random() * Math.PI * 2;
+            let spiralRiseRate = 0.01 + Math.random() * 0.02;
+            let spiralGrowRate = 0.02 + Math.random() * 0.03;
+            let spiralRotationRate = 0.1 + Math.random() * 0.2;
+            
             // Animate and remove after lifetime
             const startTime = performance.now();
             
@@ -651,19 +745,43 @@ class Hero {
                 const progress = Math.min(1, elapsed / lifetime);
                 
                 if (progress < 1) {
-                    // Move particle based on velocity
-                    particle.position.x += velocityX;
-                    particle.position.y += velocityY;
-                    particle.position.z += velocityZ;
-                    
-                    // Apply gravity effect
-                    velocityY -= 0.001;
-                    
-                    // For burst effect, add some rotation to particles
-                    if (burstEffect) {
-                        particle.rotation.x += 0.05;
-                        particle.rotation.y += 0.05;
-                        particle.scale.multiplyScalar(0.99); // Gradually shrink
+                    if (spiralEffect) {
+                        // Update spiral parameters
+                        spiralRadius += spiralGrowRate;
+                        spiralAngle += spiralRotationRate;
+                        
+                        // Calculate new position based on spiral
+                        particle.position.x = worldPosition.x + Math.cos(spiralAngle) * spiralRadius;
+                        particle.position.y = worldPosition.y + spiralRiseRate * elapsed / 16;
+                        particle.position.z = worldPosition.z + Math.sin(spiralAngle) * spiralRadius;
+                        
+                        // Add some rotation to particles
+                        particle.rotation.x += 0.03;
+                        particle.rotation.y += 0.03;
+                        
+                        // Gradually change color based on height (optional effect)
+                        if (elapsed > lifetime / 2) {
+                            // Shift color towards white as it rises
+                            const colorValue = new THREE.Color(color);
+                            const whiteBlend = (elapsed - lifetime / 2) / (lifetime / 2);
+                            colorValue.lerp(new THREE.Color(0xffffff), whiteBlend * 0.5);
+                            particle.material.color = colorValue;
+                        }
+                    } else {
+                        // Move particle based on velocity
+                        particle.position.x += velocityX;
+                        particle.position.y += velocityY;
+                        particle.position.z += velocityZ;
+                        
+                        // Apply gravity effect
+                        velocityY -= 0.001;
+                        
+                        // For burst effect, add some rotation to particles
+                        if (burstEffect) {
+                            particle.rotation.x += 0.05;
+                            particle.rotation.y += 0.05;
+                            particle.scale.multiplyScalar(0.99); // Gradually shrink
+                        }
                     }
                     
                     // Fade out
@@ -3055,15 +3173,55 @@ class Hero {
                 }
                 
                 // Add upward acceleration when holding jump
-                // If above threshold, use slower acceleration rate
+                // If above threshold, use slower acceleration rate for "flying" effect
                 let accelerationRate = jumpConfig.holdJumpAcceleration;
-                if (this.jumpHeight >= flightConfig.flightThreshold) {
-                    accelerationRate = flightConfig.slowHeightChangeRate;
+                let maxVelocity = jumpConfig.holdJumpMaxVelocity;
+                
+                // Check if we're above the slow flight threshold
+                if (this.jumpHeight >= jumpConfig.slowFlightThreshold) {
+                    // Use slow flight settings to create a "fighting gravity" effect
+                    accelerationRate = jumpConfig.slowFlightAcceleration || 1.0;
+                    maxVelocity = jumpConfig.slowFlightMaxVelocity || 5;
+                    
+                    // Log the transition to slow flight mode
+                    if (!this.inSlowFlightMode) {
+                        this.inSlowFlightMode = true;
+                        Logger.log(`Entered slow flight mode at height ${this.jumpHeight.toFixed(1)}`);
+                        
+                        // Show a message to the player
+                        if (window.game && window.game.ui) {
+                            window.game.ui.showMessage("Slow Flight Mode");
+                        }
+                        
+                        // Ensure wings are visible with a special transition effect
+                        if (this.wings) {
+                            // If wings aren't already visible, show them with an opening animation
+                            if (!this.wings.visible) {
+                                this.wings.visible = true;
+                                this.wingOpenState = 0; // Start from closed position
+                                
+                                // Animate wings opening with a special effect
+                                this.animateWingOpenTransition(0, 1, jumpConfig.wingOpenDuration);
+                                this.createWingTransitionEffect(0x66ffff); // Special color for slow flight transition
+                            } else {
+                                // If wings are already visible, create a pulse effect to indicate mode change
+                                this.createWingPulseEffect(0x66ffff);
+                            }
+                            
+                            // Emit event for UI
+                            Events.emit('slowFlightModeChanged', { active: true });
+                        }
+                    }
+                } else if (this.inSlowFlightMode) {
+                    // Reset slow flight mode when below threshold
+                    this.inSlowFlightMode = false;
+                    Logger.log(`Exited slow flight mode at height ${this.jumpHeight.toFixed(1)}`);
                 }
                 
+                // Apply the appropriate acceleration and max velocity
                 this.jumpVelocity = Math.min(
                     this.jumpVelocity + accelerationRate * deltaTime,
-                    jumpConfig.holdJumpMaxVelocity
+                    maxVelocity
                 );
                 
                 // Create continuous effect for hold-jumping

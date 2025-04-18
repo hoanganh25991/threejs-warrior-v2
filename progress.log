@@ -68,3 +68,6 @@
 [2024-05-10T13:15:00.000Z] Removed WASD movement controls, using only arrow keys now
 [2024-05-10T14:00:00.000Z] Implemented wing effect from open to close when hero lands on the ground
 [2024-05-10T14:15:00.000Z] Enhanced wing particle effects with burst animation during landing
+[2024-05-10T15:00:00.000Z] Implemented slow flight mode when hero passes height threshold
+[2024-05-10T15:15:00.000Z] Added special wing effects for slow flight mode transition
+[2024-05-10T15:30:00.000Z] Created spiral particle effects and glow effects for enhanced visual feedback
