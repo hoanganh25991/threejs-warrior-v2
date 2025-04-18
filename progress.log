@@ -11,3 +11,9 @@
 [2024-05-01T00:00:10.000Z] Created main game class to tie everything together
 [2024-05-01T00:00:11.000Z] Completed Phase 1: Core Mechanics implementation
 [2024-05-01T00:00:12.000Z] Basic features implemented: hero selection, movement, and combat
+[2024-05-02T10:15:00.000Z] Added visual indicator for right-click movement
+[2024-05-02T10:45:00.000Z] Implemented skill name shout out when abilities are cast
+[2024-05-02T11:30:00.000Z] Added font loading system for 3D text with fallback to sprite text
+[2024-05-02T12:15:00.000Z] Added health bars above enemies with color changes based on health percentage
+[2024-05-02T12:45:00.000Z] Added damage number indicators when enemies take damage
+[2024-05-02T13:30:00.000Z] Started implementing UI redesign for mobile landscape view
