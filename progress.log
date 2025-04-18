@@ -66,3 +66,5 @@
 [2024-05-10T12:45:00.000Z] Updated skill buttons to show first character of skill name and key binding
 [2024-05-10T13:00:00.000Z] Added 'a' key support for basic attack
 [2024-05-10T13:15:00.000Z] Removed WASD movement controls, using only arrow keys now
+[2024-05-10T14:00:00.000Z] Implemented wing effect from open to close when hero lands on the ground
+[2024-05-10T14:15:00.000Z] Enhanced wing particle effects with burst animation during landing

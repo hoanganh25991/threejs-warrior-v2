@@ -578,8 +578,28 @@ class Hero {
         this.createWingParticles(this.rightWingGroup.position, color, particleCount, particleSize, particleLifetime);
     }
     
+    // Create a special effect when wings close during landing
+    createWingClosingEffect(color) {
+        // Skip if wings aren't visible
+        if (!this.wings || !this.wings.visible || !this.leftWingGroup || !this.rightWingGroup) return;
+        
+        // Create a more dramatic effect for wing closing
+        const particleCount = 30; // More particles for a dramatic effect
+        const particleSize = 0.1;
+        const particleLifetime = 1000; // Longer lifetime for the effect to be visible
+        
+        // Create a burst of particles from both wings
+        this.createWingParticles(this.leftWingGroup.position, color, particleCount, particleSize, particleLifetime, true);
+        this.createWingParticles(this.rightWingGroup.position, color, particleCount, particleSize, particleLifetime, true);
+        
+        // Create a ring effect at the hero's position to show impact
+        this.createRingEffect(color, 1.5);
+        
+        Logger.log(`Created wing closing effect as hero landed`);
+    }
+    
     // Create particles at wing position
-    createWingParticles(wingPosition, color, count, size, lifetime) {
+    createWingParticles(wingPosition, color, count, size, lifetime, burstEffect = false) {
         // Convert wing local position to world position
         const worldPosition = new THREE.Vector3();
         worldPosition.copy(wingPosition);
@@ -608,6 +628,21 @@ class Hero {
             // Add to scene
             this.scene.add(particle);
             
+            // Calculate initial velocity for burst effect
+            let velocityX = (Math.random() - 0.5) * 0.02;
+            let velocityY = -0.01;
+            let velocityZ = (Math.random() - 0.5) * 0.02;
+            
+            // If burst effect, give particles more initial velocity in all directions
+            if (burstEffect) {
+                velocityX = (Math.random() - 0.5) * 0.1;
+                velocityY = (Math.random() - 0.5) * 0.1;
+                velocityZ = (Math.random() - 0.5) * 0.1;
+                
+                // Add some downward bias for gravity effect
+                velocityY -= 0.02;
+            }
+            
             // Animate and remove after lifetime
             const startTime = performance.now();
             
@@ -616,10 +651,20 @@ class Hero {
                 const progress = Math.min(1, elapsed / lifetime);
                 
                 if (progress < 1) {
-                    // Move particle downward and outward
-                    particle.position.y -= 0.01;
-                    particle.position.x += (Math.random() - 0.5) * 0.02;
-                    particle.position.z += (Math.random() - 0.5) * 0.02;
+                    // Move particle based on velocity
+                    particle.position.x += velocityX;
+                    particle.position.y += velocityY;
+                    particle.position.z += velocityZ;
+                    
+                    // Apply gravity effect
+                    velocityY -= 0.001;
+                    
+                    // For burst effect, add some rotation to particles
+                    if (burstEffect) {
+                        particle.rotation.x += 0.05;
+                        particle.rotation.y += 0.05;
+                        particle.scale.multiplyScalar(0.99); // Gradually shrink
+                    }
                     
                     // Fade out
                     particle.material.opacity = 0.7 * (1 - progress);
@@ -3092,11 +3137,20 @@ class Hero {
                     if (this.wings && this.wings.visible) {
                         // Get wing configuration
                         const flightConfig = window.configLoader?.getConfig('flightConfig') || {
-                            wingOpenDuration: 0.8
+                            wingOpenDuration: 0.8,
+                            wingEffectColor: 0x66ccff
                         };
+                        
+                        // Create a special wing closing effect when landing
+                        this.createWingClosingEffect(flightConfig.wingEffectColor);
                         
                         // Animate wings closing
                         this.animateWingOpenTransition(this.wingOpenState, 0, flightConfig.wingOpenDuration / 2);
+                        
+                        // Play a sound effect for wing closing
+                        if (window.game && window.game.audio) {
+                            window.game.audio.playSound('wingClose', 0.3);
+                        }
                         
                         // Hide wings after animation completes
                         setTimeout(() => {
@@ -3107,11 +3161,16 @@ class Hero {
                                 cancelAnimationFrame(this.wingFlapAnimationId);
                                 this.wingFlapAnimationId = null;
                             }
+                            
+                            Logger.log(`Wings closed as hero landed from jump`);
                         }, flightConfig.wingOpenDuration * 500); // Half the duration in milliseconds
                     }
                     
                     // Also emit event for UI wings (backward compatibility)
-                    Events.emit('wingsVisibilityChanged', { visible: false });
+                    Events.emit('wingsVisibilityChanged', { 
+                        visible: false,
+                        action: 'landing'
+                    });
                 }
             }
             
