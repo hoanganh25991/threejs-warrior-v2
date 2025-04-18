@@ -258,6 +258,28 @@ class InputManager {
             position: this.mousePosition,
             raycaster: this.raycaster
         });
+        
+        // Create a move indicator at the clicked position
+        this.createMoveIndicator();
+    }
+    
+    createMoveIndicator() {
+        // Get the intersection point with the ground
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        
+        // Create a plane representing the ground
+        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const targetPosition = new THREE.Vector3();
+        
+        // Find the intersection point
+        this.raycaster.ray.intersectPlane(groundPlane, targetPosition);
+        
+        if (targetPosition) {
+            // Create the move indicator
+            if (window.game && window.game.world) {
+                window.game.world.createMoveIndicator(targetPosition);
+            }
+        }
     }
     
     handleAbilityClick(event) {

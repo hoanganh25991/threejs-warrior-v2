@@ -32,7 +32,9 @@ class AssetLoader {
     constructor(onProgress, onComplete) {
         this.totalAssets = 0;
         this.loadedAssets = 0;
-        this.assets = {};
+        this.assets = {
+            fonts: {}  // Store fonts separately
+        };
         this.onProgress = onProgress || (() => {});
         this.onComplete = onComplete || (() => {});
     }
@@ -87,6 +89,27 @@ class AssetLoader {
             console.error(`Error loading sound ${name}`);
             this.assetLoaded();
         }, { once: true });
+    }
+    
+    loadFont(name, path) {
+        this.totalAssets++;
+        const fontLoader = new THREE.FontLoader();
+        fontLoader.load(
+            path,
+            (font) => {
+                this.assets.fonts[name] = font;
+                this.assetLoaded();
+            },
+            (xhr) => {
+                // Progress callback if needed
+            },
+            (error) => {
+                console.error(`Error loading font ${name}:`, error);
+                // Create a fallback font
+                this.assets.fonts[name] = null;
+                this.assetLoaded();
+            }
+        );
     }
     
     assetLoaded() {

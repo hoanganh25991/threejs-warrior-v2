@@ -247,6 +247,80 @@ class World {
         return targetPosition.clone();
     }
     
+    // Create a move indicator at the specified position
+    createMoveIndicator(position) {
+        // Remove any existing move indicator
+        this.removeMoveIndicator();
+        
+        // Create a circle geometry for the indicator
+        const geometry = new THREE.RingGeometry(0.5, 0.7, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0xffff00, 
+            transparent: true, 
+            opacity: 0.7,
+            side: THREE.DoubleSide
+        });
+        
+        // Create the mesh and position it
+        const indicator = new THREE.Mesh(geometry, material);
+        indicator.rotation.x = -Math.PI / 2; // Make it horizontal
+        indicator.position.copy(position);
+        indicator.position.y = 0.1; // Slightly above ground to avoid z-fighting
+        indicator.name = 'moveIndicator';
+        
+        // Add to scene
+        this.scene.add(indicator);
+        
+        // Store reference to the indicator
+        this.moveIndicator = indicator;
+        
+        // Animate the indicator
+        this.animateMoveIndicator();
+        
+        // Remove after a short duration
+        setTimeout(() => {
+            this.removeMoveIndicator();
+        }, 1000);
+    }
+    
+    // Remove the move indicator if it exists
+    removeMoveIndicator() {
+        if (this.moveIndicator && this.moveIndicator.parent) {
+            this.scene.remove(this.moveIndicator);
+            this.moveIndicator.geometry.dispose();
+            this.moveIndicator.material.dispose();
+            this.moveIndicator = null;
+        }
+    }
+    
+    // Animate the move indicator
+    animateMoveIndicator() {
+        if (!this.moveIndicator) return;
+        
+        const startTime = Date.now();
+        const duration = 1000; // 1 second
+        
+        const animate = () => {
+            if (!this.moveIndicator) return;
+            
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress < 1) {
+                // Scale up and fade out
+                const scale = 1 + progress;
+                this.moveIndicator.scale.set(scale, scale, scale);
+                this.moveIndicator.material.opacity = 0.7 * (1 - progress);
+                
+                requestAnimationFrame(animate);
+            } else {
+                this.removeMoveIndicator();
+            }
+        };
+        
+        animate();
+    }
+    
     // Get height at position (for terrain with varying height)
     getHeightAt(x, z) {
         // For now, return 0 as we have flat terrain

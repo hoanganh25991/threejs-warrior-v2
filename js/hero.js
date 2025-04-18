@@ -1426,8 +1426,147 @@ class Hero {
         // Emit ability used event
         Events.emit('abilityUsed', { hero: this, ability });
         
+        // Show skill name shout out
+        this.showSkillShoutOut(ability.name);
+        
         // Execute ability function
         return ability.use();
+    }
+    
+    // Show a visual shout out when a skill is cast
+    showSkillShoutOut(skillName) {
+        try {
+            // Check if font is available
+            if (window.game && window.game.assets && window.game.assets.fonts && window.game.assets.fonts['default']) {
+                // Create a 3D text above the hero
+                const textGeometry = new THREE.TextGeometry(skillName, {
+                    font: window.game.assets.fonts['default'],
+                    size: 0.5,
+                    height: 0.1,
+                    curveSegments: 12,
+                    bevelEnabled: false
+                });
+                
+                // Center the text
+                textGeometry.computeBoundingBox();
+                const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+                textGeometry.translate(-textWidth / 2, 0, 0);
+                
+                // Create material and mesh
+                const textMaterial = new THREE.MeshBasicMaterial({ 
+                    color: this.getHeroColor(),
+                    transparent: true
+                });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                
+                // Position above hero
+                textMesh.position.copy(this.position);
+                textMesh.position.y += 3; // Above the hero
+                
+                // Add to scene
+                this.scene.add(textMesh);
+                
+                // Animate the text
+                const startTime = Date.now();
+                const duration = 1500; // 1.5 seconds
+                
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = elapsed / duration;
+                    
+                    if (progress < 1) {
+                        // Move upward and fade out
+                        textMesh.position.y += 0.01;
+                        textMesh.material.opacity = 1 - progress;
+                        
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Remove when animation is complete
+                        this.scene.remove(textMesh);
+                        textGeometry.dispose();
+                        textMaterial.dispose();
+                    }
+                };
+                
+                animate();
+            } else {
+                // Fallback to 2D sprite text
+                this.showSkillShoutOutSprite(skillName);
+            }
+        } catch (error) {
+            console.error("Error creating 3D text:", error);
+            // Fallback to 2D sprite text
+            this.showSkillShoutOutSprite(skillName);
+        }
+        
+        // Also show in UI for better visibility
+        if (window.game && window.game.ui) {
+            window.game.ui.showMessage(`${skillName}!`, 2000);
+        }
+    }
+    
+    // Fallback method using sprite instead of 3D text
+    showSkillShoutOutSprite(skillName) {
+        // Create a canvas for the text
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+        
+        // Draw background with hero color
+        context.fillStyle = `#${this.getHeroColor().toString(16).padStart(6, '0')}`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw text
+        context.fillStyle = 'white';
+        context.font = 'bold 32px Arial';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(skillName, canvas.width / 2, canvas.height / 2);
+        
+        // Create texture from canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        
+        // Create sprite material
+        const material = new THREE.SpriteMaterial({ 
+            map: texture,
+            transparent: true
+        });
+        
+        // Create sprite
+        const sprite = new THREE.Sprite(material);
+        sprite.scale.set(2, 0.5, 1);
+        
+        // Position above hero
+        sprite.position.copy(this.position);
+        sprite.position.y += 3; // Above the hero
+        
+        // Add to scene
+        this.scene.add(sprite);
+        
+        // Animate the sprite
+        const startTime = Date.now();
+        const duration = 1500; // 1.5 seconds
+        
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            if (progress < 1) {
+                // Move upward and fade out
+                sprite.position.y += 0.01;
+                sprite.material.opacity = 1 - progress;
+                
+                requestAnimationFrame(animate);
+            } else {
+                // Remove when animation is complete
+                this.scene.remove(sprite);
+                sprite.material.map.dispose();
+                sprite.material.dispose();
+            }
+        };
+        
+        animate();
     }
     
     // Update method called every frame

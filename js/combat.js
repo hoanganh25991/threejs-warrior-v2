@@ -473,6 +473,10 @@ class Enemy {
         // Model
         this.model = null;
         
+        // Health bar
+        this.healthBar = null;
+        this.healthBarBackground = null;
+        
         Logger.log(`Enemy of type ${type} created`);
     }
     
@@ -547,7 +551,76 @@ class Enemy {
         // Add to scene
         this.scene.add(this.model);
         
+        // Create health bar
+        this.createHealthBar();
+        
         return this;
+    }
+    
+    createHealthBar() {
+        // Get the height of the enemy model
+        const modelHeight = 2; // Height of the box geometry
+        
+        // Create background for health bar
+        const backgroundGeometry = new THREE.PlaneGeometry(1, 0.1);
+        const backgroundMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.DoubleSide
+        });
+        this.healthBarBackground = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+        
+        // Position above enemy
+        this.healthBarBackground.position.copy(this.position);
+        this.healthBarBackground.position.y = modelHeight + 0.2; // Above the enemy
+        
+        // Make it face the camera
+        this.healthBarBackground.rotation.x = Math.PI / 2;
+        
+        // Create the actual health bar
+        const healthBarGeometry = new THREE.PlaneGeometry(1, 0.1);
+        const healthBarMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide
+        });
+        this.healthBar = new THREE.Mesh(healthBarGeometry, healthBarMaterial);
+        
+        // Position at the same place as background
+        this.healthBar.position.copy(this.healthBarBackground.position);
+        this.healthBar.rotation.copy(this.healthBarBackground.rotation);
+        
+        // Add to scene
+        this.scene.add(this.healthBarBackground);
+        this.scene.add(this.healthBar);
+        
+        // Update health bar to show current health
+        this.updateHealthBar();
+    }
+    
+    updateHealthBar() {
+        if (!this.healthBar) return;
+        
+        // Calculate health percentage
+        const healthPercent = this.stats.health / this.stats.maxHealth;
+        
+        // Scale the health bar width based on health percentage
+        this.healthBar.scale.x = Math.max(0.01, healthPercent); // Minimum scale to avoid disappearing
+        
+        // Adjust position to align left side
+        const offset = (1 - healthPercent) * 0.5;
+        this.healthBar.position.x = this.healthBarBackground.position.x - offset;
+        
+        // Change color based on health percentage
+        if (healthPercent > 0.6) {
+            this.healthBar.material.color.setHex(0x00ff00); // Green
+        } else if (healthPercent > 0.3) {
+            this.healthBar.material.color.setHex(0xffff00); // Yellow
+        } else {
+            this.healthBar.material.color.setHex(0xff0000); // Red
+        }
     }
     
     moveTo(targetPosition) {

@@ -25,6 +25,10 @@ class Game {
         // Interactable objects
         this.interactableObjects = [];
         
+        // Asset management
+        this.assets = null;
+        this.assetLoader = null;
+        
         // Initialize the game
         this.init();
         
@@ -43,6 +47,9 @@ class Game {
         
         // Initialize Three.js
         this.initThreeJS();
+        
+        // Load assets
+        await this.loadAssets();
         
         // Create input manager
         this.inputManager = new InputManager(this.camera, this.renderer);
@@ -65,6 +72,29 @@ class Game {
         this.animate();
         
         Logger.log('Game initialized');
+    }
+    
+    async loadAssets() {
+        return new Promise((resolve) => {
+            // Create asset loader
+            this.assetLoader = new AssetLoader(
+                // Progress callback
+                (progress) => {
+                    this.uiManager.updateLoadingProgress(progress);
+                },
+                // Complete callback
+                (assets) => {
+                    this.assets = assets;
+                    Logger.log('Assets loaded');
+                    resolve();
+                }
+            );
+            
+            // Load default font
+            this.assetLoader.loadFont('default', 'assets/fonts/helvetiker_regular.typeface.json');
+            
+            // Add more assets here as needed
+        });
     }
     
     initThreeJS() {
