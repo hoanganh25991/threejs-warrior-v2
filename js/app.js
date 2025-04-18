@@ -195,18 +195,30 @@ CharacterController.prototype.update = function(dt) {
     }
     
     // Update camera position to follow character
-    // Create a matrix from the entity's rotation
+    // Use a simpler approach - position camera behind the entity based on its rotation
+    const entityPos = this.entity.getPosition();
+    
+    // Get entity rotation and calculate forward, right, and up vectors manually
     const entityRotation = this.entity.getRotation();
-    const rotMatrix = new pc.Mat4().setFromQuat(entityRotation);
+    const entityForward = new pc.Vec3(0, 0, -1);
+    const entityRight = new pc.Vec3(1, 0, 0);
+    const entityUp = new pc.Vec3(0, 1, 0);
     
-    // Transform the camera offset using the rotation matrix
-    const idealOffset = new pc.Vec3();
-    rotMatrix.transformPoint(this.targetCameraOffset, idealOffset);
+    // Calculate camera position based on entity orientation
+    const cameraPos = new pc.Vec3();
     
-    // Calculate the final camera position
-    const idealPosition = this.entity.getPosition().clone().add(idealOffset);
+    // Move backward along entity's forward vector
+    cameraPos.copy(entityPos);
+    cameraPos.sub(entityForward.clone().scale(this.targetCameraOffset.z));
     
-    camera.setPosition(idealPosition);
+    // Move right along entity's right vector
+    cameraPos.add(entityRight.clone().scale(this.targetCameraOffset.x));
+    
+    // Move up along entity's up vector
+    cameraPos.add(entityUp.clone().scale(this.targetCameraOffset.y));
+    
+    // Set camera position
+    camera.setPosition(cameraPos);
     
     // Make camera look at character
     this.cameraLookAt.copy(this.entity.getPosition());
@@ -344,58 +356,6 @@ const talentUI = new pc.Entity('talentUI');
 talentUI.addComponent('script');
 talentUI.script.create('talentUI');
 app.root.addChild(talentUI);
-
-// Create a progress log file
-const createProgressLog = function() {
-    // Log initial implementation progress
-    const progressLog = `
-# Implementation Progress Log
-
-## ${new Date().toISOString()}
-
-### Initial Implementation
-- Created attribute system based on the requirements in progression.md
-- Implemented hero base class with attribute integration
-- Added Axe as the first playable hero
-- Implemented ability system framework
-- Added experience and leveling system
-- Updated main app to integrate all systems
-- Added basic UI for displaying hero stats
-
-### Next Steps
-- Implement more heroes (Crystal Maiden, Lich, Storm Spirit)
-- Create proper ability implementations
-- Add talent system
-- Implement inventory and item system
-- Create proper game environments and enemies
-- Add quest system
-
-### Current Functionality
-- Character movement with WASD
-- Camera control with mouse
-- Basic attribute system with derived statistics
-- Experience gain and leveling (press X to test)
-- Health and mana management (press Z to take damage, H to heal)
-- Ability framework (press Q/W/E/R to use abilities)
-`;
-
-    return progressLog;
-};
-
-// Create a function to save the progress log
-const saveProgressLog = function(content) {
-    console.log("Progress log created:");
-    console.log(content);
-    
-    // In a real implementation, this would save to a file
-    // For now, we'll just log it to the console
-    
-    // Note: In a browser environment, we can't directly write to the file system
-    // This would need to be handled by a server-side component
-};
-
-// Save the progress log
-saveProgressLog(createProgressLog());
 
 // Start the application
 app.start();
