@@ -36,6 +36,7 @@ app.assets.add(new pc.Asset('storm-spirit-talents.js', 'script', { url: '/js/ent
 app.scripts.add('heroSelection', '/js/ui/hero-selection.js');
 app.scripts.add('talentUI', '/js/ui/talent-ui.js');
 app.scripts.add('inventoryUI', '/js/ui/inventory-ui.js');
+app.scripts.add('targetInfo', '/js/ui/target-info.js');
 
 // Create camera entity
 const camera = new pc.Entity('camera');
@@ -420,6 +421,9 @@ CharacterController.prototype.onMouseWheel = function(event) {
 
 // Get a ray from the camera through the mouse position
 CharacterController.prototype.getCameraRay = function(event) {
+    // Get the camera position (ray origin)
+    const cameraPos = camera.getPosition();
+    
     // Get the canvas coordinates of the mouse
     const canvasWidth = app.graphicsDevice.width;
     const canvasHeight = app.graphicsDevice.height;
@@ -428,19 +432,164 @@ CharacterController.prototype.getCameraRay = function(event) {
     const x = (event.x / canvasWidth) * 2 - 1;
     const y = (event.y / canvasHeight) * -2 + 1;
     
-    // Create a ray from the camera through this point
-    const ray = camera.camera.screenToWorld(x, y, camera.camera.farClip);
+    // Get the camera's near and far clip planes
+    const cameraComponent = camera.camera;
+    const nearClip = cameraComponent.nearClip;
+    const farClip = cameraComponent.farClip;
     
-    return ray;
+    // Create a point in 3D space at the near clip plane
+    const nearPoint = new pc.Vec3();
+    const farPoint = new pc.Vec3();
+    
+    // Project the 2D point into 3D space at the near and far clip planes
+    // We'll do this manually instead of using screenToWorld
+    
+    // Get the camera's view and projection matrices
+    const viewMatrix = cameraComponent.viewMatrix;
+    const projMatrix = cameraComponent.projectionMatrix;
+    
+    // Create an inverse view-projection matrix
+    const invViewProjMat = new pc.Mat4();
+    invViewProjMat.mul2(projMatrix, viewMatrix);
+    invViewProjMat.invert();
+    
+    // Transform the normalized device coordinates to world space
+    // For near point (at z = -1 in NDC space)
+    const nearPointNDC = new pc.Vec4(x, y, -1, 1);
+    const nearPointWorld = new pc.Vec4();
+    invViewProjMat.transformVec4(nearPointNDC, nearPointWorld);
+    nearPoint.set(
+        nearPointWorld.x / nearPointWorld.w,
+        nearPointWorld.y / nearPointWorld.w,
+        nearPointWorld.z / nearPointWorld.w
+    );
+    
+    // For far point (at z = 1 in NDC space)
+    const farPointNDC = new pc.Vec4(x, y, 1, 1);
+    const farPointWorld = new pc.Vec4();
+    invViewProjMat.transformVec4(farPointNDC, farPointWorld);
+    farPoint.set(
+        farPointWorld.x / farPointWorld.w,
+        farPointWorld.y / farPointWorld.w,
+        farPointWorld.z / farPointWorld.w
+    );
+    
+    // Create a ray from the near point to the far point
+    const direction = new pc.Vec3();
+    direction.sub2(farPoint, nearPoint);
+    direction.normalize();
+    
+    // Create and return the ray
+    return new pc.Ray(nearPoint, direction);
 };
 
 // Check if the ray hits an enemy
 CharacterController.prototype.checkEnemyHit = function(ray) {
-    // This is a placeholder - in a real implementation, we would:
-    // 1. Check for collision with enemy entities
-    // 2. Return the closest enemy hit
+    // Find all enemy entities
+    const enemies = [];
+    const findEnemies = function(entity) {
+        if (entity.script && entity.script.enemy) {
+            enemies.push(entity);
+        }
+        
+        for (let i = 0; i < entity.children.length; i++) {
+            findEnemies(entity.children[i]);
+        }
+    };
     
-    // For now, just return null (no enemy hit)
+    findEnemies(this.app.root);
+    
+    // Check for hits
+    let closestEnemy = null;
+    let closestDistance = Infinity;
+    
+    for (const enemy of enemies) {
+        // Skip dead enemies
+        if (enemy.script.enemy.state === 'dead') continue;
+        
+        // Simple bounding box check
+        const enemyPos = enemy.getPosition();
+        const enemyScale = enemy.getLocalScale();
+        
+        // Create a simple bounding box
+        const halfWidth = enemyScale.x / 2;
+        const halfHeight = enemyScale.y / 2;
+        const halfDepth = enemyScale.z / 2;
+        
+        const min = new pc.Vec3(
+            enemyPos.x - halfWidth,
+            enemyPos.y - halfHeight,
+            enemyPos.z - halfDepth
+        );
+        
+        const max = new pc.Vec3(
+            enemyPos.x + halfWidth,
+            enemyPos.y + halfHeight,
+            enemyPos.z + halfDepth
+        );
+        
+        // Check ray intersection with bounding box
+        const rayDir = ray.direction;
+        const rayStart = ray.origin;
+        
+        // Check intersection with the bounding box
+        // This is a simplified version of ray-box intersection
+        let tmin = -Infinity;
+        let tmax = Infinity;
+        
+        // X slab
+        if (rayDir.x !== 0) {
+            const tx1 = (min.x - rayStart.x) / rayDir.x;
+            const tx2 = (max.x - rayStart.x) / rayDir.x;
+            
+            tmin = Math.max(tmin, Math.min(tx1, tx2));
+            tmax = Math.min(tmax, Math.max(tx1, tx2));
+        }
+        
+        // Y slab
+        if (rayDir.y !== 0) {
+            const ty1 = (min.y - rayStart.y) / rayDir.y;
+            const ty2 = (max.y - rayStart.y) / rayDir.y;
+            
+            tmin = Math.max(tmin, Math.min(ty1, ty2));
+            tmax = Math.min(tmax, Math.max(ty1, ty2));
+        }
+        
+        // Z slab
+        if (rayDir.z !== 0) {
+            const tz1 = (min.z - rayStart.z) / rayDir.z;
+            const tz2 = (max.z - rayStart.z) / rayDir.z;
+            
+            tmin = Math.max(tmin, Math.min(tz1, tz2));
+            tmax = Math.min(tmax, Math.max(tz1, tz2));
+        }
+        
+        // Check if we have a hit
+        if (tmax >= tmin && tmax > 0) {
+            // We have a hit, calculate distance
+            const hitDistance = tmin > 0 ? tmin : tmax;
+            
+            // Check if this is the closest hit
+            if (hitDistance < closestDistance) {
+                closestDistance = hitDistance;
+                closestEnemy = enemy;
+            }
+        }
+    }
+    
+    // If we found a hit, return the enemy
+    if (closestEnemy) {
+        // Highlight the selected enemy
+        for (const enemy of enemies) {
+            if (enemy.script && enemy.script.enemy) {
+                enemy.script.enemy.setSelected(enemy === closestEnemy);
+            }
+        }
+        
+        return closestEnemy;
+    }
+    
+    // No hit
     return null;
 };
 
@@ -540,6 +689,15 @@ CharacterController.prototype.performAutoAttack = function() {
     
     if (!hero || !attributeSystem) return;
     
+    // Check if target is still valid
+    if (!this.combatTarget.enabled || 
+        (this.combatTarget.script.enemy && this.combatTarget.script.enemy.state === 'dead')) {
+        // Target is no longer valid
+        this.combatTarget = null;
+        this.isAutoAttacking = false;
+        return;
+    }
+    
     // Calculate damage based on attributes
     let damage = attributeSystem.physicalDamage;
     
@@ -552,10 +710,21 @@ CharacterController.prototype.performAutoAttack = function() {
         console.log(`Critical hit! Damage: ${damage.toFixed(0)}`);
     }
     
-    console.log(`Auto-attack deals ${damage.toFixed(0)} damage`);
+    // Apply damage to the target
+    if (this.combatTarget.script.enemy) {
+        this.combatTarget.script.enemy.takeDamage(damage, 'physical');
+        
+        // Check if target died
+        if (this.combatTarget.script.enemy.state === 'dead') {
+            this.combatTarget = null;
+            this.isAutoAttacking = false;
+        }
+    }
     
-    // In a real implementation, we would apply damage to the target
-    // For now, just log it
+    // In a real implementation, we would:
+    // 1. Play attack animation
+    // 2. Create visual and sound effects
+    // 3. Apply any special attack effects
 };
 
 CharacterController.prototype.onKeyDown = function(event) {
