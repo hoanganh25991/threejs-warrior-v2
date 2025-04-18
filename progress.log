@@ -65,3 +65,4 @@
 [2024-05-07T09:15:00.000Z] Updated jump.js and flight.js to properly export configurations to global scope
 [2024-05-07T10:00:00.000Z] Fixed heroes.js configuration loading issue: removed require() and added global scope export
 [2024-05-07T10:15:00.000Z] Simplified hero abilities configuration to work without direct skills.js dependency
+[2024-05-07T11:00:00.000Z] Fixed camera followJump error by implementing the missing method in the camera object

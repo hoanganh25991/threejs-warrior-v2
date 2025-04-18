@@ -141,6 +141,22 @@ class Game {
         this.camera.position.set(10, 10, 10);
         this.camera.lookAt(0, 0, 0);
         
+        // Add followJump method to camera
+        this.camera.followJump = (hero, offsetFactor) => {
+            // Store the current camera position relative to the hero
+            const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
+            
+            // Adjust camera height based on hero's jump height and offset factor
+            const heightAdjustment = hero.jumpHeight * offsetFactor;
+            offset.y += heightAdjustment;
+            
+            // Update camera position
+            this.camera.position.copy(hero.position).add(offset);
+            
+            // Look at hero
+            this.camera.lookAt(hero.position);
+        };
+        
         // Make camera globally accessible for other components
         window.camera = this.camera;
         
