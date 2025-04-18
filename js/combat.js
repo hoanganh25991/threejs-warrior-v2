@@ -35,6 +35,12 @@ class CombatSystem {
         
         if (!hero) return;
         
+        // Check if the ability exists for this hero
+        if (!hero.abilities[ability]) {
+            // This ability key is not mapped for this hero
+            return;
+        }
+        
         // Check if hero has enough mana
         if (!hero.useMana(hero.abilities[ability].manaCost)) {
             console.log('Not enough mana!');

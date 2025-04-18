@@ -352,7 +352,7 @@ class Game {
         
         const { ability } = data;
         
-        // Use the ability
+        // Use the ability if it exists
         if (this.hero.abilities[ability]) {
             this.hero.abilities[ability].use();
         }

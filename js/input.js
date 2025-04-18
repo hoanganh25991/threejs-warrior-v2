@@ -397,17 +397,8 @@ class InputManager {
             }
         }
         
-        // Handle ability key presses (letter keys)
-        if (this.isKeyPressed('q')) Events.emit('abilityActivated', { ability: 'q' });
-        if (this.isKeyPressed('w') && !this.isKeyPressed('a') && !this.isKeyPressed('s') && !this.isKeyPressed('d')) {
-            Events.emit('abilityActivated', { ability: 'w' });
-        }
-        if (this.isKeyPressed('e')) Events.emit('abilityActivated', { ability: 'e' });
-        if (this.isKeyPressed('r')) Events.emit('abilityActivated', { ability: 'r' });
-        if (this.isKeyPressed('t')) Events.emit('abilityActivated', { ability: 't' });
-        if (this.isKeyPressed('f')) Events.emit('abilityActivated', { ability: 'f' });
-        
         // Handle ability key presses (number keys 1-6)
+        // These are the keys that are actually mapped to abilities in the hero class
         if (this.isKeyPressed('1')) Events.emit('abilityActivated', { ability: '1' });
         if (this.isKeyPressed('2')) Events.emit('abilityActivated', { ability: '2' });
         if (this.isKeyPressed('3')) Events.emit('abilityActivated', { ability: '3' });
