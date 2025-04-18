@@ -1587,25 +1587,54 @@ class Hero {
     
     // Jump method
     jump() {
-        // Can't jump if already flying
-        if (this.isFlying) return;
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            initialVelocity: 10,
+            gravity: 20,
+            maxJumpCount: 2,
+            multiJumpHeightIncrease: 1.5,
+            maxJumpHeight: 15,
+            jumpEffectColor: 0xffffff,
+            doubleJumpEffectColor: 0x00ffff,
+            cameraFollowJump: true,
+            cameraJumpOffset: 0.7,
+            flightJumpVelocity: 3,
+            flightJumpGravity: 10,
+            flightJumpHeightIncrease: 0.5
+        };
+        
+        // If flying, perform a small flight jump
+        if (this.isFlying) {
+            // Small jump during flight
+            this.flightJump();
+            return;
+        }
         
         // Check if we can jump (either on ground or have double jump available)
-        if (!this.isJumping || (this.isJumping && this.jumpCount < this.maxJumpCount)) {
-            // If already jumping, this is a double jump
+        if (!this.isJumping || (this.isJumping && this.jumpCount < jumpConfig.maxJumpCount)) {
+            // If already jumping, this is a multi-jump
             if (this.isJumping) {
                 this.jumpCount++;
-                // Show double jump effect
-                this.createJumpEffect(0x00ffff);
+                
+                // Increase jump velocity for consecutive jumps
+                const multiplier = Math.min(
+                    jumpConfig.multiJumpHeightIncrease * this.jumpCount,
+                    jumpConfig.maxJumpHeight / jumpConfig.initialVelocity
+                );
+                this.jumpVelocity = jumpConfig.initialVelocity * multiplier;
+                
+                // Show multi-jump effect with different color
+                this.createJumpEffect(jumpConfig.doubleJumpEffectColor);
             } else {
                 this.jumpCount = 1;
+                this.jumpVelocity = jumpConfig.initialVelocity;
+                
                 // Show regular jump effect
-                this.createJumpEffect(0xffffff);
+                this.createJumpEffect(jumpConfig.jumpEffectColor);
             }
             
             // Set jump parameters
             this.isJumping = true;
-            this.jumpVelocity = 10; // Initial upward velocity
             
             // Play jump animation if available
             this.playAnimation('jump');
@@ -1613,14 +1642,65 @@ class Hero {
             // Show message
             if (window.game && window.game.ui) {
                 if (this.jumpCount > 1) {
-                    window.game.ui.showMessage("Double Jump!");
+                    window.game.ui.showMessage(`Jump #${this.jumpCount}!`);
                 } else {
                     window.game.ui.showMessage("Jump!");
                 }
             }
             
-            Logger.log(`Hero ${this.name} jumped (jump #${this.jumpCount})`);
+            // Notify camera to follow jump if configured
+            if (jumpConfig.cameraFollowJump && window.game && window.game.camera) {
+                window.game.camera.followJump(this, jumpConfig.cameraJumpOffset);
+            }
+            
+            Logger.log(`Hero ${this.name} jumped (jump #${this.jumpCount}, velocity: ${this.jumpVelocity.toFixed(1)})`);
         }
+    }
+    
+    // Flight jump - small jump while flying
+    flightJump() {
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            flightJumpVelocity: 3,
+            flightJumpGravity: 10,
+            flightJumpHeightIncrease: 0.5
+        };
+        
+        // Create a small upward boost
+        const startHeight = this.flightHeight;
+        const startTime = performance.now();
+        const jumpDuration = 500; // 0.5 seconds
+        
+        // Create jump effect
+        this.createJumpEffect(0x66ccff);
+        
+        // Play jump animation if available
+        this.playAnimation('jump');
+        
+        // Show message
+        if (window.game && window.game.ui) {
+            window.game.ui.showMessage("Boost!");
+        }
+        
+        // Animate the flight jump
+        const animate = (time) => {
+            const elapsed = time - startTime;
+            const progress = Math.min(1, elapsed / jumpDuration);
+            
+            if (progress < 1) {
+                // Parabolic jump curve
+                const jumpCurve = Math.sin(progress * Math.PI);
+                const heightIncrease = jumpConfig.flightJumpHeightIncrease * jumpCurve;
+                
+                // Apply height increase
+                this.flightTargetHeight = startHeight + heightIncrease;
+                
+                requestAnimationFrame(animate);
+            }
+        };
+        
+        requestAnimationFrame(animate);
+        Logger.log(`Hero ${this.name} performed flight jump`);
     }
     
     // Create visual effect for jumping
