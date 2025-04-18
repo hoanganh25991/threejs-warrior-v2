@@ -457,7 +457,6 @@ class Hero {
             this.leftWingGroup.rotation.z = flapAngle;
             this.rightWingGroup.rotation.z = -flapAngle; // Mirror for right wing
         }
-    }
         
         // Determine target wing open state based on direction and intensity
         let targetOpenState = 0.3 + (intensity * 0.7); // More open with higher intensity
