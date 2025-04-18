@@ -61,8 +61,60 @@ class InputManager {
             window.game.hero.startHoldJump();
         }
         
+        // Handle basic attack key (a)
+        if (key === 'a' && window.game && window.game.hero) {
+            this.handleBasicAttack();
+        }
+        
         // Emit key press event
         Events.emit('keyPressed', { key: key });
+    }
+    
+    handleBasicAttack() {
+        if (!window.game || !window.game.hero) return;
+        
+        // Find nearest enemy
+        const nearestEnemy = this.findNearestEnemy();
+        if (nearestEnemy) {
+            // Attack the enemy
+            window.game.hero.attack(nearestEnemy);
+            Logger.log(`Basic attack used on ${nearestEnemy.name}`);
+        } else {
+            Logger.log('No enemies in range for basic attack');
+        }
+    }
+    
+    findNearestEnemy() {
+        if (!window.game || !window.game.hero || !window.game.combatSystem) {
+            return null;
+        }
+        
+        const hero = window.game.hero;
+        const enemies = window.game.combatSystem.enemies;
+        
+        if (enemies.length === 0) {
+            return null;
+        }
+        
+        // Find the nearest enemy
+        let nearestEnemy = null;
+        let nearestDistance = Infinity;
+        
+        for (const enemy of enemies) {
+            const distance = hero.position.distanceTo(enemy.position);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEnemy = enemy;
+            }
+        }
+        
+        // Check if within attack range (default range: 3 units)
+        const attackRange = hero.stats.attackRange || 3;
+        if (nearestDistance <= attackRange) {
+            return nearestEnemy;
+        }
+        
+        return null;
     }
     
     handleAbilityKeyPress(key) {

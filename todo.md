@@ -65,10 +65,13 @@ When reflect details things, keep it organized with what layout in "docs" folder
 - [] skills when touch on no trigger
 - [] remove css style when hover skill with mouse
 - [] skills button show cool down effect
-- [] Give first character of skill name as what shown on the skill button, give small number key to inform the user how to cast the skill as small circle on skill circle on the right, really small
+- [] Give first character of skill name as what shown on the skill button, give small number key to inform the user how to cast the skill as small circle on skill circle on the right, really small, number key: 1, 2, 3, 4
 - [] Remove moving by a,w,s,d, replace with arrow keys
 - [] Same as basic attack button, i can press "a" to trigger basic attack
-- [] Basic attack can auto choose any near by enemy to fight
+- [] Basic attack can auto choose any near by enemy to fight, and hero auto move to that direction, under specific threshold only
+- [] When hero attack, show damage number on top of enemy head
+- [] Show enemy dead animation when killed
+- [] Show hero death animation when died
 
 
 

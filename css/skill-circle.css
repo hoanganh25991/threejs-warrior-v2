@@ -39,11 +39,6 @@
     transform: translate(-50%, -50%);
 }
 
-.basic-attack:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.4);
-}
-
 .basic-attack:active {
     transform: translate(-50%, -50%) scale(0.95);
 }
@@ -68,11 +63,6 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-}
-
-.skill:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
 .skill:active {
@@ -131,9 +121,41 @@
     height: 100%;
     border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.7);
-    clip-path: circle(50% at 50% 50%);
     z-index: 1;
     pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Cooldown text */
+.cooldown-text {
+    z-index: 2;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 3px black;
+}
+
+/* Key hint for skills */
+.key-hint {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    color: white;
+    font-weight: bold;
+    z-index: 2;
 }
 
 /* Mobile joystick */

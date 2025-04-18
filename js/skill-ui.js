@@ -45,13 +45,42 @@ class SkillUIManager {
         // Basic attack
         if (this.basicAttack) {
             this.basicAttack.addEventListener('click', this.handleBasicAttack.bind(this));
+            // Add touch events for mobile
+            this.basicAttack.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent default to avoid double triggering
+                this.handleBasicAttack();
+            });
         }
         
         // Skills
-        if (this.skill1) this.skill1.addEventListener('click', () => this.handleSkillActivation(1));
-        if (this.skill2) this.skill2.addEventListener('click', () => this.handleSkillActivation(2));
-        if (this.skill3) this.skill3.addEventListener('click', () => this.handleSkillActivation(3));
-        if (this.skill4) this.skill4.addEventListener('click', () => this.handleSkillActivation(4));
+        if (this.skill1) {
+            this.skill1.addEventListener('click', () => this.handleSkillActivation(1));
+            this.skill1.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.handleSkillActivation(1);
+            });
+        }
+        if (this.skill2) {
+            this.skill2.addEventListener('click', () => this.handleSkillActivation(2));
+            this.skill2.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.handleSkillActivation(2);
+            });
+        }
+        if (this.skill3) {
+            this.skill3.addEventListener('click', () => this.handleSkillActivation(3));
+            this.skill3.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.handleSkillActivation(3);
+            });
+        }
+        if (this.skill4) {
+            this.skill4.addEventListener('click', () => this.handleSkillActivation(4));
+            this.skill4.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.handleSkillActivation(4);
+            });
+        }
         
         // Joystick events
         if (this.joystickContainer) {
@@ -188,6 +217,14 @@ class SkillUIManager {
         const overlay = element.querySelector('.cooldown-overlay');
         if (!overlay) return;
         
+        // Create or update cooldown text element
+        let cooldownText = overlay.querySelector('.cooldown-text');
+        if (!cooldownText) {
+            cooldownText = document.createElement('div');
+            cooldownText.className = 'cooldown-text';
+            overlay.appendChild(cooldownText);
+        }
+        
         const startTime = performance.now();
         const endTime = startTime + (duration * 1000);
         
@@ -202,15 +239,19 @@ class SkillUIManager {
                 return;
             }
             
-            // Calculate remaining percentage
+            // Calculate remaining percentage and time
             const elapsed = currentTime - startTime;
+            const remainingTime = duration - (elapsed / 1000);
             const remaining = 1 - (elapsed / (duration * 1000));
             
-            // Update cooldown display
+            // Update cooldown display with pie animation
             overlay.style.clipPath = `polygon(50% 50%, 50% 0%, ${this.getClipPathCoordinates(remaining)})`;
             
-            // Update cooldown time
-            this.cooldowns[elementId] = duration - (elapsed / 1000);
+            // Update cooldown text
+            cooldownText.textContent = remainingTime.toFixed(1);
+            
+            // Update cooldown time in tracking object
+            this.cooldowns[elementId] = remainingTime;
             
             // Continue animation
             requestAnimationFrame(updateCooldown);
@@ -295,29 +336,67 @@ class SkillUIManager {
         
         // Update basic attack text
         if (this.basicAttack) {
-            this.basicAttack.textContent = 'ATTACK';
+            this.basicAttack.textContent = 'A';
+            this.basicAttack.setAttribute('data-tooltip', 'Basic Attack');
+            
+            // Add key hint
+            this.addKeyHint(this.basicAttack, 'a');
         }
         
         // Update skill icons with ability names
         if (this.skill1 && hero.abilities['1']) {
-            this.skill1.textContent = '1';
-            this.skill1.setAttribute('data-tooltip', hero.abilities['1'].name);
+            const abilityName = hero.abilities['1'].name;
+            const firstChar = abilityName.charAt(0);
+            this.skill1.textContent = firstChar;
+            this.skill1.setAttribute('data-tooltip', abilityName);
+            
+            // Add key hint
+            this.addKeyHint(this.skill1, '1');
         }
         
         if (this.skill2 && hero.abilities['2']) {
-            this.skill2.textContent = '2';
-            this.skill2.setAttribute('data-tooltip', hero.abilities['2'].name);
+            const abilityName = hero.abilities['2'].name;
+            const firstChar = abilityName.charAt(0);
+            this.skill2.textContent = firstChar;
+            this.skill2.setAttribute('data-tooltip', abilityName);
+            
+            // Add key hint
+            this.addKeyHint(this.skill2, '2');
         }
         
         if (this.skill3 && hero.abilities['3']) {
-            this.skill3.textContent = '3';
-            this.skill3.setAttribute('data-tooltip', hero.abilities['3'].name);
+            const abilityName = hero.abilities['3'].name;
+            const firstChar = abilityName.charAt(0);
+            this.skill3.textContent = firstChar;
+            this.skill3.setAttribute('data-tooltip', abilityName);
+            
+            // Add key hint
+            this.addKeyHint(this.skill3, '3');
         }
         
         if (this.skill4 && hero.abilities['4']) {
-            this.skill4.textContent = '4';
-            this.skill4.setAttribute('data-tooltip', hero.abilities['4'].name);
+            const abilityName = hero.abilities['4'].name;
+            const firstChar = abilityName.charAt(0);
+            this.skill4.textContent = firstChar;
+            this.skill4.setAttribute('data-tooltip', abilityName);
+            
+            // Add key hint
+            this.addKeyHint(this.skill4, '4');
         }
+    }
+    
+    addKeyHint(element, key) {
+        // Remove any existing key hint
+        const existingHint = element.querySelector('.key-hint');
+        if (existingHint) {
+            existingHint.remove();
+        }
+        
+        // Create key hint element
+        const keyHint = document.createElement('div');
+        keyHint.className = 'key-hint';
+        keyHint.textContent = key;
+        element.appendChild(keyHint);
     }
     
     updateWingsVisibility(data) {
