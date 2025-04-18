@@ -2,6 +2,9 @@
  * Hero configuration settings
  */
 
+// Import skills configuration
+const SkillsConfig = require('../skills');
+
 const HeroesConfig = {
     // Available heroes
     availableHeroes: [
@@ -40,39 +43,31 @@ const HeroesConfig = {
             },
             abilities: {
                 '1': {
-                    name: 'Berserker\'s Call',
-                    manaCost: 10,
-                    cooldown: 8,
-                    description: 'Taunts nearby enemies and increases armor'
+                    skillId: 'berserkers-call',
+                    // Reference to the skill in SkillsConfig
+                    ...SkillsConfig['berserkers-call'],
+                    // Hero-specific overrides can be added here
+                    // For example: cooldown: 7 would override the default cooldown
                 },
                 '2': {
-                    name: 'Battle Hunger',
-                    manaCost: 15,
-                    cooldown: 5,
-                    description: 'Damages an enemy over time until they kill a unit'
+                    skillId: 'battle-hunger',
+                    ...SkillsConfig['battle-hunger']
                 },
                 '3': {
-                    name: 'Counter Helix',
-                    passive: true,
-                    description: 'Automatically counterattacks when hit'
+                    skillId: 'counter-helix',
+                    ...SkillsConfig['counter-helix']
                 },
                 '4': {
-                    name: 'Culling Blade',
-                    manaCost: 25,
-                    cooldown: 10,
-                    description: 'Instantly kills low-health enemies'
+                    skillId: 'culling-blade',
+                    ...SkillsConfig['culling-blade']
                 },
                 '5': {
-                    name: 'War Cry',
-                    manaCost: 15,
-                    cooldown: 12,
-                    description: 'Increases armor and movement speed'
+                    skillId: 'war-cry',
+                    ...SkillsConfig['war-cry']
                 },
                 '6': {
-                    name: 'Taunt',
-                    manaCost: 5,
-                    cooldown: 5,
-                    description: 'Taunts enemies, making them attack you'
+                    skillId: 'taunt',
+                    ...SkillsConfig['taunt']
                 }
             }
         },
@@ -89,39 +84,28 @@ const HeroesConfig = {
             },
             abilities: {
                 '1': {
-                    name: 'Crystal Nova',
-                    manaCost: 15,
-                    cooldown: 5,
-                    description: 'Damages and slows enemies in an area'
+                    skillId: 'crystal-nova',
+                    ...SkillsConfig['crystal-nova']
                 },
                 '2': {
-                    name: 'Frostbite',
-                    manaCost: 20,
-                    cooldown: 6,
-                    description: 'Freezes an enemy, preventing movement and attack'
+                    skillId: 'frostbite',
+                    ...SkillsConfig['frostbite']
                 },
                 '3': {
-                    name: 'Brilliance Aura',
-                    passive: true,
-                    description: 'Provides mana regeneration to allies'
+                    skillId: 'brilliance-aura',
+                    ...SkillsConfig['brilliance-aura']
                 },
                 '4': {
-                    name: 'Freezing Field',
-                    manaCost: 30,
-                    cooldown: 12,
-                    description: 'Damages enemies in a large area over time'
+                    skillId: 'freezing-field',
+                    ...SkillsConfig['freezing-field']
                 },
                 '5': {
-                    name: 'Frost Armor',
-                    manaCost: 18,
-                    cooldown: 10,
-                    description: 'Increases armor and provides frost shield'
+                    skillId: 'frost-armor',
+                    ...SkillsConfig['frost-armor']
                 },
                 '6': {
-                    name: 'Cold Snap',
-                    manaCost: 22,
-                    cooldown: 8,
-                    description: 'Freezes the ground, creating an ice path'
+                    skillId: 'cold-snap',
+                    ...SkillsConfig['cold-snap']
                 }
             }
         },
@@ -138,40 +122,28 @@ const HeroesConfig = {
             },
             abilities: {
                 '1': {
-                    name: 'Frost Nova',
-                    manaCost: 15,
-                    cooldown: 5,
-                    description: 'Damages and slows enemies in an area'
+                    skillId: 'frost-nova',
+                    ...SkillsConfig['frost-nova']
                 },
                 '2': {
-                    name: 'Frost Armor',
-                    manaCost: 10,
-                    cooldown: 8,
-                    description: 'Increases armor and slows attackers'
+                    skillId: 'frost-armor-lich',
+                    ...SkillsConfig['frost-armor-lich']
                 },
                 '3': {
-                    name: 'Dark Ritual',
-                    manaCost: 5,
-                    cooldown: 4,
-                    description: 'Sacrifices a unit to gain mana'
+                    skillId: 'dark-ritual',
+                    ...SkillsConfig['dark-ritual']
                 },
                 '4': {
-                    name: 'Chain Frost',
-                    manaCost: 30,
-                    cooldown: 12,
-                    description: 'Launches a frost orb that bounces between enemies'
+                    skillId: 'chain-frost',
+                    ...SkillsConfig['chain-frost']
                 },
                 '5': {
-                    name: 'Frost Blast',
-                    manaCost: 20,
-                    cooldown: 10,
-                    description: 'Damages and slows enemies in a large area'
+                    skillId: 'frost-blast',
+                    ...SkillsConfig['frost-blast']
                 },
                 '6': {
-                    name: 'Ice Barrier',
-                    manaCost: 15,
-                    cooldown: 8,
-                    description: 'Creates a shield that absorbs damage'
+                    skillId: 'ice-barrier',
+                    ...SkillsConfig['ice-barrier']
                 }
             }
         },
@@ -187,39 +159,28 @@ const HeroesConfig = {
             },
             abilities: {
                 '1': {
-                    name: 'Static Remnant',
-                    manaCost: 10,
-                    cooldown: 4,
-                    description: 'Creates a remnant that damages nearby enemies'
+                    skillId: 'static-remnant',
+                    ...SkillsConfig['static-remnant']
                 },
                 '2': {
-                    name: 'Electric Vortex',
-                    manaCost: 20,
-                    cooldown: 6,
-                    description: 'Pulls an enemy toward you'
+                    skillId: 'electric-vortex',
+                    ...SkillsConfig['electric-vortex']
                 },
                 '3': {
-                    name: 'Overload',
-                    passive: true,
-                    description: 'Empowers attacks after using abilities'
+                    skillId: 'overload',
+                    ...SkillsConfig['overload']
                 },
                 '4': {
-                    name: 'Ball Lightning',
-                    manaCost: 15,
-                    cooldown: 3,
-                    description: 'Transforms into lightning to travel quickly'
+                    skillId: 'ball-lightning',
+                    ...SkillsConfig['ball-lightning']
                 },
                 '5': {
-                    name: 'Electric Surge',
-                    manaCost: 12,
-                    cooldown: 5,
-                    description: 'Damages enemies in a line'
+                    skillId: 'electric-surge',
+                    ...SkillsConfig['electric-surge']
                 },
                 '6': {
-                    name: 'Storm Gust',
-                    manaCost: 25,
-                    cooldown: 15,
-                    description: 'Creates a field of energy that damages enemies'
+                    skillId: 'storm-gust',
+                    ...SkillsConfig['storm-gust']
                 }
             }
         }
