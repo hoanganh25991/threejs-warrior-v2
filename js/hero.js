@@ -3543,3 +3543,6 @@ class HeroFactory {
         }
     }
 }
+
+// Make HeroFactory available globally
+window.HeroFactory = HeroFactory;
