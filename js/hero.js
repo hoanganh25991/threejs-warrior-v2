@@ -98,7 +98,9 @@ class Hero {
         // Get wing configuration
         const flightConfig = window.configLoader?.getConfig('flightConfig') || {
             wingSize: 2,
-            wingEffectColor: 0x66ccff
+            wingEffectColor: 0x66ccff,
+            featherCount: 24,
+            featherLayers: 3
         };
         
         // Create wing group to hold both wings
@@ -108,67 +110,249 @@ class Hero {
         // Position wings at the back of the hero
         this.wings.position.set(0, 0, -0.2);
         
-        // Create left wing
-        const leftWingGeometry = new THREE.BufferGeometry();
-        const leftWingShape = this.createWingShape(flightConfig.wingSize);
-        const leftWingPoints = leftWingShape.getPoints(12);
-        const leftWingVertices = [];
+        // Create left wing group
+        this.leftWingGroup = new THREE.Group();
+        this.leftWingGroup.position.set(-0.5, 0, 0);
+        this.wings.add(this.leftWingGroup);
         
-        // Create wing vertices (extrude the shape slightly)
-        for (let i = 0; i < leftWingPoints.length; i++) {
-            const point = leftWingPoints[i];
-            leftWingVertices.push(point.x, point.y, 0);
-            leftWingVertices.push(point.x, point.y, 0.1);
-        }
+        // Create right wing group
+        this.rightWingGroup = new THREE.Group();
+        this.rightWingGroup.position.set(0.5, 0, 0);
+        this.rightWingGroup.scale.x = -1; // Mirror along X axis
+        this.wings.add(this.rightWingGroup);
         
-        // Create wing faces (triangles)
-        const leftWingIndices = [];
-        for (let i = 0; i < leftWingPoints.length - 1; i++) {
-            const a = i * 2;
-            const b = a + 1;
-            const c = a + 2;
-            const d = a + 3;
+        // Create feathers for each wing
+        const featherCount = flightConfig.featherCount || 24;
+        const featherLayers = flightConfig.featherLayers || 3;
+        
+        // Create feathers for left wing
+        this.leftWingFeathers = [];
+        for (let layer = 0; layer < featherLayers; layer++) {
+            const layerFeathers = [];
+            const layerOffset = layer * 0.05; // Slight z-offset between layers
+            const layerScale = 1 - (layer * 0.15); // Smaller feathers for inner layers
             
-            // Create two triangles for each quad
-            leftWingIndices.push(a, b, c);
-            leftWingIndices.push(c, b, d);
+            for (let i = 0; i < featherCount; i++) {
+                const feather = this.createFeather(
+                    flightConfig.wingSize * layerScale, 
+                    flightConfig.wingEffectColor,
+                    i / featherCount,
+                    layer
+                );
+                
+                // Position feather
+                const angle = (i / featherCount) * Math.PI * 0.8; // 144 degrees arc
+                const radius = flightConfig.wingSize * 0.5 * (1 - Math.pow(layer / featherLayers, 2));
+                
+                feather.position.set(
+                    Math.cos(angle) * radius,
+                    Math.sin(angle) * radius,
+                    layerOffset
+                );
+                
+                // Rotate feather to point outward
+                feather.rotation.z = angle - Math.PI / 2;
+                
+                // Add to wing
+                this.leftWingGroup.add(feather);
+                layerFeathers.push(feather);
+            }
+            
+            this.leftWingFeathers.push(layerFeathers);
         }
         
-        // Set geometry attributes
-        leftWingGeometry.setIndex(leftWingIndices);
-        leftWingGeometry.setAttribute('position', new THREE.Float32BufferAttribute(leftWingVertices, 3));
-        leftWingGeometry.computeVertexNormals();
+        // Create feathers for right wing (clone left wing)
+        this.rightWingFeathers = [];
+        for (let layer = 0; layer < featherLayers; layer++) {
+            const layerFeathers = [];
+            const layerOffset = layer * 0.05;
+            const layerScale = 1 - (layer * 0.15);
+            
+            for (let i = 0; i < featherCount; i++) {
+                const feather = this.createFeather(
+                    flightConfig.wingSize * layerScale, 
+                    flightConfig.wingEffectColor,
+                    i / featherCount,
+                    layer
+                );
+                
+                // Position feather
+                const angle = (i / featherCount) * Math.PI * 0.8;
+                const radius = flightConfig.wingSize * 0.5 * (1 - Math.pow(layer / featherLayers, 2));
+                
+                feather.position.set(
+                    Math.cos(angle) * radius,
+                    Math.sin(angle) * radius,
+                    layerOffset
+                );
+                
+                // Rotate feather to point outward
+                feather.rotation.z = angle - Math.PI / 2;
+                
+                // Add to wing
+                this.rightWingGroup.add(feather);
+                layerFeathers.push(feather);
+            }
+            
+            this.rightWingFeathers.push(layerFeathers);
+        }
         
-        // Create wing material with transparency
-        const wingMaterial = new THREE.MeshPhongMaterial({
-            color: flightConfig.wingEffectColor,
+        // Create wing bone structure (for visual effect)
+        const boneStructure = this.createWingBoneStructure(flightConfig.wingSize, flightConfig.wingEffectColor);
+        this.leftWingGroup.add(boneStructure);
+        
+        const rightBoneStructure = boneStructure.clone();
+        this.rightWingGroup.add(rightBoneStructure);
+        
+        // Initially hide wings and set to closed position
+        this.wings.visible = false;
+        this.wingOpenState = 0; // 0 = closed, 1 = fully open
+        this.setWingOpenState(0); // Initialize in closed position
+        
+        Logger.log(`Created wings with feathers for hero ${this.name}`);
+    }
+    
+    // Create a single feather
+    createFeather(size, color, position, layer) {
+        // Create feather shape
+        const featherShape = new THREE.Shape();
+        
+        // Feather base
+        featherShape.moveTo(0, 0);
+        
+        // Feather tip
+        featherShape.bezierCurveTo(
+            size * 0.3, size * 0.4,
+            size * 0.6, size * 0.7,
+            size, size * 0.2
+        );
+        
+        // Feather bottom curve
+        featherShape.bezierCurveTo(
+            size * 0.7, size * 0.1,
+            size * 0.3, 0,
+            0, 0
+        );
+        
+        // Create geometry from shape
+        const featherGeometry = new THREE.ShapeGeometry(featherShape, 8);
+        
+        // Create material with slight variation in color
+        const hueShift = (Math.random() * 0.1) - 0.05; // Small random hue variation
+        const featherColor = new THREE.Color(color);
+        
+        // Adjust hue slightly for variation
+        const hsl = {};
+        featherColor.getHSL(hsl);
+        hsl.h += hueShift;
+        hsl.s += (Math.random() * 0.2) - 0.1; // Saturation variation
+        hsl.l += (Math.random() * 0.2) - 0.1; // Lightness variation
+        featherColor.setHSL(hsl.h, hsl.s, hsl.l);
+        
+        // Create material
+        const featherMaterial = new THREE.MeshPhongMaterial({
+            color: featherColor,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.7 - (layer * 0.1), // Inner layers slightly more transparent
             side: THREE.DoubleSide,
-            emissive: flightConfig.wingEffectColor,
+            emissive: featherColor,
             emissiveIntensity: 0.3,
             shininess: 50
         });
         
-        // Create left wing mesh
-        const leftWing = new THREE.Mesh(leftWingGeometry, wingMaterial);
-        leftWing.position.set(-0.5, 0, 0);
-        this.wings.add(leftWing);
+        // Create mesh
+        const feather = new THREE.Mesh(featherGeometry, featherMaterial);
         
-        // Create right wing (mirror of left wing)
-        const rightWing = leftWing.clone();
-        rightWing.position.set(0.5, 0, 0);
-        rightWing.scale.x = -1; // Mirror along X axis
-        this.wings.add(rightWing);
+        // Add some random rotation for natural look
+        feather.rotation.x = (Math.random() * 0.2) - 0.1;
+        feather.rotation.y = (Math.random() * 0.2) - 0.1;
         
-        // Initially hide wings
-        this.wings.visible = false;
+        return feather;
+    }
+    
+    // Create wing bone structure
+    createWingBoneStructure(size, color) {
+        const group = new THREE.Group();
         
-        // Store references for animation
-        this.leftWing = leftWing;
-        this.rightWing = rightWing;
+        // Main bone
+        const mainBoneGeometry = new THREE.CylinderGeometry(0.03, 0.01, size, 8);
+        const boneMaterial = new THREE.MeshPhongMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.9,
+            emissive: color,
+            emissiveIntensity: 0.5
+        });
         
-        Logger.log(`Created wings for hero ${this.name}`);
+        const mainBone = new THREE.Mesh(mainBoneGeometry, boneMaterial);
+        mainBone.rotation.z = Math.PI / 2; // Rotate to horizontal
+        mainBone.position.set(size/2, 0, 0.1); // Position along wing
+        group.add(mainBone);
+        
+        // Secondary bones
+        const secondaryBoneCount = 5;
+        for (let i = 0; i < secondaryBoneCount; i++) {
+            const length = size * 0.7 * (1 - (i / secondaryBoneCount));
+            const secondaryBoneGeometry = new THREE.CylinderGeometry(0.02, 0.01, length, 6);
+            const secondaryBone = new THREE.Mesh(secondaryBoneGeometry, boneMaterial);
+            
+            // Position and rotate
+            const angle = (i / secondaryBoneCount) * Math.PI * 0.5; // 90 degrees arc
+            secondaryBone.rotation.z = Math.PI / 2 + angle;
+            secondaryBone.position.set(
+                (size * 0.2) + Math.cos(angle) * (size * 0.1),
+                Math.sin(angle) * (size * 0.1),
+                0.05
+            );
+            
+            group.add(secondaryBone);
+        }
+        
+        return group;
+    }
+    
+    // Set wing open state (0 = closed, 1 = fully open)
+    setWingOpenState(openState) {
+        if (!this.leftWingFeathers || !this.rightWingFeathers) return;
+        
+        // Clamp value between 0 and 1
+        openState = Math.max(0, Math.min(1, openState));
+        this.wingOpenState = openState;
+        
+        // Calculate wing fold angle based on open state
+        // When closed, wings fold back, when open they spread out
+        const foldAngle = (1 - openState) * Math.PI * 0.8; // 0 when fully open, 144 degrees when closed
+        
+        // Apply to left wing group
+        this.leftWingGroup.rotation.y = foldAngle;
+        
+        // Apply to right wing group (mirrored)
+        this.rightWingGroup.rotation.y = -foldAngle;
+        
+        // Also adjust individual feathers for a more natural look
+        const featherLayers = this.leftWingFeathers.length;
+        
+        for (let layer = 0; layer < featherLayers; layer++) {
+            const layerFeathers = this.leftWingFeathers[layer];
+            const rightLayerFeathers = this.rightWingFeathers[layer];
+            
+            for (let i = 0; i < layerFeathers.length; i++) {
+                const feather = layerFeathers[i];
+                const rightFeather = rightLayerFeathers[i];
+                
+                // Calculate feather fold based on position and open state
+                const featherPosition = i / layerFeathers.length;
+                const featherFoldAngle = (1 - openState) * Math.PI * 0.5 * featherPosition;
+                
+                // Apply rotation to feathers
+                feather.rotation.x = featherFoldAngle;
+                rightFeather.rotation.x = featherFoldAngle;
+                
+                // Adjust opacity based on open state
+                feather.material.opacity = 0.3 + (openState * 0.4);
+                rightFeather.material.opacity = 0.3 + (openState * 0.4);
+            }
+        }
     }
     
     // Create a wing shape
@@ -204,14 +388,15 @@ class Hero {
     
     // Animate wings based on direction and intensity
     animateWings(direction, intensity) {
-        if (!this.wings || !this.leftWing || !this.rightWing) return;
+        if (!this.wings || !this.leftWingFeathers || !this.rightWingFeathers) return;
         
         // Get wing configuration
         const flightConfig = window.configLoader?.getConfig('flightConfig') || {
             wingFlapSpeed: 0.5,
             wingEffectColor: 0x66ccff,
             upwardEffectColor: 0x00ffff,
-            downwardEffectColor: 0xff9900
+            downwardEffectColor: 0xff9900,
+            wingOpenDuration: 0.8 // seconds to fully open wings
         };
         
         // Set wing color based on direction
@@ -219,48 +404,141 @@ class Hero {
             flightConfig.upwardEffectColor : 
             flightConfig.downwardEffectColor;
         
-        // Update wing material color
-        if (this.leftWing.material) {
-            this.leftWing.material.color.setHex(wingColor);
-            this.leftWing.material.emissive.setHex(wingColor);
-            this.leftWing.material.emissiveIntensity = 0.3 + intensity * 0.7; // Increase glow with intensity
-            this.leftWing.material.opacity = 0.5 + intensity * 0.5; // Increase opacity with intensity
+        // Update wing colors for all feathers
+        const featherLayers = this.leftWingFeathers.length;
+        for (let layer = 0; layer < featherLayers; layer++) {
+            const layerFeathers = this.leftWingFeathers[layer];
+            const rightLayerFeathers = this.rightWingFeathers[layer];
+            
+            for (let i = 0; i < layerFeathers.length; i++) {
+                const feather = layerFeathers[i];
+                const rightFeather = rightLayerFeathers[i];
+                
+                if (feather.material) {
+                    // Add slight color variation for each feather
+                    const featherColor = new THREE.Color(wingColor);
+                    const hsl = {};
+                    featherColor.getHSL(hsl);
+                    hsl.h += (Math.random() * 0.05) - 0.025; // Small hue variation
+                    hsl.s += (Math.random() * 0.1) - 0.05; // Saturation variation
+                    featherColor.setHSL(hsl.h, hsl.s, hsl.l);
+                    
+                    // Apply color and glow
+                    feather.material.color.copy(featherColor);
+                    feather.material.emissive.copy(featherColor);
+                    feather.material.emissiveIntensity = 0.3 + intensity * 0.7;
+                    
+                    // Apply same to right wing feather
+                    rightFeather.material.color.copy(featherColor);
+                    rightFeather.material.emissive.copy(featherColor);
+                    rightFeather.material.emissiveIntensity = 0.3 + intensity * 0.7;
+                }
+            }
         }
         
-        if (this.rightWing.material) {
-            this.rightWing.material.color.setHex(wingColor);
-            this.rightWing.material.emissive.setHex(wingColor);
-            this.rightWing.material.emissiveIntensity = 0.3 + intensity * 0.7;
-            this.rightWing.material.opacity = 0.5 + intensity * 0.5;
+        // Determine target wing open state based on direction and intensity
+        let targetOpenState = 0.3 + (intensity * 0.7); // More open with higher intensity
+        
+        // If wings are just appearing, start from closed position
+        if (!this.wings.visible || this.wingOpenState === 0) {
+            this.wings.visible = true;
+            this.wingOpenState = 0;
+            
+            // Create opening effect
+            this.animateWingOpenTransition(0, targetOpenState, flightConfig.wingOpenDuration);
+        } else {
+            // If wings are already visible, animate to new open state
+            this.animateWingOpenTransition(this.wingOpenState, targetOpenState, flightConfig.wingOpenDuration / 2);
         }
         
         // Animate wing flapping
         const flapSpeed = flightConfig.wingFlapSpeed * (1 + intensity);
-        const flapAmplitude = 0.2 + intensity * 0.3; // Flap more intensely with higher intensity
+        const flapAmplitude = 0.1 + intensity * 0.2; // Flap more intensely with higher intensity
         
-        // Clear any existing animation
-        if (this.wingAnimationId) {
-            cancelAnimationFrame(this.wingAnimationId);
+        // Clear any existing flap animation
+        if (this.wingFlapAnimationId) {
+            cancelAnimationFrame(this.wingFlapAnimationId);
         }
         
         // Start time for animation
         const startTime = performance.now();
         
-        // Animate wings
-        const animate = (time) => {
+        // Animate wing flapping
+        const animateFlap = (time) => {
             const elapsed = (time - startTime) / 1000; // Convert to seconds
             const flapAngle = Math.sin(elapsed * flapSpeed * Math.PI * 2) * flapAmplitude;
             
-            // Apply rotation to wings
-            this.leftWing.rotation.z = flapAngle;
-            this.rightWing.rotation.z = -flapAngle; // Mirror rotation for right wing
+            // Apply flap rotation to wing groups
+            this.leftWingGroup.rotation.z = flapAngle;
+            this.rightWingGroup.rotation.z = -flapAngle; // Mirror rotation for right wing
+            
+            // Also animate individual feathers for more natural movement
+            for (let layer = 0; layer < featherLayers; layer++) {
+                const layerFeathers = this.leftWingFeathers[layer];
+                const rightLayerFeathers = this.rightWingFeathers[layer];
+                
+                for (let i = 0; i < layerFeathers.length; i++) {
+                    const feather = layerFeathers[i];
+                    const rightFeather = rightLayerFeathers[i];
+                    
+                    // Add slight individual feather movement
+                    const featherPosition = i / layerFeathers.length;
+                    const featherPhaseOffset = featherPosition * Math.PI; // Different phase for each feather
+                    const featherFlapAngle = Math.sin((elapsed + featherPhaseOffset) * flapSpeed * Math.PI * 2) * (flapAmplitude * 0.3);
+                    
+                    // Apply additional rotation to individual feathers
+                    feather.rotation.y = featherFlapAngle;
+                    rightFeather.rotation.y = -featherFlapAngle;
+                }
+            }
+            
+            // Create occasional particle effects during flapping
+            if (Math.random() < 0.02 * intensity) {
+                this.createWingFlapEffect(wingColor, intensity);
+            }
             
             // Continue animation
-            this.wingAnimationId = requestAnimationFrame(animate);
+            this.wingFlapAnimationId = requestAnimationFrame(animateFlap);
         };
         
-        // Start animation
-        this.wingAnimationId = requestAnimationFrame(animate);
+        // Start flap animation
+        this.wingFlapAnimationId = requestAnimationFrame(animateFlap);
+    }
+    
+    // Animate wing opening/closing transition
+    animateWingOpenTransition(startOpenState, endOpenState, duration) {
+        // Clear any existing transition animation
+        if (this.wingTransitionAnimationId) {
+            cancelAnimationFrame(this.wingTransitionAnimationId);
+        }
+        
+        const startTime = performance.now();
+        
+        const animateTransition = (time) => {
+            const elapsed = (time - startTime) / 1000; // Convert to seconds
+            const progress = Math.min(1, elapsed / duration);
+            
+            // Use easeInOutCubic for smooth transition
+            const easedProgress = progress < 0.5 
+                ? 4 * progress * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            
+            // Calculate current open state
+            const currentOpenState = startOpenState + (endOpenState - startOpenState) * easedProgress;
+            
+            // Apply open state
+            this.setWingOpenState(currentOpenState);
+            
+            // Continue animation if not complete
+            if (progress < 1) {
+                this.wingTransitionAnimationId = requestAnimationFrame(animateTransition);
+            } else {
+                this.wingTransitionAnimationId = null;
+            }
+        };
+        
+        // Start transition animation
+        this.wingTransitionAnimationId = requestAnimationFrame(animateTransition);
     }
     
     // Create visual effect for wing flapping
@@ -2667,10 +2945,29 @@ class Hero {
                 // Hide wings if they were showing
                 if (this.showWings) {
                     this.showWings = false;
-                    // Hide 3D wings
-                    if (this.wings) {
-                        this.wings.visible = false;
+                    
+                    // Animate wings closing before hiding
+                    if (this.wings && this.wings.visible) {
+                        // Get wing configuration
+                        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+                            wingOpenDuration: 0.8
+                        };
+                        
+                        // Animate wings closing
+                        this.animateWingOpenTransition(this.wingOpenState, 0, flightConfig.wingOpenDuration / 2);
+                        
+                        // Hide wings after animation completes
+                        setTimeout(() => {
+                            this.wings.visible = false;
+                            
+                            // Clear any ongoing wing animations
+                            if (this.wingFlapAnimationId) {
+                                cancelAnimationFrame(this.wingFlapAnimationId);
+                                this.wingFlapAnimationId = null;
+                            }
+                        }, flightConfig.wingOpenDuration * 500); // Half the duration in milliseconds
                     }
+                    
                     // Also emit event for UI wings (backward compatibility)
                     Events.emit('wingsVisibilityChanged', { visible: false });
                 }
@@ -2685,12 +2982,32 @@ class Hero {
                     
                     // Update 3D wings visibility
                     if (this.wings) {
-                        this.wings.visible = shouldShowWings;
                         if (shouldShowWings) {
+                            // Show and animate wings opening
+                            const intensity = Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity);
                             this.animateWings(
                                 this.jumpVelocity > 0 ? 'up' : 'down', 
-                                Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity)
+                                intensity
                             );
+                        } else {
+                            // Animate wings closing before hiding
+                            const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+                                wingOpenDuration: 0.8
+                            };
+                            
+                            // Animate wings closing
+                            this.animateWingOpenTransition(this.wingOpenState, 0, flightConfig.wingOpenDuration / 2);
+                            
+                            // Hide wings after animation completes
+                            setTimeout(() => {
+                                this.wings.visible = false;
+                                
+                                // Clear any ongoing wing animations
+                                if (this.wingFlapAnimationId) {
+                                    cancelAnimationFrame(this.wingFlapAnimationId);
+                                    this.wingFlapAnimationId = null;
+                                }
+                            }, flightConfig.wingOpenDuration * 500); // Half the duration in milliseconds
                         }
                     }
                     
@@ -2700,6 +3017,15 @@ class Hero {
                         direction: this.jumpVelocity > 0 ? 'up' : 'down',
                         intensity: Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity)
                     });
+                } else if (shouldShowWings && this.wings && this.wings.visible) {
+                    // Update wing animation if already visible
+                    const intensity = Math.min(1.0, Math.abs(this.jumpVelocity) / jumpConfig.holdJumpMaxVelocity);
+                    if (intensity > 0.1) { // Only update for significant movement
+                        this.animateWings(
+                            this.jumpVelocity > 0 ? 'up' : 'down', 
+                            intensity
+                        );
+                    }
                 }
             }
             
@@ -2733,10 +3059,18 @@ class Hero {
                     
                     // Update 3D wings
                     if (this.wings) {
-                        this.wings.visible = true;
+                        const intensity = Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime));
+                        
+                        // If wings just became visible, animate opening
+                        if (!this.wings.visible) {
+                            this.wings.visible = true;
+                            this.wingOpenState = 0; // Start from closed position
+                        }
+                        
+                        // Animate wings with direction and intensity
                         this.animateWings(
                             heightStep > 0 ? 'up' : 'down',
-                            Math.min(1.0, Math.abs(heightStep) / (5 * deltaTime))
+                            intensity
                         );
                     }
                     

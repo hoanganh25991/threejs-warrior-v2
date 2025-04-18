@@ -107,7 +107,14 @@ Jump mechanics are configured in `config/movement/jump.js`, which includes:
 
 ### Wing Effects
 - 3D wings appear on the back of the hero model when flying or jumping high
-- Wings are created using custom geometry with a curved wing shape
+- Wings have multiple individual feathers (configurable, default: 24 feathers)
+- Wings have multiple layers of feathers (configurable, default: 3 layers)
+- Wings include bone structure for more realistic appearance
+- Wings transition from closed to open when hero starts flying:
+  - Start in folded position when first appearing
+  - Gradually unfold as hero transitions to flight
+  - Fold back when hero lands or stops flying
+  - Smooth transition using cubic easing functions
 - Wing size is configurable (default: 2 units)
 - Wings flap at a configurable speed (wingFlapSpeed: 0.5)
 - Wing color changes based on movement direction:
@@ -117,6 +124,7 @@ Jump mechanics are configured in `config/movement/jump.js`, which includes:
   - Flap speed increases with movement intensity
   - Flap amplitude (how wide the wings flap) increases with intensity
   - Wing opacity and glow increase with movement intensity
+  - Individual feathers have slight variations in color and movement
 - Particle effects emit from wings during flapping:
   - Particles inherit wing color based on direction
   - More particles generate with higher intensity movement

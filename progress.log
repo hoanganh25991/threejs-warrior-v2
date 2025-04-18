@@ -69,3 +69,6 @@
 [2024-05-07T12:00:00.000Z] Implemented 3D wings effect for heroes during flight and jump
 [2024-05-07T12:15:00.000Z] Added dynamic wing animation that changes based on flight direction and intensity
 [2024-05-07T12:30:00.000Z] Added particle effects for wing flapping during flight
+[2024-05-07T13:00:00.000Z] Enhanced wings with multiple feathers and bone structure for more realistic appearance
+[2024-05-07T13:15:00.000Z] Added smooth transition animation for wings opening/closing when changing between normal and flight modes
+[2024-05-07T13:30:00.000Z] Implemented individual feather animation for more natural wing movement
