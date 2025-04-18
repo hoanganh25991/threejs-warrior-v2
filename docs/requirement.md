@@ -6,6 +6,17 @@ This document serves as the central hub for all game requirements and documentat
 
 Legends of the Ancient Realms is an isometric action RPG built with PlayCanvas that combines the quest-driven, dungeon-crawling gameplay of classic ARPGs with the diverse hero roster inspired by DotA. Players select from iconic heroes representing either the Sentinel or Scourge factions, each with unique abilities and playstyles, as they embark on a journey through a war-torn world.
 
+## Game Concept
+
+### Core Vision
+Legends of the Ancient Realms aims to deliver a rich single-player experience where players can embody iconic hero archetypes in a narrative-driven adventure. The game combines fast-paced, skill-based combat with a compelling story where heroes from opposing factions must unite against a greater threat.
+
+### Key Pillars
+- **Hero-Centric Gameplay**: Distinct heroes with predefined personalities, backstories, and core abilities
+- **Isometric Action Combat**: Real-time, skill-based combat viewed from an isometric perspective
+- **Rich Narrative Experience**: A compelling story where player choices influence how the narrative unfolds
+- **Dynamic World**: Diverse and reactive environments that change based on player actions and story progression
+
 ## Core Requirements
 
 1. **3D Isometric Perspective**: The game must feature a 3D isometric view with free camera rotation
@@ -31,37 +42,164 @@ Legends of the Ancient Realms is an isometric action RPG built with PlayCanvas t
    - Low latency for responsive controls
    - Efficient asset loading for quick startup
 
+## Gameplay Systems
+
+### Movement & Controls
+- **Point-and-Click Navigation**: Primary movement method using mouse clicks
+- **WASD Movement**: Alternative direct control using keyboard
+- **Camera Rotation**: Middle-mouse button to rotate view 360 degrees
+- **Camera Zoom**: Mouse wheel to adjust distance
+
+### Combat System
+- **Auto-Attack**: Basic attacks when targeting enemies
+- **Ability System**: 4 unique abilities per hero with cooldowns and resource costs
+- **Status Effects**: Buffs/debuffs, crowd control, damage over time effects
+- **Damage Types**: Physical, magical, pure damage types with different resistances
+
+### Progression Systems
+- **Experience & Leveling**: Maximum level 30 with experience from enemies, quests, exploration
+- **Ability Advancement**: Ability points to increase power and unlock enhanced functionality
+- **Talent System**: Hero-specific specialization options unlocked at specific level thresholds
+
+### Item & Equipment System
+- **Item Categories**: Weapons, armor, accessories, consumables
+- **Item Properties**: Base stats, special effects, set bonuses, rarity tiers
+- **Inventory Management**: Grid-based inventory with limited space
+
+### Quest & Objective System
+- **Quest Types**: Main quests, side quests, hero quests, repeatable quests
+- **Objective Tracking**: Quest log, objective markers, progress tracking
+
 ## Documentation Structure
 
 ### Game Design
-- [Game Concept](gameplay/concept.md) - Core game concept and vision
-- [Gameplay Systems](gameplay/systems.md) - Detailed gameplay mechanics
-- [Story & Narrative](gameplay/story.md) - Game lore and narrative structure
-- [Progression](gameplay/progression.md) - Character progression and advancement
+- Game Concept - Core game concept and vision
+- Gameplay Systems - Detailed gameplay mechanics
+- Story & Narrative - Game lore and narrative structure
+- Progression - Character progression and advancement
 
-### World Design
-- [Environments](world/environments.md) - World design and areas
-- [NPCs](world/npcs.md) - Non-player characters
-- [Quests](world/quests.md) - Quest system and mission structure
-- [Items & Loot](world/items.md) - Equipment, consumables, and treasures
+## World Design
 
-### Hero System
-- [Hero Mechanics](heroes/system.md) - Hero mechanics and abilities
-- [Sentinel Heroes](heroes/sentinel.md) - Heroes of the Sentinel faction
-- [Scourge Heroes](heroes/scourge.md) - Heroes of the Scourge faction
-- [Abilities](heroes/abilities.md) - Detailed ability descriptions
+### Environments
+- **Major Regions**: Sentinel Territories, Scourge Territories, Neutral/Contested Zones
+- **Settlement Types**: Major cities, outposts, villages with distinct architectural styles
+- **Dungeon Types**: Ancient ruins, natural caverns, faction strongholds, corrupted zones
+- **Environmental Features**: Interactive elements, weather effects, day/night cycle, seasonal changes
 
-### Technical Specifications
-- [Architecture](technical/architecture.md) - Game architecture overview
-- [Performance](technical/performance.md) - Performance considerations
-- [Controls](technical/controls.md) - Input and control systems
-- [UI/UX](technical/ui.md) - User interface design
+### NPCs
+- **Faction Characters**: Sentinel and Scourge representatives with unique dialogue and quests
+- **Neutral Entities**: Merchants, craftsmen, mercenaries, and other non-aligned characters
+- **Hostile Creatures**: Wildlife, monsters, bandits, and faction-specific enemies
+- **Bosses**: Unique, powerful adversaries with special abilities and mechanics
 
-### Asset Requirements
-- [Visual Style](assets/visual_style.md) - Art direction and visual guidelines
-- [Sound Design](assets/sound.md) - Music and sound effects
-- [Animation](assets/animation.md) - Character and effect animations
-- [Asset Pipeline](assets/pipeline.md) - Asset creation workflow
+### Quests
+- **Main Campaign**: Central narrative focusing on the conflict between factions and emerging threats
+- **Side Missions**: Optional content that expands the world and provides additional rewards
+- **Hero Quests**: Character-specific storylines that develop individual hero backgrounds
+- **Dynamic Events**: Procedurally generated encounters that respond to player actions
+
+### Items & Loot
+- **Equipment System**: Weapons, armor, and accessories with varying stats and effects
+- **Consumables**: Potions, scrolls, and other single-use items with temporary benefits
+- **Crafting Materials**: Resources gathered throughout the world for item creation
+- **Unique Artifacts**: Legendary items with special properties and lore significance
+
+### Documentation Structure
+- Environments - World design and areas
+- NPCs - Non-player characters
+- Quests - Quest system and mission structure
+- Items & Loot - Equipment, consumables, and treasures
+
+## Hero System
+
+### Hero Structure
+- **Base Attributes**: Strength, Agility, Intelligence, Vitality, Spirit
+- **Hero Types**: Warrior, Assassin, Mage, Support, Specialist
+- **Faction Alignment**: Sentinel (order, protection, light) or Scourge (chaos, power, darkness)
+
+### Ability System
+- **Ability Structure**: 4 Active Abilities, 1 Passive Ability, 1 Ultimate Ability
+- **Ability Components**: Cooldown, Resource Cost, Targeting Type, Effect, Scaling
+- **Ability Advancement**: Ability Points, Ability Tiers, Ability Modifications
+
+### Talent System
+- **Talent Structure**: 3 specialization paths per hero with points earned at specific level thresholds
+- **Talent Types**: Ability Enhancements, New Abilities, Attribute Bonuses, Utility Effects, Playstyle Modifiers
+
+### Hero Selection & Switching
+- **Initial Selection**: Choose starting hero at the beginning of the game
+- **Hero Switching**: Switch heroes at special locations after completing the introduction
+- **Hero Relationships**: Unique dialogue and interactions between heroes
+
+### Documentation Structure
+- Hero Mechanics - Hero mechanics and abilities
+- Sentinel Heroes - Heroes of the Sentinel faction
+- Scourge Heroes - Heroes of the Scourge faction
+- Abilities - Detailed ability descriptions
+
+## Technical Specifications
+
+### Architecture
+- **Entity-Component System**: Flexible game object management using PlayCanvas ECS
+- **Scene Management**: Efficient loading and unloading of game areas
+- **Asset Pipeline**: Optimized asset loading and management
+- **Network Architecture**: Client-side prediction with optional server validation
+
+### Performance Considerations
+- **Rendering Optimizations**: LOD, texture management, shader optimization, draw call reduction
+- **Memory Management**: Asset loading, object pooling, garbage collection management
+- **Physics Optimizations**: Collision detection, physics simulation, sleep states
+- **Adaptive Performance**: Dynamic quality adjustment based on device capabilities
+
+### Controls System
+- **Mouse Controls**: Left-click to move/attack, right-click for abilities, middle-mouse for camera rotation
+- **Keyboard Controls**: WASD for movement, Q/W/E/R for abilities, space for dodge/evade
+- **Camera System**: Isometric perspective with rotation, zoom, and multiple camera modes
+- **Accessibility Options**: Auto-targeting, movement assist, camera assist, colorblind modes
+
+### UI/UX Design
+- **HUD Elements**: Health/mana bars, ability cooldowns, minimap, quest tracker
+- **Menu Systems**: Inventory, character sheet, skill tree, quest log, options
+- **Feedback Systems**: Combat text, visual effects, audio cues, haptic feedback
+- **Onboarding**: Tutorial system, tooltips, contextual help
+
+### Documentation Structure
+- Architecture - Game architecture overview
+- Performance - Performance considerations
+- Controls - Input and control systems
+- UI/UX - User interface design
+
+## Asset Requirements
+
+### Visual Style
+- **Art Direction**: Stylized fantasy with vibrant colors and distinctive silhouettes
+- **Character Design**: Unique, recognizable heroes with faction-specific visual themes
+- **Environment Design**: Diverse biomes with strong visual identity and mood
+- **VFX Design**: Spectacular ability effects with clear gameplay readability
+
+### Sound Design
+- **Music System**: Adaptive music that responds to gameplay context and intensity
+- **Sound Effects**: Distinctive audio for abilities, environments, and interactions
+- **Voice Acting**: Character-specific voice lines for abilities, reactions, and dialogue
+- **Audio Implementation**: Spatial audio, mixing, and performance optimization
+
+### Animation
+- **Character Animation**: Fluid movement, combat, and ability animations
+- **Procedural Systems**: Blending and transitions for responsive character control
+- **Environmental Animation**: Dynamic elements that bring the world to life
+- **VFX Animation**: Particle systems and shader effects for abilities and atmosphere
+
+### Asset Pipeline
+- **Creation Workflow**: Standardized processes for consistent asset quality
+- **Optimization Guidelines**: Polygon budgets, texture sizes, and performance targets
+- **Integration Process**: Smooth pipeline from art tools to game engine
+- **Quality Assurance**: Review processes to maintain visual consistency
+
+### Documentation Structure
+- Visual Style - Art direction and visual guidelines
+- Sound Design - Music and sound effects
+- Animation - Character and effect animations
+- Asset Pipeline - Asset creation workflow
 
 ## Development Roadmap
 
