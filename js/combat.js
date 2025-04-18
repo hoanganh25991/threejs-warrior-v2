@@ -119,6 +119,19 @@ class CombatSystem {
         // Create a projectile mesh based on type
         let geometry, material;
         
+        // Ensure valid position values to prevent NaN errors
+        const validStartPosition = new THREE.Vector3(
+            isNaN(startPosition.x) ? 0 : startPosition.x,
+            isNaN(startPosition.y) ? 0 : startPosition.y,
+            isNaN(startPosition.z) ? 0 : startPosition.z
+        );
+        
+        const validTargetPosition = new THREE.Vector3(
+            isNaN(targetPosition.x) ? 0 : targetPosition.x,
+            isNaN(targetPosition.y) ? 0 : targetPosition.y,
+            isNaN(targetPosition.z) ? 0 : targetPosition.z
+        );
+        
         switch (type) {
             case 'fireball':
                 geometry = new THREE.SphereGeometry(0.3, 8, 8);
@@ -142,13 +155,20 @@ class CombatSystem {
         }
         
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.copy(startPosition);
+        mesh.position.copy(validStartPosition);
         
         // Add to scene
         this.scene.add(mesh);
         
-        // Calculate direction
-        const direction = new THREE.Vector3().subVectors(targetPosition, startPosition).normalize();
+        // Calculate direction using valid positions
+        const direction = new THREE.Vector3().subVectors(validTargetPosition, validStartPosition).normalize();
+        
+        // Ensure direction is valid (not NaN)
+        if (isNaN(direction.x) || isNaN(direction.y) || isNaN(direction.z)) {
+            // If direction calculation failed, use a default direction
+            direction.set(1, 0, 0); // Default to positive X direction
+            Logger.warn('Invalid projectile direction calculated, using default direction');
+        }
         
         // Create projectile object
         const projectile = {
@@ -169,12 +189,24 @@ class CombatSystem {
     }
     
     createDamageNumber(position, amount) {
+        // Ensure valid position values to prevent NaN errors
+        if (!position || isNaN(position.x) || isNaN(position.y) || isNaN(position.z)) {
+            Logger.warn('Invalid position for damage number, skipping');
+            return;
+        }
+        
         // In a real implementation, this would create a 3D text or sprite
         // For now, we'll just log it
         console.log(`Damage: ${amount} at position ${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)}`);
     }
     
     createHitEffect(position) {
+        // Ensure valid position values to prevent NaN errors
+        if (!position || isNaN(position.x) || isNaN(position.y) || isNaN(position.z)) {
+            Logger.warn('Invalid position for hit effect, skipping');
+            return;
+        }
+        
         // Create a simple hit effect (particle burst)
         const particles = new THREE.Group();
         
@@ -201,7 +233,7 @@ class CombatSystem {
             particles.add(particle);
         }
         
-        // Position the particle group
+        // Position the particle group with valid position
         particles.position.copy(position);
         
         // Add to scene
@@ -219,6 +251,13 @@ class CombatSystem {
     createDeathEffect(position) {
         // Create a death effect (larger particle burst)
         const particles = new THREE.Group();
+        
+        // Ensure valid position values to prevent NaN errors
+        const validPosition = new THREE.Vector3(
+            isNaN(position.x) ? 0 : position.x,
+            isNaN(position.y) ? 0 : position.y,
+            isNaN(position.z) ? 0 : position.z
+        );
         
         // Create several particles
         for (let i = 0; i < 20; i++) {
@@ -243,8 +282,8 @@ class CombatSystem {
             particles.add(particle);
         }
         
-        // Position the particle group
-        particles.position.copy(position);
+        // Position the particle group with valid position
+        particles.position.copy(validPosition);
         
         // Add to scene
         this.scene.add(particles);

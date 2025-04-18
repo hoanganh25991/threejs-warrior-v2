@@ -37,8 +37,8 @@ const FlightConfig = {
     slowHeightChangeRate: 0.5,  // Slow height change rate when above threshold
     
     // Sound effects
-    takeoffSoundEffect: 'sounds/submarine.mp3',
-    landingSoundEffect: 'sounds/basso.mp3',
+    takeoffSoundEffect: 'assets/sounds/submarine.mp3',
+    landingSoundEffect: 'assets/sounds/basso.mp3',
     flightLoopSoundEffect: null // Path to looping sound during flight
 };
 

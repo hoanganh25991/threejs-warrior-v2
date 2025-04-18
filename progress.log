@@ -83,3 +83,15 @@
 [2024-05-11T10:30:00.000Z] Completed implementation of key indicators on skill buttons
 [2024-05-11T10:45:00.000Z] Completed implementation of cooldown effect for skill buttons
 [2024-05-11T11:00:00.000Z] All tasks in todo.md have been completed
+[2024-05-12T09:00:00.000Z] Fixed THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN error by adding default radius property to Hero class
+[2024-05-12T09:30:00.000Z] Enhanced createGlowEffect method to validate parameters before creating geometries
+[2024-05-12T10:00:00.000Z] Added validation in createHitEffect and createDamageNumber methods to prevent NaN values
+[2024-05-12T10:30:00.000Z] Implemented maintainFlightHeight method to allow maintaining height during flight with touch/click
+[2024-05-12T11:00:00.000Z] Enhanced flightJump method to provide better height control and visual feedback
+[2024-05-12T11:30:00.000Z] Updated input handler to call maintainFlightHeight when clicking or touching during flight
+[2024-05-12T12:00:00.000Z] Created comprehensive AudioManager class to handle all game audio
+[2024-05-12T12:30:00.000Z] Implemented sound categories (sfx, music, ambient, ui, voice) with volume controls
+[2024-05-12T13:00:00.000Z] Added methods to play, stop, and manage sounds with proper cleanup
+[2024-05-12T13:30:00.000Z] Updated hero's flight and jump methods to use the AudioManager
+[2024-05-12T14:00:00.000Z] Added proper sound cleanup when stopping actions
+[2024-05-12T14:30:00.000Z] Created documentation for fixed issues in docs/fixed-issues/nan-buffer-geometry-and-flight-improvements.md

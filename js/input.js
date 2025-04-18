@@ -353,6 +353,11 @@ class InputManager {
         // Find intersections with the ground plane
         const groundObjects = []; // This should be populated with ground objects from the scene
         
+        // Check if hero is flying and maintain height if so
+        if (window.game && window.game.hero && window.game.hero.isFlying) {
+            window.game.hero.maintainFlightHeight();
+        }
+        
         // Emit ground click event with intersection point
         Events.emit('groundClick', { 
             position: this.mousePosition,

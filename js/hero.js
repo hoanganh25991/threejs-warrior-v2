@@ -19,6 +19,9 @@ class Hero {
         this.isMoving = false;
         this.moveDirection = new THREE.Vector3();
         
+        // Physical properties
+        this.radius = 1.0; // Default collision/effect radius
+        
         // Jump properties
         this.isJumping = false;
         this.jumpHeight = 0;
@@ -640,8 +643,12 @@ class Hero {
     
     // Create a glow effect around the hero
     createGlowEffect(color, size = 1.0, duration = 1000) {
-        // Create a sphere geometry for the glow
-        const geometry = new THREE.SphereGeometry(this.radius * size, 16, 16);
+        // Ensure radius is valid
+        const effectRadius = isNaN(this.radius) ? 1.0 : this.radius;
+        const effectSize = isNaN(size) ? 1.0 : size;
+        
+        // Create a sphere geometry for the glow with validated parameters
+        const geometry = new THREE.SphereGeometry(effectRadius * effectSize, 16, 16);
         const material = new THREE.MeshBasicMaterial({
             color: color,
             transparent: true,
@@ -2429,6 +2436,11 @@ class Hero {
             // Play jump animation if available
             this.playAnimation('jump');
             
+            // Play jump sound
+            if (window.game && window.game.audio) {
+                window.game.audio.playSound('jump', 0.4);
+            }
+            
             // Show message
             if (window.game && window.game.ui) {
                 if (this.jumpCount > 1) {
@@ -2541,7 +2553,9 @@ class Hero {
         const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
             flightJumpVelocity: 3,
             flightJumpGravity: 10,
-            flightJumpHeightIncrease: 0.5
+            flightJumpHeightIncrease: 0.5,
+            flightJumpSustainedIncrease: 1.0, // Additional height for sustained jumps
+            flightJumpMaxHeight: 20 // Maximum flight height
         };
         
         // Create a small upward boost
@@ -2560,6 +2574,16 @@ class Hero {
             window.game.ui.showMessage("Boost!");
         }
         
+        // Increase flight height immediately
+        const immediateIncrease = jumpConfig.flightJumpHeightIncrease;
+        this.flightTargetHeight = Math.min(
+            startHeight + immediateIncrease,
+            jumpConfig.flightJumpMaxHeight
+        );
+        
+        // Create wing pulse effect
+        this.createWingPulseEffect(0x66ccff);
+        
         // Animate the flight jump
         const animate = (time) => {
             const elapsed = time - startTime;
@@ -2571,7 +2595,10 @@ class Hero {
                 const heightIncrease = jumpConfig.flightJumpHeightIncrease * jumpCurve;
                 
                 // Apply height increase
-                this.flightTargetHeight = startHeight + heightIncrease;
+                this.flightTargetHeight = Math.min(
+                    startHeight + heightIncrease,
+                    jumpConfig.flightJumpMaxHeight
+                );
                 
                 requestAnimationFrame(animate);
             }
@@ -2579,6 +2606,34 @@ class Hero {
         
         requestAnimationFrame(animate);
         Logger.log(`Hero ${this.name} performed flight jump`);
+    }
+    
+    // Maintain flight height (called when touch/click during flight)
+    maintainFlightHeight() {
+        if (!this.isFlying) return;
+        
+        // Get jump configuration
+        const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+            flightJumpSustainedIncrease: 1.0,
+            flightJumpMaxHeight: 20
+        };
+        
+        // Increase flight height
+        const currentHeight = this.flightHeight || 0;
+        this.flightTargetHeight = Math.min(
+            currentHeight + jumpConfig.flightJumpSustainedIncrease,
+            jumpConfig.flightJumpMaxHeight
+        );
+        
+        // Create subtle wing pulse effect
+        this.createWingPulseEffect(0x66ffff, 0.5);
+        
+        // Show message
+        if (window.game && window.game.ui) {
+            window.game.ui.showMessage("Maintaining height!");
+        }
+        
+        Logger.log(`Hero ${this.name} maintaining flight height at ${this.flightTargetHeight.toFixed(1)}`);
     }
     
     // Create visual effect for jumping
@@ -2664,11 +2719,15 @@ class Hero {
                 window.game.ui.showMessage("Landing...");
             }
             
-            // Play landing sound if configured
-            if (flightConfig.landingSoundEffect) {
-                const audio = new Audio(flightConfig.landingSoundEffect);
-                audio.volume = 0.3;
-                audio.play().catch(e => console.warn('Could not play landing sound:', e));
+            // Play landing sound using audio manager
+            if (window.game && window.game.audio) {
+                window.game.audio.playSound('landing', 0.4);
+                
+                // Stop any flight loop sound
+                if (this.flightLoopSoundId) {
+                    window.game.audio.stopSound(this.flightLoopSoundId);
+                    this.flightLoopSoundId = null;
+                }
             }
             
             // Animate wings closing before hiding
@@ -2716,11 +2775,12 @@ class Hero {
                 window.game.ui.showMessage("Taking Flight!");
             }
             
-            // Play takeoff sound if configured
-            if (flightConfig.takeoffSoundEffect) {
-                const audio = new Audio(flightConfig.takeoffSoundEffect);
-                audio.volume = 0.3;
-                audio.play().catch(e => console.warn('Could not play takeoff sound:', e));
+            // Play takeoff sound using audio manager
+            if (window.game && window.game.audio) {
+                window.game.audio.playSound('takeoff', 0.4);
+                
+                // Start looping flight sound
+                this.flightLoopSoundId = window.game.audio.playSound('flightLoop', 0.2, true);
             }
             
             // Update UI button

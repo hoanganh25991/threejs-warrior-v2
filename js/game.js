@@ -16,6 +16,7 @@ class Game {
         this.inputManager = null;
         this.uiManager = null;
         this.combatSystem = null;
+        this.audio = null; // Audio manager
         
         // Game state
         this.isRunning = false;
@@ -51,6 +52,9 @@ class Game {
         // Initialize Three.js
         this.initThreeJS();
         
+        // Initialize audio manager
+        this.initAudio();
+        
         // Load assets
         await this.loadAssets();
         
@@ -75,6 +79,22 @@ class Game {
         this.animate();
         
         Logger.log('Game initialized');
+    }
+    
+    /**
+     * Initialize audio system
+     */
+    initAudio() {
+        // Create audio manager
+        this.audio = new AudioManager();
+        
+        // Set default volumes
+        this.audio.setMasterVolume(0.5);
+        
+        // Preload common sounds
+        this.audio.preloadCommonSounds();
+        
+        Logger.log('Audio system initialized');
     }
     
     /**

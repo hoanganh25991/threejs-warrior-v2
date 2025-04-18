@@ -130,8 +130,8 @@ const JumpConfig = {
     doubleJumpEffectColor: 0x00ffff, // Color of double jump effect
     cameraFollowJump: true,     // Whether camera should follow player during jump
     cameraJumpOffset: 0.7,      // How much camera follows the jump
-    jumpSoundEffect: 'sounds/pop.mp3',
-    landSoundEffect: 'sounds/blow.mp3'
+    jumpSoundEffect: 'assets/sounds/pop.mp3',
+    landSoundEffect: 'assets/sounds/blow.mp3'
 };
 ```
 
@@ -152,8 +152,8 @@ const FlightConfig = {
     wingSize: 2,                // Size of wings
     wingFlapSpeed: 0.5,         // Speed of wing flapping animation
     wingEffectColor: 0x66ccff,  // Color for wing effect
-    takeoffSoundEffect: 'sounds/submarine.mp3',
-    landingSoundEffect: 'sounds/basso.mp3'
+    takeoffSoundEffect: 'assets/sounds/submarine.mp3',
+    landingSoundEffect: 'assets/sounds/basso.mp3'
 };
 ```
 

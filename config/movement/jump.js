@@ -35,8 +35,8 @@ const JumpConfig = {
     cameraAlwaysCenterPlayer: true,    // Always keep player at center of screen
     
     // Sound effects
-    jumpSoundEffect: 'sounds/pop.mp3',
-    landSoundEffect: 'sounds/blow.mp3',
+    jumpSoundEffect: 'assets/sounds/pop.mp3',
+    landSoundEffect: 'assets/sounds/blow.mp3',
     
     // Wing effects during high jumps
     showWings: true,            // Whether to show wings during high jumps
