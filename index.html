@@ -75,24 +75,44 @@
                 </div>
             </div>
             
-            <!-- Right side UI (abilities) -->
-            <div id="right-ui">
-                <div id="abilities-container">
-                    <div class="ability" id="ability-1">1</div>
-                    <div class="ability" id="ability-2">2</div>
-                    <div class="ability" id="ability-3">3</div>
-                    <div class="ability" id="ability-4">4</div>
-                    <div class="ability" id="ability-5">5</div>
-                    <div class="ability" id="ability-6">6</div>
+            <!-- Circular Skill UI (Diablo Immortal style) -->
+            <div id="skill-circle-container" class="skill-circle-container">
+                <div id="basic-attack" class="basic-attack">ATTACK</div>
+                <div id="skill-1" class="skill skill-1">1</div>
+                <div id="skill-2" class="skill skill-2">2</div>
+                <div id="skill-3" class="skill skill-3">3</div>
+                <div id="skill-4" class="skill skill-4">4</div>
+                
+                <!-- Wings effect container for flying -->
+                <div class="wings-container">
+                    <div class="wings"></div>
                 </div>
-                <div id="special-abilities">
-                    <div class="special-ability" id="jump-ability">JUMP</div>
-                    <div class="special-ability" id="fly-ability">FLY</div>
-                </div>
+            </div>
+            
+            <!-- Default skills (jump and fly) -->
+            <div id="default-skills" class="default-skills">
+                <div class="special-ability" id="jump-ability">JUMP</div>
+                <div class="special-ability" id="fly-ability">FLY</div>
+            </div>
+            
+            <!-- Mobile joystick -->
+            <div id="joystick-container" class="joystick-container">
+                <div id="joystick-base" class="joystick-base"></div>
+                <div id="joystick-thumb" class="joystick-thumb"></div>
             </div>
             
             <!-- Message display area -->
             <div id="message-container"></div>
+            
+            <!-- Legacy abilities container (hidden but kept for compatibility) -->
+            <div id="abilities-container" class="hidden">
+                <div class="ability" id="ability-1">1</div>
+                <div class="ability" id="ability-2">2</div>
+                <div class="ability" id="ability-3">3</div>
+                <div class="ability" id="ability-4">4</div>
+                <div class="ability" id="ability-5">5</div>
+                <div class="ability" id="ability-6">6</div>
+            </div>
         </div>
         
         <canvas id="game-canvas"></canvas>
@@ -111,6 +131,7 @@
     <script src="js/world.js"></script>
     <script src="js/combat.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/skill-ui.js"></script>
     <script src="js/game.js"></script>
 </body>
 </html>

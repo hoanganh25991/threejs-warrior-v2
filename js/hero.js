@@ -20,7 +20,8 @@ class Hero {
             intelligence: 10,
             movementSpeed: 5,
             attackSpeed: 1,
-            attackDamage: 10
+            attackDamage: 10,
+            attackRange: 3 // Default attack range
         };
         
         // Position and movement
@@ -237,7 +238,43 @@ class Hero {
         // Set attack cooldown
         this.attackCooldown = 1 / this.stats.attackSpeed;
         
+        // Emit attack event for UI
+        Events.emit('abilityUsed', {
+            abilityId: 'basic-attack',
+            cooldownTime: this.attackCooldown
+        });
+        
+        // Create attack effect
+        if (window.game && window.game.combatSystem) {
+            // Create a simple projectile or effect for the attack
+            const attackType = this.getAttackType();
+            window.game.combatSystem.createProjectile(
+                this.position.clone().add(new THREE.Vector3(0, 1, 0)), // Start slightly above hero
+                target.position.clone().add(new THREE.Vector3(0, 1, 0)), // Target slightly above enemy
+                attackType,
+                15, // Speed
+                damage,
+                this
+            );
+        }
+        
         Logger.log(`Hero ${this.name} attacked ${target.name} for ${damage} damage`);
+    }
+    
+    // Get attack type based on hero type
+    getAttackType() {
+        switch (this.type) {
+            case 'axe':
+                return 'melee'; // Red projectile
+            case 'crystal-maiden':
+                return 'ice'; // Ice projectile
+            case 'lich':
+                return 'ice'; // Ice projectile
+            case 'storm-spirit':
+                return 'lightning'; // Lightning projectile
+            default:
+                return 'melee';
+        }
     }
     
     calculateDamage() {
@@ -1798,6 +1835,9 @@ class Hero {
                 window.game.ui.flyAbility.textContent = "FLY";
             }
             
+            // Emit flight state changed event for UI
+            Events.emit('flightStateChanged', { isFlying: false });
+            
             Logger.log(`Hero ${this.name} stopped flying`);
         } else {
             // Take off
@@ -1827,6 +1867,9 @@ class Hero {
             if (window.game && window.game.ui && window.game.ui.flyAbility) {
                 window.game.ui.flyAbility.textContent = "FLY DOWN";
             }
+            
+            // Emit flight state changed event for UI
+            Events.emit('flightStateChanged', { isFlying: true });
             
             Logger.log(`Hero ${this.name} started flying at height ${this.flightTargetHeight}`);
         }

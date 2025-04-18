@@ -132,6 +132,10 @@ class CombatSystem {
                 geometry = new THREE.SphereGeometry(0.3, 8, 8);
                 material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
                 break;
+            case 'melee':
+                geometry = new THREE.BoxGeometry(0.2, 0.2, 0.8);
+                material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                break;
             default:
                 geometry = new THREE.SphereGeometry(0.3, 8, 8);
                 material = new THREE.MeshBasicMaterial({ color: 0xffffff });

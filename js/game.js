@@ -416,6 +416,11 @@ class Game {
             this.combatSystem.update(deltaTime);
         }
         
+        // Update skill UI manager
+        if (window.skillUIManager) {
+            window.skillUIManager.update(deltaTime);
+        }
+        
         // Update camera to follow hero
         if (this.hero && !this.inputManager.isMouseButtonPressed('middle')) {
             this.updateCameraPosition();

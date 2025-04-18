@@ -21,20 +21,41 @@ The game is designed to be fully playable on mobile devices, with special consid
 
 #### Virtual Joystick
 - **Position**: Bottom-left corner of the screen
-- **Size**: 80 pixels diameter (configurable in `config/ui/controls.js`)
+- **Size**: 150 pixels diameter (configurable in `config/ui/controls.js`)
 - **Appearance**: 
-  - Base circle indicating the joystick area
-  - Movable smaller circle that follows touch input
+  - Translucent outer circle with dashed border indicating the joystick area
+  - Solid inner base circle (80px diameter)
+  - Movable thumb circle (40px diameter) that follows touch input
   - Visual indicator showing direction of movement
 - **Behavior**:
-  - Appears when touch begins in the designated area
+  - Active when touch begins in the joystick area
   - Direction and distance from center determine movement vector
-  - Disappears when touch ends
-- **Implementation**: Touch event handling in the `InputManager` class
+  - Thumb position limited to the joystick radius
+  - Returns to center when touch ends
+  - Converts screen coordinates to world direction based on camera rotation
+- **Implementation**: Touch event handling in the `SkillUIManager` class
 
-#### Action Buttons
+#### Circular Skill UI (Diablo Immortal Style)
+- **Position**: Bottom-right corner of the screen
+- **Size**: 200 pixels diameter (configurable)
+- **Components**:
+  - **Basic Attack**: Large central circle (80px diameter)
+  - **Skills**: Four smaller circles (60px diameter) positioned around the basic attack
+  - **Wings Effect**: Animated wings appear behind the skill circle when flying
+- **Appearance**:
+  - Hero-specific colors and themes
+  - Visual cooldown indicators that sweep clockwise
+  - First letter of skill name displayed on each button
+  - Small number in corner indicating keyboard shortcut
+- **Behavior**:
+  - Basic attack automatically targets nearest enemy
+  - Skills trigger corresponding hero abilities
+  - Cooldown visualization shows remaining time
+  - Wings animate when flying, with different animations for ascending/descending
+
+#### Default Skills
 - **Jump Button**:
-  - Position: Bottom-right area
+  - Position: Bottom-left area
   - Size: 80 pixels (configurable)
   - Color: Green (rgba(76,175,80,0.8))
   - Behavior:
@@ -52,11 +73,6 @@ The game is designed to be fully playable on mobile devices, with special consid
   - Behavior:
     - Single tap: Toggle flight or change height
     - Long press: Continuously change height
-
-- **Ability Buttons**:
-  - Position: Bottom-right corner in a circular arrangement
-  - Size: Appropriate for touch (configurable)
-  - Visual indicators for cooldowns and mana costs
 
 ## Touch Interaction System
 
