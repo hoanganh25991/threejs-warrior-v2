@@ -49,3 +49,5 @@
 [2024-05-08T11:15:00.000Z] Tried making HeroFactory available globally but issue persisted
 [2024-05-08T11:30:00.000Z] Fixed hero selection error by modifying Game class to create heroes directly
 [2024-05-08T11:45:00.000Z] Updated documentation to reflect the final solution for the HeroFactory reference error
+[2024-05-09T09:00:00.000Z] Fixed Hero reference error by making Hero class available globally
+[2024-05-09T09:15:00.000Z] Created documentation for the Hero reference error fix
