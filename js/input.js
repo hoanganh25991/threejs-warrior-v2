@@ -350,6 +350,19 @@ class InputManager {
             Events.emit('movement', { direction: moveDirection });
         }
         
+        // Handle space key for jump/fly
+        if (this.isKeyPressed(' ')) {
+            if (window.game && window.game.hero) {
+                if (window.game.hero.isFlying) {
+                    // When flying, space makes you fly higher
+                    window.game.hero.flyHigher();
+                } else {
+                    // When not flying, space makes you jump
+                    window.game.hero.jump();
+                }
+            }
+        }
+        
         // Handle ability key presses (letter keys)
         if (this.isKeyPressed('q')) Events.emit('abilityActivated', { ability: 'q' });
         if (this.isKeyPressed('w') && !this.isKeyPressed('a') && !this.isKeyPressed('s') && !this.isKeyPressed('d')) {

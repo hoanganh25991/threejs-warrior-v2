@@ -23,3 +23,8 @@
 [2024-05-02T17:00:00.000Z] Added flight mode with smooth transitions and visual effects
 [2024-05-02T17:45:00.000Z] Improved enemy health bars to always face the camera
 [2024-05-02T18:30:00.000Z] Completed Phase 2: Enhanced Gameplay Features
+[2024-05-03T09:15:00.000Z] Added space key support for jumping
+[2024-05-03T09:30:00.000Z] Updated all buttons to be non-selectable for better UX
+[2024-05-03T10:00:00.000Z] Enhanced flying mechanics: space key now makes hero fly higher when in flight mode
+[2024-05-03T10:30:00.000Z] Modified fly button to toggle between flying up and down
+[2024-05-03T11:00:00.000Z] Added visual effects for flying higher and lower

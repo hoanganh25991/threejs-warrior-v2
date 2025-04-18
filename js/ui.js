@@ -54,7 +54,24 @@ class UIManager {
         if (this.flyAbility) {
             this.flyAbility.addEventListener('click', () => {
                 if (window.game && window.game.hero) {
-                    window.game.hero.toggleFlight();
+                    if (window.game.hero.isFlying) {
+                        // If already flying, pressing the button makes you fly lower
+                        window.game.hero.flyLower();
+                        
+                        // Update button text to show current function
+                        this.flyAbility.textContent = "FLY DOWN";
+                        
+                        // If at minimum height, next click will land
+                        if (window.game.hero.flightTargetHeight <= 1) {
+                            this.flyAbility.textContent = "LAND";
+                        }
+                    } else {
+                        // If not flying, start flying
+                        window.game.hero.toggleFlight();
+                        
+                        // Update button text
+                        this.flyAbility.textContent = "FLY DOWN";
+                    }
                 }
             });
         }

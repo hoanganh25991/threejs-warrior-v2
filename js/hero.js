@@ -1847,6 +1847,99 @@ class Hero {
         }
     }
     
+    // Fly higher (increase flight height)
+    flyHigher() {
+        if (!this.isFlying) return;
+        
+        // Increase target height up to a maximum
+        const maxHeight = 20;
+        this.flightTargetHeight = Math.min(maxHeight, this.flightTargetHeight + 2);
+        
+        // Create a small boost effect
+        this.createFlightBoostEffect(0x00ffff);
+        
+        // Show message for significant height changes
+        if (this.flightTargetHeight >= maxHeight && window.game && window.game.ui) {
+            window.game.ui.showMessage("Maximum altitude reached!");
+        }
+        
+        Logger.log(`Hero ${this.name} flying higher: ${this.flightTargetHeight.toFixed(1)}`);
+    }
+    
+    // Fly lower (decrease flight height)
+    flyLower() {
+        if (!this.isFlying) return;
+        
+        // Decrease target height down to a minimum
+        const minHeight = 1;
+        this.flightTargetHeight = Math.max(minHeight, this.flightTargetHeight - 2);
+        
+        // Create a small descent effect
+        this.createFlightBoostEffect(0xff9900);
+        
+        // Show message when close to ground
+        if (this.flightTargetHeight <= minHeight && window.game && window.game.ui) {
+            window.game.ui.showMessage("Minimum altitude reached!");
+        }
+        
+        Logger.log(`Hero ${this.name} flying lower: ${this.flightTargetHeight.toFixed(1)}`);
+    }
+    
+    // Create visual effect for flight boost
+    createFlightBoostEffect(color) {
+        // Create a small particle burst effect
+        const particles = [];
+        const particleCount = 10;
+        const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const particleMaterial = new THREE.MeshBasicMaterial({ color: color, transparent: true });
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = new THREE.Mesh(particleGeometry, particleMaterial.clone());
+            
+            // Position around the hero
+            const angle = (i / particleCount) * Math.PI * 2;
+            const radius = 0.5;
+            particle.position.set(
+                this.position.x + Math.cos(angle) * radius,
+                this.model.position.y,
+                this.position.z + Math.sin(angle) * radius
+            );
+            
+            // Add to scene
+            this.scene.add(particle);
+            particles.push(particle);
+            
+            // Animate and remove after a short time
+            const startTime = performance.now();
+            const duration = 500 + Math.random() * 500; // 0.5-1s duration
+            
+            const animate = (time) => {
+                const elapsed = time - startTime;
+                const progress = Math.min(1, elapsed / duration);
+                
+                // Move outward and upward/downward
+                const direction = color === 0x00ffff ? 1 : -1; // Up for blue, down for orange
+                particle.position.y += direction * 0.05;
+                particle.position.x += Math.cos(angle) * 0.02;
+                particle.position.z += Math.sin(angle) * 0.02;
+                
+                // Fade out
+                particle.material.opacity = 1 - progress;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Remove particle
+                    this.scene.remove(particle);
+                    particle.geometry.dispose();
+                    particle.material.dispose();
+                }
+            };
+            
+            requestAnimationFrame(animate);
+        }
+    }
+    
     // Clean up resources when hero is removed
     dispose() {
         if (this.model) {
