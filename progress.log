@@ -58,3 +58,5 @@
 [2024-05-10T09:15:00.000Z] Created documentation for the controls configuration global scope fix
 [2024-05-10T10:00:00.000Z] Fixed TypeError: ability.startCooldown is not a function by properly using the Ability class's use() method
 [2024-05-10T10:15:00.000Z] Created documentation for the ability.startCooldown fix
+[2024-05-10T11:00:00.000Z] Fixed TypeError: Cannot read properties of undefined (reading 'key') in ui.js by updating the updateAbilityCooldown and resetAbilityCooldown methods to handle both event data formats
+[2024-05-10T11:15:00.000Z] Created documentation for the ability.key TypeError fix

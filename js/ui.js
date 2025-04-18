@@ -299,10 +299,17 @@ class UIManager {
     }
     
     updateAbilityCooldown(data) {
-        const { ability } = data;
+        // Handle both formats: {ability} and {abilityId, cooldownTime}
+        const abilityKey = data.ability ? data.ability.key : data.abilityId;
+        const cooldownTime = data.ability ? data.ability.cooldownMax : data.cooldownTime;
+        
+        if (!abilityKey) {
+            Logger.warn('Missing ability key in updateAbilityCooldown');
+            return;
+        }
         
         // Find the ability element
-        const abilityElement = document.getElementById(`ability-${ability.key}`);
+        const abilityElement = document.getElementById(`ability-${abilityKey}`);
         if (!abilityElement) return;
         
         // Add cooldown overlay
@@ -316,8 +323,11 @@ class UIManager {
         // Set initial height to 100%
         cooldownOverlay.style.height = '100%';
         
+        // Create a temporary ability object if we only have the ID and cooldown
+        const abilityObj = data.ability || { key: abilityKey, cooldownMax: cooldownTime };
+        
         // Start cooldown animation
-        this.animateCooldown(ability, cooldownOverlay);
+        this.animateCooldown(abilityObj, cooldownOverlay);
     }
     
     animateCooldown(ability, overlay) {
@@ -343,10 +353,16 @@ class UIManager {
     }
     
     resetAbilityCooldown(data) {
-        const { ability } = data;
+        // Handle both formats: {ability} and {abilityId}
+        const abilityKey = data.ability ? data.ability.key : data.abilityId;
+        
+        if (!abilityKey) {
+            Logger.warn('Missing ability key in resetAbilityCooldown');
+            return;
+        }
         
         // Find the ability element
-        const abilityElement = document.getElementById(`ability-${ability.key}`);
+        const abilityElement = document.getElementById(`ability-${abilityKey}`);
         if (!abilityElement) return;
         
         // Remove cooldown overlay

@@ -44,7 +44,7 @@ When reflect details things, keep it organized with what layout in "docs" folder
     at Hero.useAbility (hero.js:2024:17)
     at InputManager.handleAbilityKeyPress (input.js:76:34)
     at InputManager.handleKeyDown (input.js:53:18)
-- [] Uncaught TypeError: Cannot read properties of undefined (reading 'key')
+- [x] Uncaught TypeError: Cannot read properties of undefined (reading 'key')
     at UIManager.updateAbilityCooldown (ui.js:305:75)
     at utils.js:225:13
     at Array.forEach (<anonymous>)
@@ -52,7 +52,7 @@ When reflect details things, keep it organized with what layout in "docs" folder
     at Hero.attack (hero.js:789:16)
     at Hero.update (hero.js:3314:22)
     at Game.update (game.js:422:23)
-- [] ui.js:305 Uncaught TypeError: Cannot read properties of undefined (reading 'key')
+- [x] ui.js:305 Uncaught TypeError: Cannot read properties of undefined (reading 'key')
     at UIManager.updateAbilityCooldown (ui.js:305:75)
     at utils.js:225:13
     at Array.forEach (<anonymous>)
@@ -62,9 +62,9 @@ When reflect details things, keep it organized with what layout in "docs" folder
     at Game.update (game.js:422:23)
     at Game.animate (game.js:453:14)
 
-- [] skills when touch no trigger
-- [] remove effect when hover skill with mouse
-- [] skills show cool down effect
+- [] skills when touch on no trigger
+- [] remove css style when hover skill with mouse
+- [] skills button show cool down effect
 - [] Give first character of skill name as what shown on the skill button, give small number key to inform the user how to cast the skill as small circle on skill circle on the right, really small
 - [] Remove moving by a,w,s,d, replace with arrow keys
 - [] Same as basic attack button, i can press "a" to trigger basic attack
