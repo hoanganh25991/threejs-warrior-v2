@@ -156,6 +156,65 @@ Lich.prototype.setupVisuals = function() {
 };
 
 /**
+ * Set up Lich's talents
+ */
+Lich.prototype.setupLichTalents = function() {
+    // Ensure the entity has the talent system script
+    if (!this.entity.script.talentSystem) {
+        this.entity.script.create('talentSystem');
+    }
+    
+    // Load talent definitions from the external file
+    const talentsScript = this.app.assets.find('lich-talents.js');
+    
+    // If we can't find the script asset, use placeholder talents
+    if (!talentsScript) {
+        console.warn("Lich talents script not found, using placeholder talents");
+        
+        // Set up placeholder talents
+        const placeholderTalents = {
+            offensive: {
+                tier1: {
+                    name: "Frost Mastery",
+                    description: "Increases Intelligence by 5 and magical damage by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        intelligence: 5
+                    }
+                }
+            },
+            defensive: {
+                tier1: {
+                    name: "Ice Barrier",
+                    description: "Increases Vitality by 5 and grants 10% resistance to all damage.",
+                    type: "attribute",
+                    attributes: {
+                        vitality: 5
+                    }
+                }
+            },
+            utility: {
+                tier1: {
+                    name: "Necromantic Power",
+                    description: "Increases Spirit by 5 and increases mana regeneration by 50%.",
+                    type: "attribute",
+                    attributes: {
+                        spirit: 5
+                    }
+                }
+            }
+        };
+        
+        this.entity.script.talentSystem.setupTalents(placeholderTalents);
+    } else {
+        // Use the loaded talent definitions
+        this.entity.script.talentSystem.setupTalents(LichTalents);
+    }
+    
+    console.log("Lich talents configured");
+};
+
+/**
  * Frost Nova ability implementation
  */
 Lich.prototype.frostnova = function() {

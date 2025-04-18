@@ -12,6 +12,11 @@ const StormSpirit = pc.createScript('stormSpirit');
 StormSpirit.attributes.add('modelAsset', { type: 'asset', assetType: 'model' });
 StormSpirit.attributes.add('textureAsset', { type: 'asset', assetType: 'texture' });
 
+// Load Storm Spirit talents
+const StormSpiritTalents = {
+    // Talent definitions will be loaded from the talents file
+};
+
 StormSpirit.prototype.initialize = function() {
     // Ensure the entity has the required components and scripts
     if (!this.entity.script.hero) {
@@ -30,6 +35,9 @@ StormSpirit.prototype.initialize = function() {
     
     // Set up Storm Spirit's abilities
     this.setupStormSpiritAbilities();
+    
+    // Set up Storm Spirit's talents
+    this.setupStormSpiritTalents();
     
     // Load Storm Spirit's model and textures (placeholder for now)
     this.setupVisuals();
@@ -140,6 +148,65 @@ StormSpirit.prototype.setupVisuals = function() {
     }
     
     console.log("Storm Spirit visuals configured (placeholder)");
+};
+
+/**
+ * Set up Storm Spirit's talents
+ */
+StormSpirit.prototype.setupStormSpiritTalents = function() {
+    // Ensure the entity has the talent system script
+    if (!this.entity.script.talentSystem) {
+        this.entity.script.create('talentSystem');
+    }
+    
+    // Load talent definitions from the external file
+    const talentsScript = this.app.assets.find('storm-spirit-talents.js');
+    
+    // If we can't find the script asset, use placeholder talents
+    if (!talentsScript) {
+        console.warn("Storm Spirit talents script not found, using placeholder talents");
+        
+        // Set up placeholder talents
+        const placeholderTalents = {
+            offensive: {
+                tier1: {
+                    name: "Lightning Mastery",
+                    description: "Increases Intelligence by 5 and magical damage by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        intelligence: 5
+                    }
+                }
+            },
+            defensive: {
+                tier1: {
+                    name: "Electric Shield",
+                    description: "Increases Vitality by 5 and grants 10% resistance to all damage.",
+                    type: "attribute",
+                    attributes: {
+                        vitality: 5
+                    }
+                }
+            },
+            utility: {
+                tier1: {
+                    name: "Energy Flow",
+                    description: "Increases Agility by 5 and increases movement speed by 10%.",
+                    type: "attribute",
+                    attributes: {
+                        agility: 5
+                    }
+                }
+            }
+        };
+        
+        this.entity.script.talentSystem.setupTalents(placeholderTalents);
+    } else {
+        // Use the loaded talent definitions
+        this.entity.script.talentSystem.setupTalents(StormSpiritTalents);
+    }
+    
+    console.log("Storm Spirit talents configured");
 };
 
 /**

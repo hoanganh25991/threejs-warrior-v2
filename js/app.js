@@ -14,6 +14,7 @@ window.addEventListener('resize', () => app.resizeCanvas());
 app.scripts.add('attributeSystem', '/js/systems/attribute-system.js');
 app.scripts.add('abilitySystem', '/js/systems/ability-system.js');
 app.scripts.add('experienceSystem', '/js/systems/experience-system.js');
+app.scripts.add('talentSystem', '/js/systems/talent-system.js');
 
 // Entities
 app.scripts.add('hero', '/js/entities/hero.js');
@@ -22,8 +23,15 @@ app.scripts.add('crystalMaiden', '/js/entities/heroes/crystal-maiden.js');
 app.scripts.add('lich', '/js/entities/heroes/lich.js');
 app.scripts.add('stormSpirit', '/js/entities/heroes/storm-spirit.js');
 
+// Talents
+app.assets.add(new pc.Asset('axe-talents.js', 'script', { url: '/js/entities/heroes/talents/axe-talents.js' }));
+app.assets.add(new pc.Asset('crystal-maiden-talents.js', 'script', { url: '/js/entities/heroes/talents/crystal-maiden-talents.js' }));
+app.assets.add(new pc.Asset('lich-talents.js', 'script', { url: '/js/entities/heroes/talents/lich-talents.js' }));
+app.assets.add(new pc.Asset('storm-spirit-talents.js', 'script', { url: '/js/entities/heroes/talents/storm-spirit-talents.js' }));
+
 // UI
 app.scripts.add('heroSelection', '/js/ui/hero-selection.js');
+app.scripts.add('talentUI', '/js/ui/talent-ui.js');
 
 // Create camera entity
 const camera = new pc.Entity('camera');
@@ -305,6 +313,7 @@ const createStatsUI = function() {
             statsText += `Space: Jump\n`;
             statsText += `Q/W/E/R: Abilities\n`;
             statsText += `TAB: Hero Selection\n`;
+            statsText += `T: Talent Tree\n`;
             statsText += `X: Gain XP (test)\n`;
             statsText += `Z: Take Damage (test)\n`;
             statsText += `H: Heal (test)\n`;
@@ -322,6 +331,12 @@ const heroSelectionUI = new pc.Entity('heroSelectionUI');
 heroSelectionUI.addComponent('script');
 heroSelectionUI.script.create('heroSelection');
 app.root.addChild(heroSelectionUI);
+
+// Create talent UI
+const talentUI = new pc.Entity('talentUI');
+talentUI.addComponent('script');
+talentUI.script.create('talentUI');
+app.root.addChild(talentUI);
 
 // Create a progress log file
 const createProgressLog = function() {
