@@ -18,6 +18,12 @@ app.scripts.add('experienceSystem', '/js/systems/experience-system.js');
 // Entities
 app.scripts.add('hero', '/js/entities/hero.js');
 app.scripts.add('axe', '/js/entities/heroes/axe.js');
+app.scripts.add('crystalMaiden', '/js/entities/heroes/crystal-maiden.js');
+app.scripts.add('lich', '/js/entities/heroes/lich.js');
+app.scripts.add('stormSpirit', '/js/entities/heroes/storm-spirit.js');
+
+// UI
+app.scripts.add('heroSelection', '/js/ui/hero-selection.js');
 
 // Create camera entity
 const camera = new pc.Entity('camera');
@@ -286,6 +292,7 @@ const createStatsUI = function() {
             statsText += `WASD: Move\n`;
             statsText += `Space: Jump\n`;
             statsText += `Q/W/E/R: Abilities\n`;
+            statsText += `TAB: Hero Selection\n`;
             statsText += `X: Gain XP (test)\n`;
             statsText += `Z: Take Damage (test)\n`;
             statsText += `H: Heal (test)\n`;
@@ -297,6 +304,12 @@ const createStatsUI = function() {
 
 // Create the UI
 createStatsUI();
+
+// Create hero selection UI
+const heroSelectionUI = new pc.Entity('heroSelectionUI');
+heroSelectionUI.addComponent('script');
+heroSelectionUI.script.create('heroSelection');
+app.root.addChild(heroSelectionUI);
 
 // Create a progress log file
 const createProgressLog = function() {

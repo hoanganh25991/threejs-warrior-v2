@@ -57,17 +57,66 @@
 - Health and mana management (press Z to take damage, H to heal)
 - Ability framework (press Q/W/E/R to use abilities)
 
+## Phase 2: Expanded Features
+
+### Date: 2024-05-15
+
+#### Completed Tasks
+- Implemented additional heroes: Crystal Maiden, Lich, and Storm Spirit
+- Created hero selection system with UI
+- Enhanced ability implementations for all heroes
+- Added passive abilities for each hero
+
+#### Implementation Details
+
+1. **Additional Heroes**
+   - **Crystal Maiden (Rylai)**
+     - Support/Elemental Mage from the Sentinel faction
+     - Abilities: Crystal Nova, Frostbite, Glacial Path, Freezing Field
+     - Passive: Arcane Aura for mana regeneration
+     - Intelligence-based with high spirit attributes
+
+   - **Lich (Kel'Thuzad)**
+     - Specialist/Crowd Control from the Scourge faction
+     - Abilities: Frost Nova, Dark Ritual, Ice Chains, Chain Frost
+     - Passive: Frost Armor for protection and slowing attackers
+     - Intelligence-based with focus on crowd control
+
+   - **Storm Spirit (Raijin Thunderkeg)**
+     - Mobile Mage/Assassin from the Scourge faction
+     - Abilities: Static Remnant, Electric Vortex, Overload, Ball Lightning
+     - Unique mechanic: Overload charges after ability use
+     - Intelligence-based with high agility for mobility
+
+2. **Hero Selection System**
+   - Created UI for selecting between available heroes
+   - Added ability to switch heroes during gameplay (press TAB)
+   - Implemented visual indicators for hero faction and type
+   - Preserved hero state when switching
+
+3. **Enhanced Ability Implementations**
+   - Added detailed ability effects based on hero attributes
+   - Implemented passive abilities with appropriate effects
+   - Created placeholder for visual effects
+   - Added ability descriptions and tooltips
+
+#### Current Functionality
+- All previous functionality
+- Four playable heroes with unique abilities and attributes
+- Hero switching via selection UI (press TAB)
+- Enhanced ability implementations with proper scaling
+
 #### Next Steps
-- Implement more heroes (Crystal Maiden, Lich, Storm Spirit)
-- Create proper ability implementations with visual effects
-- Add talent system with three specialization paths per hero
-- Implement inventory and item system
-- Create proper game environments and enemies
+- Implement talent system with three specialization paths per hero
+- Create proper ability visual effects
+- Add inventory and item system
+- Implement proper game environments and enemies
 - Add quest system
+- Create proper hero models and animations
 
 #### Technical Debt
 - Need to implement proper asset loading for hero models and textures
-- UI needs significant improvement and styling
+- UI needs styling improvements
 - Ability system needs to connect with visual effects
 - Need to implement proper collision detection for abilities
 - Progress saving/loading not yet implemented
