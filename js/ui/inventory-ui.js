@@ -543,7 +543,7 @@ InventoryUI.prototype.updateInventoryDisplay = function() {
     }
     
     const inventorySystem = heroEntity.script.inventorySystem;
-    const inventoryItems = inventorySystem.getInventoryItems();
+    const inventoryItems = inventorySystem.getInventoryContents();
     
     // Update each inventory slot
     for (let i = 0; i < this.inventorySlots.length; i++) {
@@ -670,7 +670,7 @@ InventoryUI.prototype.selectInventorySlot = function(slotIndex) {
     }
     
     const inventorySystem = heroEntity.script.inventorySystem;
-    const inventoryItems = inventorySystem.getInventoryItems();
+    const inventoryItems = inventorySystem.getInventoryContents();
     const item = inventoryItems[slotIndex];
     
     if (!item) {

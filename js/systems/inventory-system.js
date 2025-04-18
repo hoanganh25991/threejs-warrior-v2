@@ -458,6 +458,14 @@ InventorySystem.prototype.getEquippedItems = function() {
 
 /**
  * Get the inventory contents
+ * @returns {Array} - The inventory contents
+ */
+InventorySystem.prototype.getInventoryContents = function() {
+    return this.inventory.slice();
+};
+
+/**
+ * Get the inventory contents
  * @returns {Array} - The inventory items
  */
 InventorySystem.prototype.getInventoryItems = function() {

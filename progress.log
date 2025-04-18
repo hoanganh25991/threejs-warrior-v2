@@ -192,18 +192,74 @@
 - Item usage for consumables
 - Test items can be added with the G key
 
+## Phase 5: Basic Combat Implementation
+
+### Date: 2024-07-01
+
+#### Completed Tasks
+- Enhanced movement system with point-and-click navigation
+- Improved camera controls with rotation and zoom
+- Implemented basic combat system with auto-attacks
+- Added enemy targeting system
+- Enhanced ability effects with visual feedback
+- Improved ground collision detection
+
+#### Implementation Details
+
+1. **Movement System Enhancements**
+   - Added point-and-click navigation using mouse
+   - Implemented pathfinding for obstacle avoidance
+   - Improved character controller with smoother movement
+   - Added movement animations (placeholder)
+   - Implemented proper ground collision detection
+
+2. **Camera System Improvements**
+   - Added middle-mouse button camera rotation
+   - Implemented mouse wheel zoom functionality
+   - Created camera collision detection to prevent clipping
+   - Added camera smoothing for better user experience
+   - Implemented camera reset functionality
+
+3. **Basic Combat System**
+   - Added auto-attack functionality when targeting enemies
+   - Implemented attack animations (placeholder)
+   - Created damage calculation based on attributes
+   - Added critical hit system based on attributes
+   - Implemented attack speed based on agility
+
+4. **Enemy Targeting System**
+   - Created target selection with mouse clicks
+   - Added target highlighting
+   - Implemented target information display
+   - Created target lock-on functionality
+   - Added target switching with tab key
+
+5. **Ability Enhancements**
+   - Improved ability targeting system
+   - Added visual effects for abilities (placeholder)
+   - Implemented area of effect indicators
+   - Created ability impact effects
+   - Added sound effects for abilities (placeholder)
+
+#### Current Functionality
+- All previous functionality
+- Point-and-click movement with pathfinding
+- Enhanced camera controls with rotation and zoom
+- Basic combat with auto-attacks
+- Enemy targeting system
+- Improved ability effects with visual feedback
+
 #### Next Steps
-- Create proper ability visual effects
-- Implement proper game environments and enemies
+- Create proper game environments and enemies
 - Add quest system
 - Create proper hero models and animations
 - Implement crafting system
+- Add more detailed combat mechanics
 
 #### Technical Debt
 - Need to implement proper asset loading for hero models and textures
 - UI needs styling improvements
 - Ability system needs to connect with visual effects
-- Need to implement proper collision detection for abilities
 - Progress saving/loading not yet implemented
 - Talent effects need better integration with gameplay mechanics
 - Item icons and visual representation needed

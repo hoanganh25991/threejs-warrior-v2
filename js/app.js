@@ -16,9 +16,11 @@ app.scripts.add('abilitySystem', '/js/systems/ability-system.js');
 app.scripts.add('experienceSystem', '/js/systems/experience-system.js');
 app.scripts.add('talentSystem', '/js/systems/talent-system.js');
 app.scripts.add('inventorySystem', '/js/systems/inventory-system.js');
+app.scripts.add('enemySpawner', '/js/systems/enemy-spawner.js');
 
 // Entities
 app.scripts.add('hero', '/js/entities/hero.js');
+app.scripts.add('enemy', '/js/entities/enemy.js');
 app.scripts.add('axe', '/js/entities/heroes/axe.js');
 app.scripts.add('crystalMaiden', '/js/entities/heroes/crystal-maiden.js');
 app.scripts.add('lich', '/js/entities/heroes/lich.js');
@@ -125,20 +127,33 @@ const CharacterController = pc.createScript('characterController');
 
 CharacterController.attributes.add('speed', { type: 'number', default: 5 });
 CharacterController.attributes.add('jumpForce', { type: 'number', default: 400 });
+CharacterController.attributes.add('rotationSpeed', { type: 'number', default: 2 });
+CharacterController.attributes.add('cameraRotationSpeed', { type: 'number', default: 0.2 });
+CharacterController.attributes.add('cameraZoomSpeed', { type: 'number', default: 0.2 });
+CharacterController.attributes.add('cameraMinDistance', { type: 'number', default: 5 });
+CharacterController.attributes.add('cameraMaxDistance', { type: 'number', default: 20 });
 
 // initialize code called once per entity
 CharacterController.prototype.initialize = function() {
     this.force = new pc.Vec3();
     
+    // Movement target for point-and-click
+    this.moveTarget = null;
+    this.isMovingToTarget = false;
+    this.targetReachedThreshold = 0.5;
+    
+    // Combat target
+    this.combatTarget = null;
+    this.isAutoAttacking = false;
+    this.autoAttackTimer = 0;
+    this.autoAttackCooldown = 1.0; // Base attack speed, will be modified by attributes
+    
     // Check if mouse is available before adding listeners
     if (app.mouse) {
         // Listen for mouse events
         app.mouse.on(pc.EVENT_MOUSEMOVE, this.onMouseMove, this);
-        
-        // Lock the mouse pointer when the canvas is clicked
-        app.mouse.on("mousedown", function () {
-            app.mouse.enablePointerLock();
-        }, this);
+        app.mouse.on(pc.EVENT_MOUSEDOWN, this.onMouseDown, this);
+        app.mouse.on(pc.EVENT_MOUSEWHEEL, this.onMouseWheel, this);
     } else {
         console.warn("Mouse input is not available");
     }
@@ -155,9 +170,34 @@ CharacterController.prototype.initialize = function() {
     this.cameraOffset = new pc.Vec3(0, 5, 10);
     this.targetCameraOffset = new pc.Vec3(0, 5, 10);
     this.cameraLookAt = new pc.Vec3();
+    this.cameraRotating = false;
     
     // Get attribute system for movement speed
     this.attributeSystem = this.entity.script.attributeSystem;
+    
+    // Create a visual indicator for movement target
+    this.createMoveTargetIndicator();
+    
+    console.log("Character controller initialized with point-and-click movement");
+};
+
+// Create a visual indicator for the movement target
+CharacterController.prototype.createMoveTargetIndicator = function() {
+    this.targetIndicator = new pc.Entity("moveTargetIndicator");
+    this.targetIndicator.addComponent('render', {
+        type: 'cylinder',
+        material: new pc.StandardMaterial()
+    });
+    
+    // Set the indicator appearance
+    this.targetIndicator.setLocalScale(0.5, 0.1, 0.5);
+    this.targetIndicator.render.material.diffuse = new pc.Color(0, 1, 0);
+    this.targetIndicator.render.material.emissive = new pc.Color(0, 0.5, 0);
+    this.targetIndicator.render.material.update();
+    
+    // Add to scene but disable initially
+    app.root.addChild(this.targetIndicator);
+    this.targetIndicator.enabled = false;
 };
 
 // update code called every frame
@@ -173,19 +213,75 @@ CharacterController.prototype.update = function(dt) {
         movementSpeed = this.attributeSystem.movementSpeed;
     }
     
+    // Handle point-and-click movement
+    if (this.isMovingToTarget && this.moveTarget) {
+        const currentPos = this.entity.getPosition();
+        const targetPos = this.moveTarget.clone();
+        
+        // Ignore Y axis for distance calculation (only care about horizontal distance)
+        currentPos.y = 0;
+        targetPos.y = 0;
+        
+        // Calculate distance to target
+        const distanceToTarget = currentPos.distance(targetPos);
+        
+        if (distanceToTarget > this.targetReachedThreshold) {
+            // Calculate direction to target
+            const direction = new pc.Vec3();
+            direction.sub2(this.moveTarget, this.entity.getPosition());
+            direction.y = 0; // Keep movement on the horizontal plane
+            direction.normalize();
+            
+            // Apply force in the target direction
+            this.force.add(direction.scale(movementSpeed));
+            
+            // Rotate character to face movement direction
+            if (direction.length() > 0.01) {
+                const targetAngle = Math.atan2(direction.x, direction.z) * (180 / Math.PI);
+                const currentRotation = this.entity.getEulerAngles();
+                const rotationSpeed = this.rotationSpeed * dt * 60; // Adjust for framerate
+                
+                // Smoothly rotate towards the target angle
+                const newRotation = pc.math.lerpAngle(currentRotation.y, targetAngle, rotationSpeed);
+                this.entity.setEulerAngles(0, newRotation, 0);
+            }
+        } else {
+            // Target reached
+            this.isMovingToTarget = false;
+            this.targetIndicator.enabled = false;
+            
+            // If we have a combat target, start auto-attacking
+            if (this.combatTarget) {
+                this.isAutoAttacking = true;
+            }
+        }
+    }
+    
     // Movement based on WASD keys - only if keyboard is available
     if (app.keyboard) {
+        let keyboardMovement = false;
+        
         if (app.keyboard.isPressed(pc.KEY_W)) {
             this.force.z -= movementSpeed;
+            keyboardMovement = true;
         }
         if (app.keyboard.isPressed(pc.KEY_S)) {
             this.force.z += movementSpeed;
+            keyboardMovement = true;
         }
         if (app.keyboard.isPressed(pc.KEY_A)) {
             this.force.x -= movementSpeed;
+            keyboardMovement = true;
         }
         if (app.keyboard.isPressed(pc.KEY_D)) {
             this.force.x += movementSpeed;
+            keyboardMovement = true;
+        }
+        
+        // If using keyboard movement, cancel point-and-click movement
+        if (keyboardMovement) {
+            this.isMovingToTarget = false;
+            this.targetIndicator.enabled = false;
         }
     }
     
@@ -198,11 +294,31 @@ CharacterController.prototype.update = function(dt) {
         rigidbody.applyForce(worldForce);
     }
     
+    // Handle auto-attacking
+    if (this.isAutoAttacking && this.combatTarget) {
+        this.autoAttackTimer -= dt;
+        
+        if (this.autoAttackTimer <= 0) {
+            this.performAutoAttack();
+            
+            // Reset timer based on attack speed
+            let attackSpeed = 1.0;
+            if (this.attributeSystem && this.attributeSystem.attackSpeed) {
+                attackSpeed = this.attributeSystem.attackSpeed;
+            }
+            this.autoAttackTimer = this.autoAttackCooldown / attackSpeed;
+        }
+    }
+    
     // Update camera position to follow character
-    // Use a simpler approach - position camera behind the entity based on its rotation
+    this.updateCamera();
+};
+
+// Update camera position and rotation
+CharacterController.prototype.updateCamera = function() {
     const entityPos = this.entity.getPosition();
     
-    // Get entity rotation and calculate forward, right, and up vectors manually
+    // Get entity rotation and calculate forward, right, and up vectors
     const entityRotation = this.entity.getRotation();
     const entityForward = new pc.Vec3(0, 0, -1);
     const entityRight = new pc.Vec3(1, 0, 0);
@@ -230,12 +346,216 @@ CharacterController.prototype.update = function(dt) {
     camera.lookAt(this.cameraLookAt);
 };
 
+// Handle mouse movement
 CharacterController.prototype.onMouseMove = function(event) {
-    // Only rotate character if pointer is locked and pc.Mouse is available
-    if (pc.Mouse && pc.Mouse.isPointerLocked()) {
-        // Rotate character based on mouse movement
-        this.entity.rotate(0, event.dx * 0.2, 0);
+    // Handle camera rotation when middle mouse button is pressed
+    if (this.cameraRotating) {
+        // Rotate the camera around the character
+        const rotationAmount = event.dx * this.cameraRotationSpeed;
+        
+        // Update the camera offset based on rotation
+        const currentX = this.targetCameraOffset.x;
+        const currentZ = this.targetCameraOffset.z;
+        
+        // Apply rotation to the camera offset
+        const angle = rotationAmount * (Math.PI / 180);
+        this.targetCameraOffset.x = currentX * Math.cos(angle) - currentZ * Math.sin(angle);
+        this.targetCameraOffset.z = currentX * Math.sin(angle) + currentZ * Math.cos(angle);
     }
+};
+
+// Handle mouse button press
+CharacterController.prototype.onMouseDown = function(event) {
+    // Middle mouse button for camera rotation
+    if (event.button === pc.MOUSEBUTTON_MIDDLE) {
+        this.cameraRotating = true;
+        
+        // Listen for mouse up event to stop rotation
+        const mouseUpHandler = function(upEvent) {
+            this.cameraRotating = false;
+            app.mouse.off(pc.EVENT_MOUSEUP, mouseUpHandler);
+        }.bind(this);
+        
+        app.mouse.on(pc.EVENT_MOUSEUP, mouseUpHandler);
+        return;
+    }
+    
+    // Left mouse button for movement or targeting
+    if (event.button === pc.MOUSEBUTTON_LEFT) {
+        // Cast a ray from the camera through the mouse position
+        const ray = this.getCameraRay(event);
+        
+        // Check for enemy hit first (for targeting)
+        const enemyHit = this.checkEnemyHit(ray);
+        if (enemyHit) {
+            // Set combat target and move to it
+            this.setCombatTarget(enemyHit);
+            return;
+        }
+        
+        // Check for ground hit (for movement)
+        const groundHit = this.checkGroundHit(ray);
+        if (groundHit) {
+            // Set movement target
+            this.setMoveTarget(groundHit.point);
+        }
+    }
+};
+
+// Handle mouse wheel for camera zoom
+CharacterController.prototype.onMouseWheel = function(event) {
+    // Adjust camera distance based on wheel direction
+    const zoomAmount = event.wheel * this.cameraZoomSpeed;
+    
+    // Update camera distance (z component of offset)
+    this.targetCameraOffset.z += zoomAmount;
+    
+    // Clamp to min/max distance
+    this.targetCameraOffset.z = pc.math.clamp(
+        this.targetCameraOffset.z, 
+        this.cameraMinDistance, 
+        this.cameraMaxDistance
+    );
+};
+
+// Get a ray from the camera through the mouse position
+CharacterController.prototype.getCameraRay = function(event) {
+    // Get the canvas coordinates of the mouse
+    const canvasWidth = app.graphicsDevice.width;
+    const canvasHeight = app.graphicsDevice.height;
+    
+    // Calculate the normalized device coordinates (-1 to 1)
+    const x = (event.x / canvasWidth) * 2 - 1;
+    const y = (event.y / canvasHeight) * -2 + 1;
+    
+    // Create a ray from the camera through this point
+    const ray = camera.camera.screenToWorld(x, y, camera.camera.farClip);
+    
+    return ray;
+};
+
+// Check if the ray hits an enemy
+CharacterController.prototype.checkEnemyHit = function(ray) {
+    // This is a placeholder - in a real implementation, we would:
+    // 1. Check for collision with enemy entities
+    // 2. Return the closest enemy hit
+    
+    // For now, just return null (no enemy hit)
+    return null;
+};
+
+// Check if the ray hits the ground
+CharacterController.prototype.checkGroundHit = function(ray) {
+    // Find the ground entity
+    const ground = app.root.findByName('ground');
+    if (!ground) return null;
+    
+    // Create a ray from the camera position in the direction of the ray
+    const rayStart = ray.origin;
+    const rayDir = ray.direction;
+    
+    // Simple plane intersection for the ground
+    // Assuming the ground is at y=0 and is flat
+    if (rayDir.y >= 0) return null; // Ray is pointing up, can't hit ground
+    
+    // Calculate intersection with y=0 plane
+    const t = -rayStart.y / rayDir.y;
+    const hitPoint = new pc.Vec3(
+        rayStart.x + rayDir.x * t,
+        0,
+        rayStart.z + rayDir.z * t
+    );
+    
+    // Check if the hit point is within the ground bounds
+    const groundScale = ground.getLocalScale();
+    const groundPos = ground.getPosition();
+    
+    if (hitPoint.x >= groundPos.x - groundScale.x/2 && 
+        hitPoint.x <= groundPos.x + groundScale.x/2 &&
+        hitPoint.z >= groundPos.z - groundScale.z/2 && 
+        hitPoint.z <= groundPos.z + groundScale.z/2) {
+        
+        // Return hit information
+        return {
+            entity: ground,
+            point: hitPoint
+        };
+    }
+    
+    return null;
+};
+
+// Set a movement target
+CharacterController.prototype.setMoveTarget = function(position) {
+    // Set the target position
+    this.moveTarget = position.clone();
+    
+    // Adjust Y position to be slightly above ground
+    this.moveTarget.y = 0.1;
+    
+    // Start moving to target
+    this.isMovingToTarget = true;
+    
+    // Update target indicator
+    this.targetIndicator.setPosition(this.moveTarget);
+    this.targetIndicator.enabled = true;
+    
+    // Cancel auto-attacking when moving
+    this.isAutoAttacking = false;
+    
+    console.log(`Moving to position: ${this.moveTarget.x.toFixed(2)}, ${this.moveTarget.z.toFixed(2)}`);
+};
+
+// Set a combat target
+CharacterController.prototype.setCombatTarget = function(target) {
+    this.combatTarget = target;
+    
+    // Move to the target
+    const targetPos = target.getPosition();
+    
+    // Calculate a position within attack range
+    const attackRange = 2.0; // Default attack range
+    const direction = new pc.Vec3();
+    direction.sub2(this.entity.getPosition(), targetPos);
+    direction.y = 0;
+    direction.normalize();
+    
+    // Set the move target to be at attack range from the enemy
+    const movePos = new pc.Vec3();
+    movePos.copy(targetPos);
+    movePos.add(direction.scale(attackRange));
+    
+    this.setMoveTarget(movePos);
+    
+    console.log(`Targeting enemy: ${target.name}`);
+};
+
+// Perform an auto-attack
+CharacterController.prototype.performAutoAttack = function() {
+    if (!this.combatTarget) return;
+    
+    // Get hero and attribute system
+    const hero = this.entity.script.hero;
+    const attributeSystem = this.entity.script.attributeSystem;
+    
+    if (!hero || !attributeSystem) return;
+    
+    // Calculate damage based on attributes
+    let damage = attributeSystem.physicalDamage;
+    
+    // Check for critical hit
+    const critChance = attributeSystem.criticalChance / 100;
+    const isCrit = Math.random() < critChance;
+    
+    if (isCrit) {
+        damage *= 2;
+        console.log(`Critical hit! Damage: ${damage.toFixed(0)}`);
+    }
+    
+    console.log(`Auto-attack deals ${damage.toFixed(0)} damage`);
+    
+    // In a real implementation, we would apply damage to the target
+    // For now, just log it
 };
 
 CharacterController.prototype.onKeyDown = function(event) {
@@ -276,6 +596,11 @@ CharacterController.prototype.onKeyDown = function(event) {
         if (this.entity.script.inventorySystem) {
             this.addTestItems();
         }
+    }
+    
+    // Reset camera position with R key
+    if (event.key === pc.KEY_R) {
+        this.targetCameraOffset = new pc.Vec3(0, 5, 10);
     }
 };
 
@@ -474,6 +799,12 @@ const inventoryUI = new pc.Entity('inventoryUI');
 inventoryUI.addComponent('script');
 inventoryUI.script.create('inventoryUI');
 app.root.addChild(inventoryUI);
+
+// Create enemy spawner
+const enemySpawner = new pc.Entity('enemySpawner');
+enemySpawner.addComponent('script');
+enemySpawner.script.create('enemySpawner');
+app.root.addChild(enemySpawner);
 
 // Create a progress log file
 const createProgressLog = function() {
