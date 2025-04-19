@@ -62,11 +62,34 @@ class Hero {
     
     // Initialize the hero with a model
     async init() {
-        // Create a placeholder model (a colored box)
-        const geometry = new THREE.BoxGeometry(1, 2, 1);
-        const material = new THREE.MeshLambertMaterial({ color: this.getHeroColor() });
-        this.model = new THREE.Mesh(geometry, material);
-        this.model.position.set(0, 1, 0); // Position slightly above ground
+        // Create a model manager if it doesn't exist globally
+        if (!window.modelManager) {
+            window.modelManager = new ModelManager();
+            window.modelManager.init(this.scene);
+        }
+        
+        // Create a detailed hero model based on type
+        try {
+            this.model = await window.modelManager.createHeroModel(this.type);
+            window.modelManager.setActiveModel(this.type);
+            
+            if (!this.model) {
+                // Fallback to placeholder if model creation fails
+                Logger.warn(`Failed to create detailed model for ${this.name}, using placeholder`);
+                const geometry = new THREE.BoxGeometry(1, 2, 1);
+                const material = new THREE.MeshLambertMaterial({ color: this.getHeroColor() });
+                this.model = new THREE.Mesh(geometry, material);
+                this.model.position.set(0, 1, 0);
+            }
+        } catch (error) {
+            Logger.error(`Error creating model for ${this.name}: ${error.message}`);
+            // Fallback to placeholder
+            const geometry = new THREE.BoxGeometry(1, 2, 1);
+            const material = new THREE.MeshLambertMaterial({ color: this.getHeroColor() });
+            this.model = new THREE.Mesh(geometry, material);
+            this.model.position.set(0, 1, 0);
+        }
+        
         this.model.castShadow = true;
         this.model.receiveShadow = true;
         
@@ -1112,6 +1135,17 @@ class Hero {
     
     // Animation methods
     playAnimation(name) {
+        // First try to play the animation using the model manager
+        if (window.modelManager && window.modelManager.getActiveModel()) {
+            // Check if the model has this animation
+            const modelAnimations = window.modelManager.getActiveModel().animations;
+            if (modelAnimations && modelAnimations[name]) {
+                window.modelManager.playAnimation(name);
+                return;
+            }
+        }
+        
+        // Fallback to legacy animation system
         if (!this.animations[name]) {
             // If we don't have the requested animation, do nothing
             return;
@@ -3634,6 +3668,11 @@ class Hero {
             if (this.abilities[key]) {
                 this.abilities[key].update(deltaTime);
             }
+        }
+        
+        // Update model animations
+        if (window.modelManager) {
+            window.modelManager.update();
         }
     }
     

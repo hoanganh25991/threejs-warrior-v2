@@ -391,11 +391,86 @@ class InputManager {
         // Cast a ray from the camera through the mouse position
         this.raycaster.setFromCamera(this.mouse, this.camera);
         
-        // Emit ability click event with intersection point
-        Events.emit('abilityClick', { 
-            position: this.mousePosition,
-            raycaster: this.raycaster
-        });
+        // Check if we clicked on an enemy
+        const enemy = this.checkForEnemyUnderCursor();
+        
+        if (enemy) {
+            // If we clicked on an enemy, attack it
+            if (window.game && window.game.hero) {
+                window.game.hero.attack(enemy);
+                
+                // Start auto-attack if holding the button
+                this.startAutoAttack(enemy);
+            }
+        } else {
+            // Emit ability click event with intersection point
+            Events.emit('abilityClick', { 
+                position: this.mousePosition,
+                raycaster: this.raycaster
+            });
+        }
+    }
+    
+    // Check if there's an enemy under the cursor
+    checkForEnemyUnderCursor() {
+        if (!window.game || !window.game.enemies) {
+            return null;
+        }
+        
+        // Get all enemies in the scene
+        const enemies = window.game.enemies;
+        
+        // Check for intersections with enemies
+        for (const enemy of enemies) {
+            if (!enemy.model) continue;
+            
+            // Create a bounding sphere for the enemy
+            const boundingSphere = new THREE.Sphere(
+                enemy.position.clone(),
+                enemy.radius || 1.0
+            );
+            
+            // Check if the ray intersects the bounding sphere
+            if (this.raycaster.ray.intersectsSphere(boundingSphere)) {
+                return enemy;
+            }
+        }
+        
+        return null;
+    }
+    
+    // Start auto-attack on an enemy
+    startAutoAttack(enemy) {
+        // Clear any existing auto-attack interval
+        this.stopAutoAttack();
+        
+        // Set up auto-attack interval
+        this.autoAttackInterval = setInterval(() => {
+            // Check if we're still holding the mouse button
+            if (!this.mouseButtons.left) {
+                this.stopAutoAttack();
+                return;
+            }
+            
+            // Check if the enemy is still valid
+            if (!enemy || !enemy.isAlive) {
+                this.stopAutoAttack();
+                return;
+            }
+            
+            // Attack the enemy
+            if (window.game && window.game.hero) {
+                window.game.hero.attack(enemy);
+            }
+        }, 1000 / (window.game?.hero?.stats?.attackSpeed || 1));
+    }
+    
+    // Stop auto-attack
+    stopAutoAttack() {
+        if (this.autoAttackInterval) {
+            clearInterval(this.autoAttackInterval);
+            this.autoAttackInterval = null;
+        }
     }
     
     handleCameraRotation(event) {
