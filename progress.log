@@ -95,3 +95,17 @@
 [2024-05-12T13:30:00.000Z] Updated hero's flight and jump methods to use the AudioManager
 [2024-05-12T14:00:00.000Z] Added proper sound cleanup when stopping actions
 [2024-05-12T14:30:00.000Z] Created documentation for fixed issues in docs/fixed-issues/nan-buffer-geometry-and-flight-improvements.md
+[2024-05-13T09:00:00.000Z] Implemented detailed 3D models for heroes in Ghibli style
+[2024-05-13T09:30:00.000Z] Created Storm Spirit model with lightning effects and animations
+[2024-05-13T10:00:00.000Z] Created Lich model with frost effects and animations
+[2024-05-13T10:30:00.000Z] Created Axe model with rage effects and animations
+[2024-05-13T11:00:00.000Z] Created Crystal Maiden model with frost effects and animations
+[2024-05-13T11:30:00.000Z] Implemented ModelManager to handle hero models and animations
+[2024-05-13T12:00:00.000Z] Updated Hero class to use the new models
+[2024-05-13T12:30:00.000Z] Implemented experience and leveling system for heroes
+[2024-05-13T13:00:00.000Z] Added visual effects for level up
+[2024-05-13T13:30:00.000Z] Enhanced enemy system with proper death animations and experience rewards
+[2024-05-13T14:00:00.000Z] Implemented basic attack functionality with auto-attack on hold
+[2024-05-13T14:30:00.000Z] Updated UI to show experience and level information
+[2024-05-13T15:00:00.000Z] Fixed TypeError: Cannot read properties of undefined (reading 'parameters') in hero.js
+[2024-05-13T15:30:00.000Z] Added checks for model geometry parameters with default values for complex 3D models

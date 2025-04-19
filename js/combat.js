@@ -518,9 +518,13 @@ class Enemy {
         this.isAttacking = false;
         this.currentTarget = null;
         this.attackCooldown = 0;
+        this.isAlive = true;
         
         // Model
         this.model = null;
+        
+        // Collision radius for targeting
+        this.radius = 1.0;
         
         // Health bar
         this.healthBar = null;
@@ -798,11 +802,68 @@ class Enemy {
     }
     
     die() {
+        // Mark as not alive
+        this.isAlive = false;
+        
+        // Play death animation if available
+        if (this.model) {
+            // Fade out the model
+            const fadeOut = setInterval(() => {
+                if (this.model.material.opacity <= 0.1) {
+                    clearInterval(fadeOut);
+                    // Remove from scene after fade out
+                    this.dispose();
+                } else {
+                    this.model.material.opacity -= 0.1;
+                }
+            }, 100);
+            
+            // Make material transparent for fade effect
+            this.model.material.transparent = true;
+        }
+        
         // Emit death event
         Events.emit('enemyDeath', { enemy: this });
+        
+        // Award experience to the hero if they killed this enemy
+        if (window.game && window.game.hero) {
+            window.game.hero.gainExperience(this.stats.experienceValue);
+            
+            // Show message
+            if (window.game.uiManager) {
+                window.game.uiManager.showMessage(`Defeated ${this.name}! +${this.stats.experienceValue} XP`);
+            }
+        }
+    }
+    
+    dispose() {
+        // Remove from scene
+        if (this.model) {
+            this.scene.remove(this.model);
+        }
+        
+        // Remove health bar
+        if (this.healthBar) {
+            this.scene.remove(this.healthBar);
+        }
+        
+        if (this.healthBarBackground) {
+            this.scene.remove(this.healthBarBackground);
+        }
+        
+        // Remove from enemies list
+        if (window.game && window.game.combatSystem) {
+            const index = window.game.combatSystem.enemies.indexOf(this);
+            if (index !== -1) {
+                window.game.combatSystem.enemies.splice(index, 1);
+            }
+        }
     }
     
     update(deltaTime) {
+        // Skip update if not alive
+        if (!this.isAlive) return;
+        
         // If we have a target, check if it's in range
         if (this.currentTarget) {
             const distanceToTarget = this.position.distanceTo(this.currentTarget.position);

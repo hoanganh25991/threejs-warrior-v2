@@ -16,8 +16,8 @@ const HeroesConfig = {
     defaultStats: {
         health: 100,
         maxHealth: 100,
-        mana: 100_000,
-        maxMana: 100,
+        mana: 300_000,
+        maxMana: 300_000,
         strength: 10,
         agility: 10,
         intelligence: 10,

@@ -308,6 +308,37 @@ class UIManager {
         this.manaText.textContent = `${hero.stats.mana}/${hero.stats.maxMana}`;
     }
     
+    updateXPBar(currentXP, neededXP) {
+        if (!this.xpBar) return;
+        
+        // If no parameters provided, calculate from hero
+        if (currentXP === undefined || neededXP === undefined) {
+            if (!window.game || !window.game.hero) return;
+            
+            const hero = window.game.hero;
+            currentXP = hero.experience;
+            neededXP = hero.calculateExpForNextLevel();
+        }
+        
+        // Calculate percentage
+        const xpPercent = (currentXP / neededXP) * 100;
+        
+        // Update XP bar width
+        this.xpBar.style.width = `${Math.min(100, xpPercent)}%`;
+    }
+    
+    updateLevelText(level) {
+        if (!this.levelText) return;
+        
+        // If no level provided, get from hero
+        if (level === undefined) {
+            if (!window.game || !window.game.hero) return;
+            level = window.game.hero.level;
+        }
+        
+        this.levelText.textContent = `Level ${level}`;
+    }
+    
     updateAbilityCooldown(data) {
         // Handle both formats: {ability} and {abilityId, cooldownTime}
         const abilityKey = data.ability ? data.ability.key : data.abilityId;

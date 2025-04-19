@@ -181,6 +181,8 @@ class InputManager {
         switch (event.button) {
             case 0: // Left button
                 this.mouseButtons.left = false;
+                // Stop auto-attack when left mouse button is released
+                this.stopAutoAttack();
                 break;
             case 1: // Middle button
                 this.mouseButtons.middle = false;
@@ -298,6 +300,9 @@ class InputManager {
         
         // Reset touch states
         this.mouseButtons.left = false;
+        
+        // Stop auto-attack when touch ends
+        this.stopAutoAttack();
         
         // Emit touch end event
         Events.emit('touchEnd', {});

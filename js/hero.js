@@ -41,6 +41,10 @@ class Hero {
         this.currentTarget = null;
         this.attackCooldown = 0;
         
+        // Experience and level
+        this.experience = 0;
+        this.level = 1;
+        
         // Abilities (6 abilities using only number keys 1-6)
         this.abilities = {
             '1': null, // Primary ability
@@ -3520,14 +3524,22 @@ class Hero {
             
             // Update model height
             if (this.model) {
-                this.model.position.y = this.jumpHeight + this.model.geometry.parameters.height / 2;
+                // Use a default height if geometry parameters are not available
+                const modelHeight = (this.model.geometry && this.model.geometry.parameters) 
+                    ? this.model.geometry.parameters.height / 2 
+                    : 1.0;
+                this.model.position.y = this.jumpHeight + modelHeight;
             }
         }
         
         // Update flight
-        if (this.isFlying) {
+        if (this.isFlying && this.model) {
             // Smoothly move towards target flight height
-            const currentHeight = this.model.position.y - this.model.geometry.parameters.height / 2;
+            // Use a default height if geometry parameters are not available
+            const modelHeight = (this.model.geometry && this.model.geometry.parameters) 
+                ? this.model.geometry.parameters.height / 2 
+                : 1.0;
+            const currentHeight = this.model.position.y - modelHeight;
             const heightDifference = this.flightTargetHeight - currentHeight;
             
             // Apply smooth movement towards target height
@@ -3543,7 +3555,11 @@ class Hero {
                 
                 // Update model height
                 if (this.model) {
-                    this.model.position.y = newHeight + this.model.geometry.parameters.height / 2;
+                    // Use a default height if geometry parameters are not available
+                    const modelHeight = (this.model.geometry && this.model.geometry.parameters) 
+                        ? this.model.geometry.parameters.height / 2 
+                        : 1.0;
+                    this.model.position.y = newHeight + modelHeight;
                 }
                 
                 // Update camera to follow flight height
@@ -3871,6 +3887,129 @@ class Ability {
         return this.cooldown / this.cooldownMax;
     }
 }
+
+// Add experience and leveling methods to Hero prototype
+Hero.prototype.gainExperience = function(amount) {
+    // Add experience
+    this.experience += amount;
+    
+    // Check if we've leveled up
+    const expNeeded = this.calculateExpForNextLevel();
+    
+    if (this.experience >= expNeeded) {
+        this.levelUp();
+    }
+    
+    // Update UI
+    if (window.game && window.game.uiManager) {
+        window.game.uiManager.updateXPBar(this.experience, expNeeded);
+    }
+    
+    Logger.log(`Hero ${this.name} gained ${amount} experience. Total: ${this.experience}`);
+};
+
+Hero.prototype.calculateExpForNextLevel = function() {
+    // Simple formula: 100 * current level
+    return 100 * this.level;
+};
+
+Hero.prototype.levelUp = function() {
+    // Increase level
+    this.level++;
+    
+    // Reset experience (keep overflow)
+    const expNeeded = this.calculateExpForNextLevel() / this.level; // Get exp needed for the level we just reached
+    this.experience -= expNeeded;
+    
+    // Increase stats
+    this.stats.maxHealth += 10;
+    this.stats.health = this.stats.maxHealth; // Heal to full on level up
+    this.stats.maxMana += 10;
+    this.stats.mana = this.stats.maxMana; // Restore mana to full on level up
+    this.stats.strength += 1;
+    this.stats.agility += 1;
+    this.stats.intelligence += 1;
+    
+    // Update UI
+    if (window.game && window.game.uiManager) {
+        window.game.uiManager.updateHealthBar();
+        window.game.uiManager.updateManaBar();
+        window.game.uiManager.updateLevelText(this.level);
+        window.game.uiManager.showMessage(`Level Up! You are now level ${this.level}`);
+    }
+    
+    // Play level up effect
+    this.playLevelUpEffect();
+    
+    Logger.log(`Hero ${this.name} leveled up to ${this.level}`);
+};
+
+Hero.prototype.playLevelUpEffect = function() {
+    // Create a particle effect around the hero
+    const particleCount = 30;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = new THREE.Mesh(
+            new THREE.SphereGeometry(0.1, 8, 8),
+            new THREE.MeshBasicMaterial({ 
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.8
+            })
+        );
+        
+        // Random position around the hero
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 0.5 + Math.random() * 0.5;
+        const height = Math.random() * 2;
+        
+        particle.position.set(
+            this.position.x + Math.cos(angle) * radius,
+            1 + height,
+            this.position.z + Math.sin(angle) * radius
+        );
+        
+        this.scene.add(particle);
+        particles.push({
+            mesh: particle,
+            velocity: new THREE.Vector3(
+                (Math.random() - 0.5) * 0.1,
+                0.05 + Math.random() * 0.1,
+                (Math.random() - 0.5) * 0.1
+            )
+        });
+    }
+    
+    // Animate particles
+    let time = 0;
+    const animate = () => {
+        time += 0.05;
+        
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.mesh.position.add(p.velocity);
+            p.mesh.material.opacity -= 0.01;
+            
+            if (p.mesh.material.opacity <= 0) {
+                this.scene.remove(p.mesh);
+                particles.splice(i, 1);
+                i--;
+            }
+        }
+        
+        if (particles.length > 0 && time < 3) {
+            requestAnimationFrame(animate);
+        } else {
+            // Clean up any remaining particles
+            for (const p of particles) {
+                this.scene.remove(p.mesh);
+            }
+        }
+    };
+    
+    animate();
+};
 
 // Hero Factory to create different hero types
 class HeroFactory {
