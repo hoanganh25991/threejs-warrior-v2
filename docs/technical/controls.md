@@ -58,14 +58,7 @@
 
 ### Keyboard Controls
 
-#### Movement Keys
-- **W**: Move forward (relative to camera)
-- **A**: Strafe left
-- **S**: Move backward
-- **D**: Strafe right
-- **Shift+Movement**: Sprint (consumes stamina)
-- **Space**: Dodge/Evade in movement direction
-- **Alt+Movement**: Precision movement (slower, more controlled)
+#### Arrow Keys
 
 #### Ability Keys
 - **Q**: Ability 1
