@@ -4,19 +4,18 @@
 
 const JumpConfig = {
     // Basic jump settings
-    initialVelocity: 10,        // Initial upward velocity for jump
-    gravity: 20,                // Gravity applied during jump
-    maxJumpCount: 2,            // Maximum number of consecutive jumps (double jump)
+    initialVelocity: 8,         // Initial upward velocity for jump
+    gravity: 15,                // Gravity applied during jump (reduced for more floaty jumps)
+    maxJumpCount: 10,           // Maximum number of consecutive jumps (increased for multiple F presses)
     
     // Multi-jump settings
-    multiJumpHeightIncrease: 1.5, // Height multiplier for each consecutive jump
-    maxJumpHeight: 15,          // Maximum height player can reach with multiple jumps
+    multiJumpHeightIncrease: 1.2, // Height multiplier for each consecutive jump
+    maxJumpHeight: 30,          // Maximum height player can reach with multiple jumps (increased)
     
     // Hold-to-jump settings
-    holdJumpEnabled: true,      // Whether holding jump button increases height
-    holdJumpAcceleration: 5,    // Acceleration when holding jump button
-    holdJumpMaxVelocity: 15,    // Maximum velocity when holding jump button
-    holdJumpDecay: 0.8,         // How quickly jump velocity decays when button is released
+    holdJumpEnabled: false,     // Disabled hold jump - only press F multiple times
+    jumpForceIncrement: 2,      // Force added with each F press
+    maxJumpForce: 20,           // Maximum jump force after multiple presses
     
     // Jump effects
     jumpEffectColor: 0xffffff,  // Color of regular jump effect

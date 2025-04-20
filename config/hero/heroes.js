@@ -40,6 +40,14 @@ const HeroesConfig = {
                 strength: 15,
                 movementSpeed: 4.5
             },
+            // Hero-specific wing configuration
+            wings: {
+                wingEffectColor: 0xff3300,  // Red-orange fiery wings
+                wingSize: 2.2,              // Larger wings
+                wingFlapSpeed: 0.7,         // Faster flapping
+                featherCount: 20,           // Fewer, larger feathers
+                featherLayers: 2            // Fewer layers for more solid appearance
+            },
             abilities: {
                 '1': {
                     skillId: 'berserkers-call',
@@ -74,6 +82,15 @@ const HeroesConfig = {
                 intelligence: 15,
                 movementSpeed: 4
             },
+            // Hero-specific wing configuration
+            wings: {
+                wingEffectColor: 0x88ddff,  // Light blue ice wings
+                wingSize: 1.8,              // Smaller, delicate wings
+                wingFlapSpeed: 0.4,         // Slower, graceful flapping
+                featherCount: 30,           // More feathers for detailed appearance
+                featherLayers: 4,           // More layers for crystalline effect
+                opacity: 0.6                // More transparent for ice effect
+            },
             abilities: {
                 '1': {
                     skillId: 'crystal-nova',
@@ -106,6 +123,16 @@ const HeroesConfig = {
                 intelligence: 18,
                 movementSpeed: 4.2
             },
+            // Hero-specific wing configuration
+            wings: {
+                wingEffectColor: 0x3333aa,  // Dark blue spectral wings
+                wingSize: 2.5,              // Large, imposing wings
+                wingFlapSpeed: 0.3,         // Slow, ominous flapping
+                featherCount: 18,           // Fewer, larger feathers
+                featherLayers: 3,           // Medium layers for ghostly effect
+                opacity: 0.5,               // Translucent for spectral effect
+                emissiveIntensity: 0.6      // Glowing effect
+            },
             abilities: {
                 '1': {
                     skillId: 'frost-nova-lich',
@@ -136,6 +163,18 @@ const HeroesConfig = {
                 agility: 15,
                 movementSpeed: 5.5,
                 attackSpeed: 1.2
+            },
+            // Hero-specific wing configuration
+            wings: {
+                wingEffectColor: 0x22cc22,  // Electric green energy wings
+                wingSize: 2.0,              // Medium sized wings
+                wingFlapSpeed: 1.2,         // Very fast flapping
+                featherCount: 24,           // Standard feather count
+                featherLayers: 2,           // Fewer layers for more energy-like appearance
+                opacity: 0.8,               // More solid for energy effect
+                emissiveIntensity: 0.9,     // Strong glow
+                particleIntensity: 2.0,     // More particles
+                particleSpeed: 1.5          // Faster particle movement
             },
             abilities: {
                 '1': {

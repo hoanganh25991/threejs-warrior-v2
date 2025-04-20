@@ -193,21 +193,83 @@ class Game {
             // Store the current camera position relative to the hero
             const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
             
-            // Get jump configuration
+            // Get jump and flight configurations
             const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
-                maxJumpHeight: 15,
+                maxJumpHeight: 30,
                 cameraJumpOffset: 0.7,
-                cameraTiltFactor: 0.3, // How much to tilt the camera (0-1)
-                cameraBackOffset: 0.8, // How much to move camera back as height increases (increased for better view)
-                cameraFovIncrease: 15, // How much to increase field of view at max height (increased for wider view)
-                cameraSkyViewFactor: 0.6, // How much to adjust camera to see more sky (0-1) (increased for better sky view)
-                cameraGroundViewEnhancement: 0.5, // How much to enhance ground visibility at height
-                cameraAlwaysCenterPlayer: true, // Always keep player at center of screen
-                cameraLerpFactor: 0.1 // Lerp factor for smooth camera movement (0-1)
+                cameraTiltFactor: 0.3,
+                cameraBackOffset: 0.8,
+                cameraFovIncrease: 15,
+                cameraSkyViewFactor: 0.6,
+                cameraGroundViewEnhancement: 0.5,
+                cameraAlwaysCenterPlayer: true,
+                cameraLerpFactor: 0.1
+            };
+            
+            const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+                firstPersonView: true,
+                firstPersonViewThreshold: 15
             };
             
             // Calculate normalized height (0-1 range)
             const normalizedHeight = Math.min(1, hero.jumpHeight / jumpConfig.maxJumpHeight);
+            
+            // Check if we should switch to first-person view (during flight or high jump)
+            const shouldUseFirstPerson = 
+                (hero.isFlying && flightConfig.firstPersonView) || 
+                (hero.jumpHeight >= flightConfig.firstPersonViewThreshold && flightConfig.firstPersonView);
+            
+            if (shouldUseFirstPerson) {
+                // First-person view implementation
+                // Position camera at hero's head level
+                const headOffset = 0.8; // Offset from hero's position to eye level
+                const firstPersonPosition = new THREE.Vector3(
+                    hero.position.x,
+                    hero.position.y + headOffset,
+                    hero.position.z
+                );
+                
+                // Get hero's forward direction (based on rotation)
+                const forwardDirection = new THREE.Vector3(0, 0, -1);
+                forwardDirection.applyEuler(hero.rotation);
+                
+                // Set camera position
+                this.camera.position.lerp(firstPersonPosition, 0.1);
+                
+                // Create look target in front of hero
+                const lookTarget = new THREE.Vector3().copy(firstPersonPosition).add(
+                    forwardDirection.multiplyScalar(10) // Look 10 units ahead
+                );
+                
+                // Add slight downward angle to see more of the ground
+                lookTarget.y -= 2;
+                
+                // Store the last look target for lerping
+                if (!this.camera.lastLookTarget) {
+                    this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
+                }
+                
+                // Lerp the look target for smooth transitions
+                this.camera.lastLookTarget.lerp(lookTarget, 0.1);
+                
+                // Look at the lerped target
+                this.camera.lookAt(this.camera.lastLookTarget);
+                
+                // Adjust field of view for first-person
+                const firstPersonFOV = 75; // Wider FOV for first-person
+                if (Math.abs(this.camera.fov - firstPersonFOV) > 0.5) {
+                    this.camera.fov = firstPersonFOV;
+                    this.camera.updateProjectionMatrix();
+                    Logger.log(`Switched to first-person view with FOV: ${firstPersonFOV}`);
+                }
+                
+                // Reset camera roll
+                this.camera.rotation.z = 0;
+                
+                return; // Skip the rest of the method
+            }
+            
+            // Standard third-person camera for normal jumping
             
             // Adjust camera height based on hero's jump height and offset factor
             const heightAdjustment = hero.jumpHeight * offsetFactor;
@@ -215,14 +277,14 @@ class Game {
             
             // Enhanced camera positioning for better view at height
             if (normalizedHeight > 0.1) {
-                // Calculate how much to move back based on height - more aggressive scaling for better view
+                // Calculate how much to move back based on height
                 const backFactor = normalizedHeight * jumpConfig.cameraBackOffset;
                 
                 // Get camera direction vector (normalized)
                 const direction = new THREE.Vector3().subVectors(hero.position, this.camera.position).normalize();
                 
                 // Move camera back in the opposite direction with enhanced scaling
-                offset.addScaledVector(direction, -backFactor * 15); // Increased multiplier for more dramatic effect
+                offset.addScaledVector(direction, -backFactor * 15);
                 
                 // Add slight lateral movement for a more dynamic view as height increases
                 const lateralOffset = Math.sin(hero.jumpHeight * 0.1) * normalizedHeight * 2;

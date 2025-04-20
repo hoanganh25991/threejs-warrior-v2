@@ -4,21 +4,22 @@
 
 const FlightConfig = {
     // Basic flight settings
-    initialHeight: 5,           // Initial height when starting flight
-    maxHeight: 20,              // Maximum flight height
+    initialHeight: 10,          // Initial height when starting flight
+    maxHeight: 40,              // Maximum flight height
     minHeight: 1,               // Minimum flight height
     
     // Height change rates
     heightChangeRate: {
-        keyPress: 2,            // Height change per key press
-        longPress: 1.5,         // Height change per second when holding button
-        mouseWheel: 1           // Height change per mouse wheel tick
+        keyPress: 3,            // Height change per key press
+        longPress: 0,           // Disabled long press
+        mouseWheel: 0           // Disabled mouse wheel
     },
     
     // Camera settings
     cameraFollowFlight: true,   // Whether camera follows player during flight
     cameraFlightOffset: 0.8,    // How much camera follows flight height (0-1)
-    mouseLookSensitivity: 0.5,  // Sensitivity for mouse look during flight
+    firstPersonView: true,      // Enable first-person view during flight
+    firstPersonViewThreshold: 15, // Height threshold to switch to first-person view
     
     // Visual effects
     upwardEffectColor: 0x00ffff,    // Color for upward flight effect

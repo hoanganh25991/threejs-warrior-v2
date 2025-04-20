@@ -2413,15 +2413,14 @@ class Hero {
     jump() {
         // Get jump configuration
         const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
-            initialVelocity: 10,
-            gravity: 20,
-            maxJumpCount: 2,
-            multiJumpHeightIncrease: 1.5,
-            maxJumpHeight: 15,
-            holdJumpEnabled: true,
-            holdJumpAcceleration: 5,
-            holdJumpMaxVelocity: 15,
-            holdJumpDecay: 0.8,
+            initialVelocity: 8,
+            gravity: 15,
+            maxJumpCount: 10,
+            multiJumpHeightIncrease: 1.2,
+            maxJumpHeight: 30,
+            holdJumpEnabled: false,
+            jumpForceIncrement: 2,
+            maxJumpForce: 20,
             jumpEffectColor: 0xffffff,
             doubleJumpEffectColor: 0x00ffff,
             holdJumpEffectColor: 0x66ccff,
@@ -2430,26 +2429,39 @@ class Hero {
             showWings: true,
             wingAppearThreshold: 5,
             wingOpenDuration: 0.8,
-            flightTransitionThreshold: 5,
+            flightTransitionThreshold: 15,
             flightTransitionEnabled: true
         };
         
-        // Check if we can jump (either on ground or have double jump available)
+        // Check if we can jump (either on ground or have multi-jump available)
         if (!this.isJumping || (this.isJumping && this.jumpCount < jumpConfig.maxJumpCount)) {
-            // If already jumping, this is a multi-jump
+            // If already jumping, this is a multi-jump (pressing F multiple times)
             if (this.isJumping) {
                 this.jumpCount++;
                 
-                // Increase jump velocity for consecutive jumps
-                const multiplier = Math.min(
-                    jumpConfig.multiJumpHeightIncrease * this.jumpCount,
-                    jumpConfig.maxJumpHeight / jumpConfig.initialVelocity
+                // Increase jump velocity with each press of F
+                const additionalForce = Math.min(
+                    jumpConfig.jumpForceIncrement * this.jumpCount,
+                    jumpConfig.maxJumpForce
                 );
-                this.jumpVelocity = jumpConfig.initialVelocity * multiplier;
+                
+                // Add to current velocity instead of resetting
+                this.jumpVelocity += additionalForce;
+                
+                // Cap at maximum
+                this.jumpVelocity = Math.min(this.jumpVelocity, jumpConfig.maxJumpForce);
                 
                 // Show multi-jump effect with different color
                 this.createJumpEffect(jumpConfig.doubleJumpEffectColor);
+                
+                // Check if we've reached flight threshold
+                if (this.jumpHeight >= jumpConfig.flightTransitionThreshold && jumpConfig.flightTransitionEnabled) {
+                    // Transition to flight mode
+                    this.startFlying();
+                    return;
+                }
             } else {
+                // First jump
                 this.jumpCount = 1;
                 this.jumpVelocity = jumpConfig.initialVelocity;
                 
@@ -2482,7 +2494,7 @@ class Hero {
             // Show message
             if (window.game && window.game.ui) {
                 if (this.jumpCount > 1) {
-                    window.game.ui.showMessage(`Jump #${this.jumpCount}!`);
+                    window.game.ui.showMessage(`Jump Force: ${this.jumpVelocity.toFixed(1)}!`);
                 } else {
                     window.game.ui.showMessage("Jump!");
                 }
@@ -2717,21 +2729,189 @@ class Hero {
         animate();
     }
     
+    // Start flying (transition from jump to flight)
+    startFlying() {
+        // Get flight configuration
+        const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+            initialHeight: 10,
+            maxHeight: 40,
+            minHeight: 1,
+            heightChangeRate: {
+                keyPress: 3,
+                longPress: 0,
+                mouseWheel: 0
+            },
+            cameraFollowFlight: true,
+            cameraFlightOffset: 0.8,
+            firstPersonView: true,
+            firstPersonViewThreshold: 15,
+            upwardEffectColor: 0x00ffff,
+            downwardEffectColor: 0xff9900,
+            wingEffectColor: 0x66ccff,
+            showWings: true,
+            wingSize: 2,
+            wingFlapSpeed: 0.5
+        };
+        
+        // Set flying state
+        this.isFlying = true;
+        this.isJumping = false; // Cancel any jump in progress
+        
+        // Use current height as initial flight height
+        this.flightTargetHeight = Math.max(this.jumpHeight, flightConfig.initialHeight);
+        
+        // Play flight animation if available
+        this.playAnimation('fly');
+        
+        // Create takeoff effect
+        this.createFlightEffect(flightConfig.upwardEffectColor, 'takeoff');
+        
+        // Show message
+        if (window.game && window.game.ui) {
+            window.game.ui.showMessage("Entering Flight Mode!");
+        }
+        
+        // Play takeoff sound using audio manager
+        if (window.game && window.game.audio) {
+            window.game.audio.playSound('takeoff', 0.4);
+            
+            // Start looping flight sound
+            this.flightLoopSoundId = window.game.audio.playSound('flightLoop', 0.2, true);
+        }
+        
+        // Show wings with hero-specific configuration
+        this.showHeroWings();
+        
+        // Update UI button if it exists
+        if (window.game && window.game.ui && window.game.ui.flyAbility) {
+            window.game.ui.flyAbility.textContent = "FLY DOWN";
+        }
+        
+        // Emit flight state changed event for UI
+        Events.emit('flightStateChanged', { isFlying: true });
+        
+        Logger.log(`Hero ${this.name} transitioned to flight mode at height ${this.flightTargetHeight}`);
+    }
+    
+    // Show hero-specific wings
+    showHeroWings() {
+        // Get hero-specific wing configuration if available
+        const heroConfig = window.HeroesConfig?.heroes[this.type];
+        const heroWings = heroConfig?.wings;
+        
+        if (heroWings) {
+            // Apply hero-specific wing properties
+            if (this.wings) {
+                // Make wings visible
+                this.wings.visible = true;
+                
+                // Apply hero-specific wing color
+                if (heroWings.wingEffectColor !== undefined) {
+                    this.updateWingColor(heroWings.wingEffectColor);
+                }
+                
+                // Apply hero-specific wing properties
+                this.wingFlapSpeed = heroWings.wingFlapSpeed || 0.5;
+                this.wingSize = heroWings.wingSize || 2.0;
+                
+                // Apply opacity if specified
+                if (heroWings.opacity !== undefined) {
+                    this.updateWingOpacity(heroWings.opacity);
+                }
+                
+                // Apply emissive intensity if specified
+                if (heroWings.emissiveIntensity !== undefined) {
+                    this.updateWingEmissive(heroWings.emissiveIntensity);
+                }
+                
+                // Animate wings opening
+                this.animateWingOpenTransition(0, 1, 0.8);
+                
+                Logger.log(`Showing ${this.type} specific wings`);
+            }
+        } else {
+            // Use default wings
+            if (this.wings) {
+                this.wings.visible = true;
+                this.animateWingOpenTransition(0, 1, 0.8);
+            }
+        }
+    }
+    
+    // Update wing color
+    updateWingColor(color) {
+        if (!this.leftWingFeathers || !this.rightWingFeathers) return;
+        
+        const newColor = new THREE.Color(color);
+        
+        // Update all feathers in both wings
+        for (const layerFeathers of this.leftWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.color.set(newColor);
+                feather.material.emissive.set(newColor);
+            }
+        }
+        
+        for (const layerFeathers of this.rightWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.color.set(newColor);
+                feather.material.emissive.set(newColor);
+            }
+        }
+    }
+    
+    // Update wing opacity
+    updateWingOpacity(opacity) {
+        if (!this.leftWingFeathers || !this.rightWingFeathers) return;
+        
+        // Update all feathers in both wings
+        for (const layerFeathers of this.leftWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.opacity = opacity;
+            }
+        }
+        
+        for (const layerFeathers of this.rightWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.opacity = opacity;
+            }
+        }
+    }
+    
+    // Update wing emissive intensity
+    updateWingEmissive(intensity) {
+        if (!this.leftWingFeathers || !this.rightWingFeathers) return;
+        
+        // Update all feathers in both wings
+        for (const layerFeathers of this.leftWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.emissiveIntensity = intensity;
+            }
+        }
+        
+        for (const layerFeathers of this.rightWingFeathers) {
+            for (const feather of layerFeathers) {
+                feather.material.emissiveIntensity = intensity;
+            }
+        }
+    }
+    
     // Toggle flight mode
     toggleFlight() {
         // Get flight configuration
         const flightConfig = window.configLoader?.getConfig('flightConfig') || {
-            initialHeight: 5,
-            maxHeight: 20,
+            initialHeight: 10,
+            maxHeight: 40,
             minHeight: 1,
             heightChangeRate: {
-                keyPress: 2,
-                longPress: 1.5,
-                mouseWheel: 1
+                keyPress: 3,
+                longPress: 0,
+                mouseWheel: 0
             },
             cameraFollowFlight: true,
             cameraFlightOffset: 0.8,
-            mouseLookSensitivity: 0.5,
+            firstPersonView: true,
+            firstPersonViewThreshold: 15,
             upwardEffectColor: 0x00ffff,
             downwardEffectColor: 0xff9900,
             wingEffectColor: 0x66ccff,

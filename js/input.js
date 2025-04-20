@@ -42,36 +42,30 @@ class InputManager {
     }
     
     initEventListeners() {
-        // Keyboard events
+        // Keyboard events - only keyboard controls are enabled
         window.addEventListener('keydown', this.handleKeyDown.bind(this));
         window.addEventListener('keyup', this.handleKeyUp.bind(this));
         
-        // Mouse events
+        // Mouse and touch events are disabled as per requirements
+        // We still prevent context menu on right-click for better experience
         const canvas = this.renderer.domElement;
-        canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
-        canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-        canvas.addEventListener('wheel', this.handleMouseWheel.bind(this));
-        
-        // Prevent context menu on right-click
         canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
-        // Touch events for mobile
-        canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
-        canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
-        canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
+        Logger.log('Input system initialized with keyboard-only controls');
     }
     
     handleKeyDown(event) {
         const key = event.key.toLowerCase();
         this.keys[key] = true;
         
-        // Handle number keys 1-6 for abilities
-        if (key >= '1' && key <= '6') {
-            this.handleAbilityKeyPress(key);
-        }
+        // Get controls configuration
+        const controlsConfig = window.ControlsConfig || {};
+        const keyboardControls = controlsConfig.keyboard || {};
         
-        // Handle jump key (f)
+        // Handle WASD movement
+        // Movement is handled in the update loop using this.keys
+        
+        // Handle jump/fly key (f)
         if (key === 'f' && window.game && window.game.hero) {
             if (!window.game.hero.isJumping) {
                 window.game.hero.jump();
@@ -79,9 +73,17 @@ class InputManager {
             window.game.hero.startHoldJump();
         }
         
-        // Handle basic attack key (a)
-        if (key === 'a' && window.game && window.game.hero) {
+        // Handle ability keys (h, j, k, l)
+        if (key === 'h') {
+            // H is both basic attack and ability 1
             this.handleBasicAttack();
+            this.handleAbilityKeyPress('1');
+        } else if (key === 'j') {
+            this.handleAbilityKeyPress('2');
+        } else if (key === 'k') {
+            this.handleAbilityKeyPress('3');
+        } else if (key === 'l') {
+            this.handleAbilityKeyPress('4');
         }
         
         // Emit key press event
@@ -609,13 +611,13 @@ class InputManager {
     }
     
     update() {
-        // Handle arrow key movement
+        // Handle WASD movement
         const moveDirection = new THREE.Vector3(0, 0, 0);
         
-        if (this.isKeyPressed('arrowup')) moveDirection.z -= 1;
-        if (this.isKeyPressed('arrowdown')) moveDirection.z += 1;
-        if (this.isKeyPressed('arrowleft')) moveDirection.x -= 1;
-        if (this.isKeyPressed('arrowright')) moveDirection.x += 1;
+        if (this.isKeyPressed('w')) moveDirection.z -= 1;
+        if (this.isKeyPressed('s')) moveDirection.z += 1;
+        if (this.isKeyPressed('a')) moveDirection.x -= 1;
+        if (this.isKeyPressed('d')) moveDirection.x += 1;
         
         // Only emit movement event if there's actual movement
         if (moveDirection.x !== 0 || moveDirection.z !== 0) {

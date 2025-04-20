@@ -19,10 +19,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 
 ## Core Requirements
 
-1. **3D Isometric Perspective**: The game must feature a 3D isometric view with free camera rotation
+1. **3D Isometric Perspective**: The game must feature a 3D isometric view with fixed camera angle
 2. **Hero-Based Gameplay**: Players must be able to select from distinct heroes with unique abilities
-3. **Free Movement**: Characters must move freely in the environment using both mouse and keyboard controls
-4. **Dynamic Camera**: Middle-mouse button must rotate the camera around the character
+3. **Free Movement**: Characters must move freely in the environment using WASD keyboard controls
+4. **Simplified Controls**: The game must use keyboard-only controls with WASD for movement, F for jump/fly, and HJKL for abilities
 5. **Skill-Based Combat**: Combat must involve active use of hero abilities and tactical positioning
 6. **Quest-Driven Narrative**: The game must feature a story-driven campaign with meaningful quests
 7. **Browser-Based**: The game must run in modern web browsers without plugins
@@ -45,10 +45,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 ## Gameplay Systems
 
 ### Movement & Controls
-- **Point-and-Click Navigation**: Primary movement method using mouse clicks
-- **Arrow Keys Movement**: Alternative direct control using keyboard
-- **Camera Rotation**: Middle-mouse button to rotate view 360 degrees
-- **Camera Zoom**: Mouse wheel to adjust distance
+- **WASD Movement**: Primary movement method using keyboard
+- **F Key for Jump/Fly**: Press F to jump, hold for higher jumps, press again while jumping to fly
+- **Fixed Camera View**: Isometric view with fixed camera angle
+- **HJKL for Abilities**: Use H, J, K, L keys to activate hero abilities
 
 ### Combat System
 - **Auto-Attack**: Basic attacks when targeting enemies
@@ -152,10 +152,10 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 - **Adaptive Performance**: Dynamic quality adjustment based on device capabilities
 
 ### Controls System
-- **Mouse Controls**: Left-click to move/attack, right-click for abilities, middle-mouse for camera rotation
-- **Keyboard Controls**: WASD for movement, Q/W/E/R for abilities, space for dodge/evade
-- **Camera System**: Isometric perspective with rotation, zoom, and multiple camera modes
-- **Accessibility Options**: Auto-targeting, movement assist, camera assist, colorblind modes
+- **Keyboard-Only Controls**: WASD for movement, F for jump/fly, HJKL for abilities
+- **Auto-Targeting System**: Automatically selects nearest enemy in range for abilities and attacks
+- **Camera System**: Fixed isometric perspective with automatic adjustments based on hero height
+- **Accessibility Options**: Auto-targeting, simplified controls, visual feedback, colorblind modes
 
 ### UI/UX Design
 - **HUD Elements**: Health/mana bars, ability cooldowns, minimap, quest tracker

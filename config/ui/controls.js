@@ -4,38 +4,29 @@
 
 // Define the ControlsConfig in the global scope (window)
 window.ControlsConfig = {
-    // Keyboard controls
+    // Keyboard controls - WASD for movement, F for jump/fly
     keyboard: {
         movement: {
-            forward: 'ArrowUp',
-            backward: 'ArrowDown',
-            left: 'ArrowLeft',
-            right: 'ArrowRight',
+            forward: 'w',
+            backward: 's',
+            left: 'a',
+            right: 'd',
             jump: 'f'
-            // Removed WASD controls, using only arrow keys now
+            // Arrow keys removed as per requirements
         },
         combat: {
-            basicAttack: 'a',
+            basicAttack: 'h',
             autoTarget: true,
             autoTargetRange: 10
         },
         abilities: {
-            ability1: '1',
-            ability2: '2',
-            ability3: '3',
-            ability4: '4',
-            ability5: '5',
-            ability6: '6',
-            quickAbility1: 'q',
-            quickAbility2: 'e',
-            quickAbility3: 'r',
-            quickAbility4: 't'
+            ability1: 'h',
+            ability2: 'j',
+            ability3: 'k',
+            ability4: 'l'
         },
         camera: {
-            rotateLeft: 'q',
-            rotateRight: 'e',
-            zoomIn: 'z',
-            zoomOut: 'x'
+            // Camera controls removed as per requirements
         },
         interaction: {
             interact: 'f',
@@ -46,84 +37,17 @@ window.ControlsConfig = {
         }
     },
     
-    // Mouse controls
+    // Mouse controls - disabled as per requirements
     mouse: {
-        primary: 'left',         // Primary action (attack, select)
-        secondary: 'right',      // Secondary action (move)
-        tertiary: 'middle',      // Tertiary action (camera)
-        
-        // Flight controls
-        flightControls: {
-            enabled: true,       // Enable mouse look during flight
-            lookButton: 'right', // Button to hold for looking around
-            ascendButton: 'left', // Button to ascend
-            descendButton: 'right', // Button to descend
-            sensitivity: 0.5     // Mouse sensitivity
-        }
+        enabled: false
     },
     
-    // Touch controls
+    // Touch controls - disabled as per requirements
     touch: {
-        enabled: true,
-        
-        // Joystick configuration
-        joystick: {
-            size: 120,              // Size of virtual joystick base in pixels
-            innerSize: 60,          // Size of the movable joystick handle
-            position: {             // Position of joystick from bottom-left
-                x: 150,
-                y: 150
-            },
-            alpha: 0.7,             // Opacity of joystick
-            baseColor: 'rgba(50, 50, 50, 0.5)',
-            handleColor: 'rgba(150, 150, 150, 0.8)',
-            borderColor: 'rgba(200, 200, 200, 0.8)',
-            borderWidth: 2,
-            
-            // Visual feedback
-            showDirection: true,    // Show direction indicator
-            directionColor: 'rgba(255, 255, 255, 0.4)',
-            
-            // Dynamic joystick (appears where touch starts)
-            dynamic: true,
-            dynamicOpacity: 0.9,
-            
-            // Movement settings
-            deadZone: 0.1,          // Minimum movement to register (0-1)
-            maxZone: 0.9,           // Zone for maximum speed (0-1)
-            followFinger: true      // Joystick follows finger beyond bounds
-        },
-        
-        // Skill activation
-        skillActivation: {
-            tapToActivate: true,    // Tap to activate skill
-            dragToAim: true,        // Drag to aim directional skills
-            showAimIndicator: true, // Show aiming indicator
-            aimIndicatorColor: 'rgba(255, 255, 255, 0.5)',
-            vibrationFeedback: true // Vibrate on activation
-        },
-        
-        buttonSize: 80,             // Size of touch buttons
-        buttonSpacing: 10,          // Spacing between buttons
-        
-        // Long press settings
-        longPressThreshold: 300,    // Time in ms to trigger long press
-        longPressInterval: 100,     // Interval in ms for continuous action during long press
-        
-        // Double tap settings
-        doubleTapThreshold: 300,    // Time in ms between taps to count as double tap
-        
-        // Auto-targeting for basic attacks
-        autoTargeting: {
-            enabled: true,
-            range: 10,
-            preferClosest: true,
-            showTargetIndicator: true,
-            targetIndicatorColor: 'rgba(255, 0, 0, 0.5)'
-        }
+        enabled: false
     },
     
-    // Button appearance
+    // Button appearance - updated for keyboard-only controls
     buttons: {
         jump: {
             text: 'JUMP',
@@ -131,7 +55,7 @@ window.ControlsConfig = {
             borderColor: '#999',
             textColor: 'white',
             size: 80,
-            keyHint: 'SPACE',
+            keyHint: 'F',
             keyHintSize: 16,
             keyHintColor: 'rgba(255,255,255,0.7)',
             keyHintBgColor: 'rgba(0,0,0,0.5)'
@@ -154,12 +78,12 @@ window.ControlsConfig = {
             }
         },
         attack: {
-            text: 'A',
+            text: 'H',
             color: 'rgba(255,59,59,0.8)',
             borderColor: '#ff3333',
             textColor: 'white',
             size: 100,
-            keyHint: 'A',
+            keyHint: 'H',
             keyHintSize: 18,
             keyHintColor: 'rgba(255,255,255,0.8)',
             keyHintBgColor: 'rgba(0,0,0,0.5)',
@@ -178,6 +102,22 @@ window.ControlsConfig = {
                 color: 'rgba(255,0,0,0.5)',
                 size: 30
             }
+        },
+        ability1: {
+            text: 'H',
+            keyHint: 'H'
+        },
+        ability2: {
+            text: 'J',
+            keyHint: 'J'
+        },
+        ability3: {
+            text: 'K',
+            keyHint: 'K'
+        },
+        ability4: {
+            text: 'L',
+            keyHint: 'L'
         }
     }
 };

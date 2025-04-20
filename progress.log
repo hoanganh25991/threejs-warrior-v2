@@ -79,3 +79,15 @@
 [2024-05-14T10:00:00.000Z] Fixed issue with missing playAmbientSound method in AudioManager class
 [2024-05-14T10:15:00.000Z] Enhanced AudioManager with dedicated ambient sound tracking and management
 [2024-05-14T11:00:00.000Z] Merged implementation-details.md into requirement.md for consolidated documentation
+[2024-05-15T09:00:00.000Z] Simplified control system to keyboard-only controls
+[2024-05-15T09:15:00.000Z] Updated movement to use WASD keys instead of mouse/touch
+[2024-05-15T09:30:00.000Z] Implemented HJKL keys for abilities and attacks
+[2024-05-15T09:45:00.000Z] Enhanced auto-targeting system to work without mouse input
+[2024-05-15T10:00:00.000Z] Updated documentation to reflect new control scheme
+[2024-05-15T10:15:00.000Z] Created fixed-issue document for simplified keyboard controls
+[2024-05-16T09:00:00.000Z] Fixed WASD movement in input handler
+[2024-05-16T09:30:00.000Z] Implemented hero-specific wing configurations for each hero
+[2024-05-16T10:00:00.000Z] Enhanced jump mechanics with multi-press force accumulation
+[2024-05-16T10:30:00.000Z] Implemented first-person view during flight
+[2024-05-16T11:00:00.000Z] Added automatic transition to flight mode at height threshold
+[2024-05-16T11:30:00.000Z] Created fixed-issue document for jump-fly controls and first-person view
