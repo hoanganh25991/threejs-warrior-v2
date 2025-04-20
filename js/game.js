@@ -676,7 +676,7 @@ class Game {
             
             // Final validation before passing to hero
             if (isNaN(worldDirection.x) || isNaN(worldDirection.y) || isNaN(worldDirection.z)) {
-                Logger.error('Invalid world direction calculated:', worldDirection);
+                Logger.error(`Invalid world direction calculated: x=${worldDirection.x}, y=${worldDirection.y}, z=${worldDirection.z}`);
                 return;
             }
             
