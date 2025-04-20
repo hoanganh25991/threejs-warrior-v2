@@ -9,21 +9,18 @@
 - Double-click to perform a short dash in that direction (if hero has dash ability)
 - Click on enemy to move within attack range and begin auto-attacking
 
-### WASD Movement
+### Arrow Keys Movement
 - Alternative direct control using keyboard
-- W: Move forward relative to camera
-- A: Strafe left
-- S: Move backward
-- D: Strafe right
+- Arrow Up: Move forward relative to camera
+- Arrow Left: Strafe left
+- Arrow Down: Move backward
+- Arrow Right: Strafe right
 - Shift + movement key: Sprint (consumes stamina)
 - Space: Dodge roll (direction based on movement keys)
 
 ### Camera Controls
 - Middle-mouse button: Rotate camera 360 degrees around character
 - Mouse wheel: Zoom in/out (minimum and maximum distances vary by environment)
-- Hold Alt: Temporarily unlock camera from character
-- F key: Reset camera to default position behind character
-- Tab key: Toggle between different camera presets (close, medium, far)
 
 ## Combat System
 
@@ -36,8 +33,8 @@
 
 ### Ability System
 - Each hero has 4 unique active abilities plus 1 passive and 1 ultimate
-- Q, W, E, R keys activate abilities (or 1-4 number keys)
-- Right-click + ability key for targeted abilities
+- 1, 2, 3, 4 number keys activate abilities
+- Pressing an ability key while targeting will cast it immediately
 - Visual indicators show area of effect for targeted abilities
 - Ability cooldowns displayed on HUD
 - Resource costs (mana, energy, rage, etc.) vary by hero type
