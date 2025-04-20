@@ -110,3 +110,6 @@
 [2025-04-20T10:20:00.000Z] Restructured camera followJump method to ensure configuration variables are always accessible
 [2025-04-20T10:25:00.000Z] Added missing cameraRollEnabled property to default jumpConfig
 [2025-04-20T10:30:00.000Z] Created documentation for jumpconfig-not-defined-in-camera-followjump fix
+[2025-04-20T11:00:00.000Z] Fixed issue with offset not defined in camera followJump method
+[2025-04-20T11:05:00.000Z] Ensured offset variable is always defined with default value in camera followJump
+[2025-04-20T11:10:00.000Z] Created documentation for offset-not-defined-in-camera-followjump fix

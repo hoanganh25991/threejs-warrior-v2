@@ -209,6 +209,9 @@ class Game {
                 firstPersonViewThreshold: 15
             };
             
+            // Define offset outside try-catch blocks to ensure it's always available
+            let offset = new THREE.Vector3(0, 0, 0); // Default offset
+            
             try {
                 // Validate hero position
                 if (!hero || !hero.position) {
@@ -222,7 +225,7 @@ class Game {
                 }
                 
                 // Store the current camera position relative to the hero
-                const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
+                offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
                 
                 // Get jump and flight configurations from configLoader if available
                 if (window.configLoader) {
