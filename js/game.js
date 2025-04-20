@@ -190,6 +190,25 @@ class Game {
         
         // Add followJump method to camera
         this.camera.followJump = (hero, offsetFactor) => {
+            // Define configurations outside try-catch blocks to make them accessible throughout the method
+            let jumpConfig = {
+                maxJumpHeight: 30,
+                cameraJumpOffset: 0.7,
+                cameraTiltFactor: 0.3,
+                cameraBackOffset: 0.8,
+                cameraFovIncrease: 15,
+                cameraSkyViewFactor: 0.6,
+                cameraGroundViewEnhancement: 0.5,
+                cameraAlwaysCenterPlayer: true,
+                cameraLerpFactor: 0.1,
+                cameraRollEnabled: false
+            };
+            
+            let flightConfig = {
+                firstPersonView: true,
+                firstPersonViewThreshold: 15
+            };
+            
             try {
                 // Validate hero position
                 if (!hero || !hero.position) {
@@ -205,23 +224,19 @@ class Game {
                 // Store the current camera position relative to the hero
                 const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
                 
-                // Get jump and flight configurations
-                const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
-                    maxJumpHeight: 30,
-                    cameraJumpOffset: 0.7,
-                    cameraTiltFactor: 0.3,
-                    cameraBackOffset: 0.8,
-                    cameraFovIncrease: 15,
-                    cameraSkyViewFactor: 0.6,
-                    cameraGroundViewEnhancement: 0.5,
-                    cameraAlwaysCenterPlayer: true,
-                    cameraLerpFactor: 0.1
-                };
-                
-                const flightConfig = window.configLoader?.getConfig('flightConfig') || {
-                    firstPersonView: true,
-                    firstPersonViewThreshold: 15
-                };
+                // Get jump and flight configurations from configLoader if available
+                if (window.configLoader) {
+                    const loadedJumpConfig = window.configLoader.getConfig('jumpConfig');
+                    const loadedFlightConfig = window.configLoader.getConfig('flightConfig');
+                    
+                    if (loadedJumpConfig) {
+                        jumpConfig = { ...jumpConfig, ...loadedJumpConfig };
+                    }
+                    
+                    if (loadedFlightConfig) {
+                        flightConfig = { ...flightConfig, ...loadedFlightConfig };
+                    }
+                }
             } catch (error) {
                 Logger.error('Error in camera.followJump initialization:', error);
                 return;
