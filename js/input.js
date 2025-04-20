@@ -165,6 +165,16 @@ class InputManager {
             window.game.hero.stopHoldJump();
         }
         
+        // Check if a movement key was released
+        if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+            // Check if all movement keys are now released
+            if (!this.isKeyPressed('w') && !this.isKeyPressed('a') && 
+                !this.isKeyPressed('s') && !this.isKeyPressed('d')) {
+                // All movement keys are released, emit stop movement event
+                Events.emit('stopMovement');
+            }
+        }
+        
         // Emit key release event
         Events.emit('keyReleased', { key: key });
     }

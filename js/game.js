@@ -651,17 +651,67 @@ class Game {
         }
         
         try {
+            // Validate input direction
+            if (!direction || typeof direction !== 'object') {
+                Logger.error(`Invalid direction object: ${direction}`);
+                return;
+            }
+            
+            if (isNaN(direction.x) || isNaN(direction.z)) {
+                Logger.error(`Invalid input direction values: x=${direction.x}, z=${direction.z}`);
+                return;
+            }
+            
             // Convert direction from camera space to world space
             const cameraDirection = new THREE.Vector3(0, 0, -1);
+            
+            // Validate camera quaternion
+            if (!this.camera || !this.camera.quaternion) {
+                Logger.error('Camera or camera quaternion is not available');
+                return;
+            }
+            
+            // Apply camera rotation and validate
             cameraDirection.applyQuaternion(this.camera.quaternion);
+            if (isNaN(cameraDirection.x) || isNaN(cameraDirection.y) || isNaN(cameraDirection.z)) {
+                Logger.error(`Invalid camera direction after quaternion: x=${cameraDirection.x}, y=${cameraDirection.y}, z=${cameraDirection.z}`);
+                return;
+            }
+            
+            // Set y to 0 for horizontal movement only
             cameraDirection.y = 0;
+            
+            // Check if vector is still valid after y=0
+            if (cameraDirection.length() === 0) {
+                // If camera is looking straight up or down, use a default forward direction
+                Logger.warn('Camera looking straight up/down, using default forward direction');
+                cameraDirection.set(0, 0, -1);
+            }
+            
             cameraDirection.normalize();
             
+            // Create right vector
             const cameraRight = new THREE.Vector3(1, 0, 0);
             cameraRight.applyQuaternion(this.camera.quaternion);
+            
+            // Validate right vector
+            if (isNaN(cameraRight.x) || isNaN(cameraRight.y) || isNaN(cameraRight.z)) {
+                Logger.error(`Invalid camera right vector: x=${cameraRight.x}, y=${cameraRight.y}, z=${cameraRight.z}`);
+                return;
+            }
+            
             cameraRight.y = 0;
+            
+            // Check if vector is still valid after y=0
+            if (cameraRight.length() === 0) {
+                // If camera right vector is invalid, use a default right direction
+                Logger.warn('Invalid camera right vector after y=0, using default right direction');
+                cameraRight.set(1, 0, 0);
+            }
+            
             cameraRight.normalize();
             
+            // Create world direction vector with validated components
             const worldDirection = new THREE.Vector3();
             worldDirection.addScaledVector(cameraDirection, -direction.z);
             worldDirection.addScaledVector(cameraRight, direction.x);
