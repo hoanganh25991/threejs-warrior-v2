@@ -190,208 +190,274 @@ class Game {
         
         // Add followJump method to camera
         this.camera.followJump = (hero, offsetFactor) => {
-            // Store the current camera position relative to the hero
-            const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
-            
-            // Get jump and flight configurations
-            const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
-                maxJumpHeight: 30,
-                cameraJumpOffset: 0.7,
-                cameraTiltFactor: 0.3,
-                cameraBackOffset: 0.8,
-                cameraFovIncrease: 15,
-                cameraSkyViewFactor: 0.6,
-                cameraGroundViewEnhancement: 0.5,
-                cameraAlwaysCenterPlayer: true,
-                cameraLerpFactor: 0.1
-            };
-            
-            const flightConfig = window.configLoader?.getConfig('flightConfig') || {
-                firstPersonView: true,
-                firstPersonViewThreshold: 15
-            };
-            
-            // Calculate normalized height (0-1 range)
-            const normalizedHeight = Math.min(1, hero.jumpHeight / jumpConfig.maxJumpHeight);
-            
-            // Check if we should switch to first-person view (during flight or high jump)
-            const shouldUseFirstPerson = 
-                (hero.isFlying && flightConfig.firstPersonView) || 
-                (hero.jumpHeight >= flightConfig.firstPersonViewThreshold && flightConfig.firstPersonView);
-            
-            if (shouldUseFirstPerson) {
-                // First-person view implementation
-                // Position camera at hero's head level
-                const headOffset = 0.8; // Offset from hero's position to eye level
-                const firstPersonPosition = new THREE.Vector3(
-                    hero.position.x,
-                    hero.position.y + headOffset,
-                    hero.position.z
-                );
+            try {
+                // Validate hero position
+                if (!hero || !hero.position) {
+                    Logger.error('Invalid hero or hero position in followJump');
+                    return;
+                }
                 
-                // Get hero's forward direction (based on rotation)
-                const forwardDirection = new THREE.Vector3(0, 0, -1);
-                forwardDirection.applyEuler(hero.rotation);
+                if (isNaN(hero.position.x) || isNaN(hero.position.y) || isNaN(hero.position.z)) {
+                    Logger.error(`Invalid hero position in followJump: x=${hero.position.x}, y=${hero.position.y}, z=${hero.position.z}`);
+                    return;
+                }
                 
-                // Set camera position
-                this.camera.position.lerp(firstPersonPosition, 0.1);
+                // Store the current camera position relative to the hero
+                const offset = new THREE.Vector3().subVectors(this.camera.position, hero.position);
                 
-                // Create look target in front of hero
-                const lookTarget = new THREE.Vector3().copy(firstPersonPosition).add(
-                    forwardDirection.multiplyScalar(10) // Look 10 units ahead
-                );
+                // Get jump and flight configurations
+                const jumpConfig = window.configLoader?.getConfig('jumpConfig') || {
+                    maxJumpHeight: 30,
+                    cameraJumpOffset: 0.7,
+                    cameraTiltFactor: 0.3,
+                    cameraBackOffset: 0.8,
+                    cameraFovIncrease: 15,
+                    cameraSkyViewFactor: 0.6,
+                    cameraGroundViewEnhancement: 0.5,
+                    cameraAlwaysCenterPlayer: true,
+                    cameraLerpFactor: 0.1
+                };
                 
-                // Add slight downward angle to see more of the ground
-                lookTarget.y -= 2;
+                const flightConfig = window.configLoader?.getConfig('flightConfig') || {
+                    firstPersonView: true,
+                    firstPersonViewThreshold: 15
+                };
+            } catch (error) {
+                Logger.error('Error in camera.followJump initialization:', error);
+                return;
+            }
+            
+            try {
+                // Calculate normalized height (0-1 range)
+                const jumpHeight = hero.jumpHeight || 0;
+                const normalizedHeight = Math.min(1, jumpHeight / jumpConfig.maxJumpHeight);
+                
+                // Check if we should switch to first-person view (during flight or high jump)
+                const shouldUseFirstPerson = 
+                    (hero.isFlying && flightConfig.firstPersonView) || 
+                    (jumpHeight >= flightConfig.firstPersonViewThreshold && flightConfig.firstPersonView);
+                
+                if (shouldUseFirstPerson) {
+                    // First-person view implementation
+                    // Position camera at hero's head level
+                    const headOffset = 0.8; // Offset from hero's position to eye level
+                    const firstPersonPosition = new THREE.Vector3(
+                        hero.position.x,
+                        hero.position.y + headOffset,
+                        hero.position.z
+                    );
+                    
+                    // Get hero's forward direction (based on rotation)
+                    const forwardDirection = new THREE.Vector3(0, 0, -1);
+                    
+                    // Validate hero rotation
+                    if (hero.rotation && 
+                        !isNaN(hero.rotation.x) && 
+                        !isNaN(hero.rotation.y) && 
+                        !isNaN(hero.rotation.z)) {
+                        forwardDirection.applyEuler(hero.rotation);
+                    } else {
+                        Logger.warn('Invalid hero rotation in followJump, using default direction');
+                    }
+                    
+                    // Validate forward direction
+                    if (isNaN(forwardDirection.x) || isNaN(forwardDirection.y) || isNaN(forwardDirection.z)) {
+                        Logger.warn('Invalid forward direction in followJump, using default');
+                        forwardDirection.set(0, 0, -1);
+                    }
+                    
+                    // Set camera position
+                    this.camera.position.lerp(firstPersonPosition, 0.1);
+                    
+                    // Create look target in front of hero
+                    const lookTarget = new THREE.Vector3().copy(firstPersonPosition);
+                    lookTarget.add(forwardDirection.multiplyScalar(10)); // Look 10 units ahead
+                    
+                    // Add slight downward angle to see more of the ground
+                    lookTarget.y -= 2;
+                    
+                    // Store the last look target for lerping
+                    if (!this.camera.lastLookTarget) {
+                        this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
+                    }
+                    
+                    // Lerp the look target for smooth transitions
+                    this.camera.lastLookTarget.lerp(lookTarget, 0.1);
+                    
+                    // Look at the lerped target
+                    this.camera.lookAt(this.camera.lastLookTarget);
+                    // Adjust field of view for first-person
+                    const firstPersonFOV = 75; // Wider FOV for first-person
+                    if (Math.abs(this.camera.fov - firstPersonFOV) > 0.5) {
+                        this.camera.fov = firstPersonFOV;
+                        this.camera.updateProjectionMatrix();
+                        Logger.log(`Switched to first-person view with FOV: ${firstPersonFOV}`);
+                    }
+                    
+                    // Reset camera roll
+                    this.camera.rotation.z = 0;
+                    
+                    return; // Skip the rest of the method
+                }
+                
+                // Standard third-person camera for normal jumping
+                
+                // Adjust camera height based on hero's jump height and offset factor
+                const heightAdjustment = jumpHeight * offsetFactor;
+                offset.y += heightAdjustment;
+                
+                // Enhanced camera positioning for better view at height
+                if (normalizedHeight > 0.1) {
+                    try {
+                        // Calculate how much to move back based on height
+                        const backFactor = normalizedHeight * jumpConfig.cameraBackOffset;
+                        
+                        // Get camera direction vector (normalized)
+                        const direction = new THREE.Vector3().subVectors(hero.position, this.camera.position);
+                        
+                        // Validate direction vector
+                        if (direction.length() === 0) {
+                            Logger.warn('Zero-length camera direction in followJump');
+                        } else {
+                            direction.normalize();
+                            
+                            // Move camera back in the opposite direction with enhanced scaling
+                            offset.addScaledVector(direction, -backFactor * 15);
+                        }
+                        
+                        // Add slight lateral movement for a more dynamic view as height increases
+                        const lateralOffset = Math.sin(jumpHeight * 0.1) * normalizedHeight * 2;
+                        offset.x += lateralOffset;
+                        
+                        // Log significant camera adjustments
+                        if (jumpHeight > 5 && Math.floor(jumpHeight) % 2 === 0) {
+                            Logger.log(`Enhanced camera view for height: ${jumpHeight.toFixed(1)}`);
+                        }
+                    } catch (error) {
+                        Logger.error('Error in camera positioning:', error);
+                    }
+                }
+                
+                // Calculate tilt based on height relative to max jump height
+                let tiltFactor = 0;
+                if (jumpHeight > 0) {
+                    // Enhanced tilt calculation for better ground visibility at height
+                    tiltFactor = normalizedHeight * (jumpConfig.cameraTiltFactor || 0.3);
+                    
+                    // Add ground view enhancement - look more downward as height increases to see more ground
+                    const groundViewEnhancement = normalizedHeight * jumpConfig.cameraGroundViewEnhancement;
+                    tiltFactor += groundViewEnhancement;
+                    
+                    // Adjust field of view based on height to see more of the area
+                    const baseFOV = 60; // Default FOV
+                    const maxFOVIncrease = jumpConfig.cameraFovIncrease || 15;
+                    const newFOV = baseFOV + (normalizedHeight * maxFOVIncrease);
+                    
+                    // Only update if FOV has changed significantly to avoid constant updates
+                    if (Math.abs(this.camera.fov - newFOV) > 0.5) {
+                        this.camera.fov = newFOV;
+                        this.camera.updateProjectionMatrix();
+                    }
+                    
+                    if (jumpHeight > 5) {
+                        Logger.log(`Enhanced camera FOV adjusted to: ${newFOV.toFixed(1)}`);
+                    }
+                }
+                
+                // Create a default look target in case of errors
+                let lookTarget = new THREE.Vector3(hero.position.x, hero.position.y, hero.position.z);
+                
+                try {
+                    // Calculate the target camera position
+                    const targetPosition = new THREE.Vector3().copy(hero.position).add(offset);
+                    
+                    // Always center the player in the screen using lerp for smooth transitions
+                    if (jumpConfig.cameraAlwaysCenterPlayer) {
+                        // Use lerp for smooth camera movement
+                        const lerpFactor = jumpConfig.cameraLerpFactor || 0.1;
+                        
+                        // Lerp the camera position to the target position
+                        this.camera.position.lerp(targetPosition, lerpFactor);
+                        
+                        // Store the last target position for reference
+                        if (!this.camera.lastTargetPosition) {
+                            this.camera.lastTargetPosition = new THREE.Vector3();
+                        }
+                        this.camera.lastTargetPosition.copy(targetPosition);
+                    } else {
+                        // Update camera position with standard offset (no lerp)
+                        this.camera.position.copy(targetPosition);
+                    }
+                    
+                    // Create a look target that's adjusted based on height
+                    // Enhanced to provide better view of both ground and sky
+                    const skyViewAdjustment = normalizedHeight * (jumpConfig.cameraSkyViewFactor || 0.6);
+                    lookTarget = new THREE.Vector3(
+                        hero.position.x, // Always look at player's x position
+                        // Enhanced formula for better view:
+                        // When low, look down more; when high, look more toward horizon and see more sky
+                        hero.position.y - (jumpHeight * tiltFactor) + (skyViewAdjustment * jumpHeight),
+                        hero.position.z // Always look at player's z position
+                    );
+                } catch (error) {
+                    Logger.error('Error in camera target calculation:', error);
+                }
                 
                 // Store the last look target for lerping
                 if (!this.camera.lastLookTarget) {
                     this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
                 }
-                
+            
                 // Lerp the look target for smooth transitions
-                this.camera.lastLookTarget.lerp(lookTarget, 0.1);
+                this.camera.lastLookTarget.lerp(lookTarget, jumpConfig.cameraLerpFactor || 0.1);
                 
                 // Look at the lerped target
                 this.camera.lookAt(this.camera.lastLookTarget);
                 
-                // Adjust field of view for first-person
-                const firstPersonFOV = 75; // Wider FOV for first-person
-                if (Math.abs(this.camera.fov - firstPersonFOV) > 0.5) {
-                    this.camera.fov = firstPersonFOV;
-                    this.camera.updateProjectionMatrix();
-                    Logger.log(`Switched to first-person view with FOV: ${firstPersonFOV}`);
-                }
-                
-                // Reset camera roll
-                this.camera.rotation.z = 0;
-                
-                return; // Skip the rest of the method
-            }
-            
-            // Standard third-person camera for normal jumping
-            
-            // Adjust camera height based on hero's jump height and offset factor
-            const heightAdjustment = hero.jumpHeight * offsetFactor;
-            offset.y += heightAdjustment;
-            
-            // Enhanced camera positioning for better view at height
-            if (normalizedHeight > 0.1) {
-                // Calculate how much to move back based on height
-                const backFactor = normalizedHeight * jumpConfig.cameraBackOffset;
-                
-                // Get camera direction vector (normalized)
-                const direction = new THREE.Vector3().subVectors(hero.position, this.camera.position).normalize();
-                
-                // Move camera back in the opposite direction with enhanced scaling
-                offset.addScaledVector(direction, -backFactor * 15);
-                
-                // Add slight lateral movement for a more dynamic view as height increases
-                const lateralOffset = Math.sin(hero.jumpHeight * 0.1) * normalizedHeight * 2;
-                offset.x += lateralOffset;
-                
-                // Log significant camera adjustments
-                if (hero.jumpHeight > 5 && Math.floor(hero.jumpHeight) % 2 === 0) {
-                    Logger.log(`Enhanced camera view for height: ${hero.jumpHeight.toFixed(1)}`);
-                }
-            }
-            
-            // Calculate tilt based on height relative to max jump height
-            let tiltFactor = 0;
-            if (hero.jumpHeight > 0) {
-                // Enhanced tilt calculation for better ground visibility at height
-                tiltFactor = normalizedHeight * (jumpConfig.cameraTiltFactor || 0.3);
-                
-                // Add ground view enhancement - look more downward as height increases to see more ground
-                const groundViewEnhancement = normalizedHeight * jumpConfig.cameraGroundViewEnhancement;
-                tiltFactor += groundViewEnhancement;
-                
-                // Adjust field of view based on height to see more of the area
-                const baseFOV = 60; // Default FOV
-                const maxFOVIncrease = jumpConfig.cameraFovIncrease || 15;
-                const newFOV = baseFOV + (normalizedHeight * maxFOVIncrease);
-                
-                // Only update if FOV has changed significantly to avoid constant updates
-                if (Math.abs(this.camera.fov - newFOV) > 0.5) {
-                    this.camera.fov = newFOV;
-                    this.camera.updateProjectionMatrix();
-                    Logger.log(`Enhanced camera FOV adjusted to: ${newFOV.toFixed(1)}`);
-                }
-            }
-            
-            // Calculate the target camera position
-            const targetPosition = new THREE.Vector3().copy(hero.position).add(offset);
-            
-            // Always center the player in the screen using lerp for smooth transitions
-            if (jumpConfig.cameraAlwaysCenterPlayer) {
-                // Use lerp for smooth camera movement
-                const lerpFactor = jumpConfig.cameraLerpFactor || 0.1;
-                
-                // Lerp the camera position to the target position
-                this.camera.position.lerp(targetPosition, lerpFactor);
-                
-                // Store the last target position for reference
-                if (!this.camera.lastTargetPosition) {
-                    this.camera.lastTargetPosition = new THREE.Vector3();
-                }
-                this.camera.lastTargetPosition.copy(targetPosition);
-            } else {
-                // Update camera position with standard offset (no lerp)
-                this.camera.position.copy(targetPosition);
-            }
-            
-            // Create a look target that's adjusted based on height
-            // Enhanced to provide better view of both ground and sky
-            const skyViewAdjustment = normalizedHeight * (jumpConfig.cameraSkyViewFactor || 0.6);
-            const lookTarget = new THREE.Vector3(
-                hero.position.x, // Always look at player's x position
-                // Enhanced formula for better view:
-                // When low, look down more; when high, look more toward horizon and see more sky
-                hero.position.y - (hero.jumpHeight * tiltFactor) + (skyViewAdjustment * hero.jumpHeight),
-                hero.position.z // Always look at player's z position
-            );
-            
-            // Store the last look target for lerping
-            if (!this.camera.lastLookTarget) {
-                this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
-            }
-            
-            // Lerp the look target for smooth transitions
-            this.camera.lastLookTarget.lerp(lookTarget, jumpConfig.cameraLerpFactor || 0.1);
-            
-            // Look at the lerped target
-            this.camera.lookAt(this.camera.lastLookTarget);
-            
-            // Enhanced camera roll effect based on height
-            if (jumpConfig.cameraRollEnabled && hero.jumpHeight > 2) { // Lower threshold for earlier effect
-                // More dynamic roll effect that increases with height
-                const rollAmount = Math.sin(hero.jumpHeight * 0.15) * 0.03 * normalizedHeight;
-                
-                // Lerp the roll amount for smooth transitions
-                if (this.camera.lastRollAmount === undefined) {
-                    this.camera.lastRollAmount = 0;
-                }
-                
-                this.camera.lastRollAmount = THREE.MathUtils.lerp(
-                    this.camera.lastRollAmount,
-                    rollAmount,
-                    jumpConfig.cameraLerpFactor || 0.1
-                );
-                
-                this.camera.rotation.z = this.camera.lastRollAmount;
-            } else {
-                // Lerp back to zero
-                if (this.camera.lastRollAmount !== undefined && this.camera.lastRollAmount !== 0) {
-                    this.camera.lastRollAmount = THREE.MathUtils.lerp(
-                        this.camera.lastRollAmount,
-                        0,
-                        jumpConfig.cameraLerpFactor || 0.1
-                    );
-                    this.camera.rotation.z = this.camera.lastRollAmount;
+                // Enhanced camera roll effect based on height
+                if (jumpConfig.cameraRollEnabled && jumpHeight > 2) { // Lower threshold for earlier effect
+                    try {
+                        // More dynamic roll effect that increases with height
+                        const rollAmount = Math.sin(jumpHeight * 0.15) * 0.03 * normalizedHeight;
+                        
+                        // Lerp the roll amount for smooth transitions
+                        if (this.camera.lastRollAmount === undefined) {
+                            this.camera.lastRollAmount = 0;
+                        }
+                        
+                        this.camera.lastRollAmount = THREE.MathUtils.lerp(
+                            this.camera.lastRollAmount,
+                            rollAmount,
+                            jumpConfig.cameraLerpFactor || 0.1
+                        );
+                        
+                        this.camera.rotation.z = this.camera.lastRollAmount;
+                    } catch (error) {
+                        Logger.error('Error in camera roll calculation:', error);
+                        this.camera.rotation.z = 0;
+                    }
                 } else {
-                    this.camera.rotation.z = 0;
-                    this.camera.lastRollAmount = 0;
+                    // Lerp back to zero
+                    if (this.camera.lastRollAmount !== undefined && this.camera.lastRollAmount !== 0) {
+                        try {
+                            this.camera.lastRollAmount = THREE.MathUtils.lerp(
+                                this.camera.lastRollAmount,
+                                0,
+                                jumpConfig.cameraLerpFactor || 0.1
+                            );
+                            this.camera.rotation.z = this.camera.lastRollAmount;
+                        } catch (error) {
+                            Logger.error('Error in camera roll reset:', error);
+                            this.camera.rotation.z = 0;
+                            this.camera.lastRollAmount = 0;
+                        }
+                    } else {
+                        this.camera.rotation.z = 0;
+                        this.camera.lastRollAmount = 0;
+                    }
                 }
+            } catch (finalError) {
+                Logger.error('Final error in camera followJump:', finalError);
             }
         };
         
