@@ -46,7 +46,7 @@ Legends of the Ancient Realms aims to deliver a rich single-player experience wh
 
 ### Movement & Controls
 - **Point-and-Click Navigation**: Primary movement method using mouse clicks
-- **WASD Movement**: Alternative direct control using keyboard
+- **Arrow Keys Movement**: Alternative direct control using keyboard
 - **Camera Rotation**: Middle-mouse button to rotate view 360 degrees
 - **Camera Zoom**: Mouse wheel to adjust distance
 
