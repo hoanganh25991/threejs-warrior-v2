@@ -81,7 +81,7 @@ class UIManager {
             this.jumpAbility.addEventListener('touchcancel', endHoldJump);
             
             // Start hold-to-jump
-            function startHoldJump() {
+            const startHoldJump = () => {
                 // Clear any existing timer
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
@@ -104,13 +104,13 @@ class UIManager {
                         window.game.hero.startHoldJump();
                         
                         // Add visual feedback
-                        this.jumpAbility.classList.add('active');
+                        document.getElementById('jump-ability').classList.add('active');
                     }
                 }, controlsConfig.touch.longPressThreshold);
             }
             
             // End hold-to-jump
-            function endHoldJump() {
+            const endHoldJump = () => {
                 // Clear timer
                 if (longPressTimer) {
                     clearTimeout(longPressTimer);
@@ -122,7 +122,7 @@ class UIManager {
                     window.game.hero.stopHoldJump();
                     
                     // Remove visual feedback
-                    this.jumpAbility.classList.remove('active');
+                    document.getElementById('jump-ability').classList.remove('active');
                 }
                 
                 // Reset long press state after a short delay

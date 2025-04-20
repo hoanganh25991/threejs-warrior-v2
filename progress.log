@@ -113,3 +113,6 @@
 [2025-04-20T11:00:00.000Z] Fixed issue with offset not defined in camera followJump method
 [2025-04-20T11:05:00.000Z] Ensured offset variable is always defined with default value in camera followJump
 [2025-04-20T11:10:00.000Z] Created documentation for offset-not-defined-in-camera-followjump fix
+[2025-04-20T12:00:00.000Z] Fixed issue with "Cannot read properties of undefined (reading 'classList')" in ui.js
+[2025-04-20T12:05:00.000Z] Converted jump event handlers to arrow functions to preserve correct context
+[2025-04-20T12:10:00.000Z] Created documentation for cannot-read-properties-of-undefined-in-ui-js fix
