@@ -25,9 +25,36 @@ class Logger {
     static error(message, error) {
         const timestamp = new Date().toISOString();
         let logMessage = `[${timestamp}] ERROR: ${message}`;
+        
+        // Format the error object properly
         if (error) {
-            logMessage += ` ${error.message || error}`;
+            if (error instanceof Error) {
+                logMessage += ` ${error.message || error}`;
+            } else if (typeof error === 'object') {
+                try {
+                    // Try to stringify the object
+                    const errorStr = JSON.stringify(error);
+                    logMessage += ` ${errorStr}`;
+                } catch (e) {
+                    // If stringification fails, use a simpler approach
+                    if (error.toString && error.toString() !== '[object Object]') {
+                        logMessage += ` ${error.toString()}`;
+                    } else {
+                        // For objects that don't stringify well, extract properties
+                        const props = [];
+                        for (const key in error) {
+                            if (Object.prototype.hasOwnProperty.call(error, key)) {
+                                props.push(`${key}=${error[key]}`);
+                            }
+                        }
+                        logMessage += ` {${props.join(', ')}}`;
+                    }
+                }
+            } else {
+                logMessage += ` ${error}`;
+            }
         }
+        
         console.error(logMessage);
         
         // Append to progress.log

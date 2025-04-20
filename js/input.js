@@ -619,13 +619,16 @@ class InputManager {
         if (this.isKeyPressed('a')) moveDirection.x -= 1;
         if (this.isKeyPressed('d')) moveDirection.x += 1;
         
-        // Only emit movement event if there's actual movement
+        // Check if any movement keys are pressed
         if (moveDirection.x !== 0 || moveDirection.z !== 0) {
             // Normalize the direction vector
             moveDirection.normalize();
             
             // Emit movement event
             Events.emit('movement', { direction: moveDirection });
+        } else {
+            // No movement keys are pressed, emit stop movement event
+            Events.emit('stopMovement');
         }
         
         // Handle ability key presses (number keys 1-6)
