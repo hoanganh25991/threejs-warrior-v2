@@ -116,3 +116,6 @@
 [2025-04-20T12:00:00.000Z] Fixed issue with "Cannot read properties of undefined (reading 'classList')" in ui.js
 [2025-04-20T12:05:00.000Z] Converted jump event handlers to arrow functions to preserve correct context
 [2025-04-20T12:10:00.000Z] Created documentation for cannot-read-properties-of-undefined-in-ui-js fix
+[2025-04-20T13:00:00.000Z] Fixed issue with "Cannot access 'startHoldJump' before initialization" in ui.js
+[2025-04-20T13:05:00.000Z] Reordered function definitions to ensure they're defined before being used as event listeners
+[2025-04-20T13:10:00.000Z] Created documentation for startholdjump-reference-error fix

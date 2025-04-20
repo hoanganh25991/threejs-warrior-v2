@@ -56,30 +56,7 @@ class UIManager {
             let isLongPress = false;
             let jumpCount = 0;
             
-            // Handle click/tap
-            this.jumpAbility.addEventListener('click', (event) => {
-                // Prevent default to avoid double triggering
-                event.preventDefault();
-                
-                // Only handle if not a long press
-                if (!isLongPress && window.game && window.game.hero) {
-                    window.game.hero.jump();
-                }
-                
-                // Reset long press state
-                isLongPress = false;
-            });
-            
-            // Handle mousedown/touchstart for hold-to-jump
-            this.jumpAbility.addEventListener('mousedown', startHoldJump);
-            this.jumpAbility.addEventListener('touchstart', startHoldJump);
-            
-            // Handle mouseup/touchend to end hold-to-jump
-            this.jumpAbility.addEventListener('mouseup', endHoldJump);
-            this.jumpAbility.addEventListener('touchend', endHoldJump);
-            this.jumpAbility.addEventListener('mouseleave', endHoldJump);
-            this.jumpAbility.addEventListener('touchcancel', endHoldJump);
-            
+            // Define hold-to-jump functions before using them
             // Start hold-to-jump
             const startHoldJump = () => {
                 // Clear any existing timer
@@ -130,6 +107,30 @@ class UIManager {
                     isLongPress = false;
                 }, 50);
             }
+            
+            // Handle click/tap
+            this.jumpAbility.addEventListener('click', (event) => {
+                // Prevent default to avoid double triggering
+                event.preventDefault();
+                
+                // Only handle if not a long press
+                if (!isLongPress && window.game && window.game.hero) {
+                    window.game.hero.jump();
+                }
+                
+                // Reset long press state
+                isLongPress = false;
+            });
+            
+            // Handle mousedown/touchstart for hold-to-jump
+            this.jumpAbility.addEventListener('mousedown', startHoldJump);
+            this.jumpAbility.addEventListener('touchstart', startHoldJump);
+            
+            // Handle mouseup/touchend to end hold-to-jump
+            this.jumpAbility.addEventListener('mouseup', endHoldJump);
+            this.jumpAbility.addEventListener('touchend', endHoldJump);
+            this.jumpAbility.addEventListener('mouseleave', endHoldJump);
+            this.jumpAbility.addEventListener('touchcancel', endHoldJump);
         }
         
         // Add event listener for wing visibility changes
