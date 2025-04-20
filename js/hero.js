@@ -3935,7 +3935,7 @@ Hero.prototype.levelUp = function() {
         window.game.uiManager.updateHealthBar();
         window.game.uiManager.updateManaBar();
         window.game.uiManager.updateLevelText(this.level);
-        window.game.uiManager.showMessage(`Level Up! You are now level ${this.level}`);
+        // window.game.uiManager.showMessage(`Level Up! You are now level ${this.level}`);
     }
     
     // Play level up effect

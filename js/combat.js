@@ -831,7 +831,7 @@ class Enemy {
             
             // Show message
             if (window.game.uiManager) {
-                window.game.uiManager.showMessage(`Defeated ${this.name}! +${this.stats.experienceValue} XP`);
+                // window.game.uiManager.showMessage(`Defeated ${this.name}! +${this.stats.experienceValue} XP`);
             }
         }
     }

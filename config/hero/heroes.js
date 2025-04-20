@@ -22,7 +22,7 @@ const HeroesConfig = {
         agility: 10,
         intelligence: 10,
         movementSpeed: 5,
-        attackSpeed: 1,
+        attackSpeed: 10,
         attackDamage: 10,
         attackRange: 3 // Default attack range
     },

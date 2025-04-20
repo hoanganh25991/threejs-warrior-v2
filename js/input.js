@@ -17,6 +17,24 @@ class InputManager {
         this.mousePosition = { x: 0, y: 0 };
         this.targetPosition = null;
         
+        // Touch state
+        this.touchStartDistance = 0;
+        this.lastTapTime = 0;
+        this.lastTapPosition = { x: 0, y: 0 };
+        
+        // Continuous trigger state
+        this.continuousTriggers = {};
+        this.longPressTimers = {};
+        this.longPressActive = {};
+        
+        // Get input configuration
+        this.inputConfig = window.configLoader?.getConfig('inputConfig') || {
+            longPressDelay: 300, // ms before long press is activated
+            longPressInterval: 200, // ms between continuous triggers
+            doubleTapDelay: 300, // ms between taps to count as double tap
+            tapRadius: 10 // pixels radius to consider as same tap location
+        };
+        
         // Initialize event listeners
         this.initEventListeners();
         
@@ -149,6 +167,58 @@ class InputManager {
         Events.emit('keyReleased', { key: key });
     }
     
+    // Start a continuous trigger for a given input
+    startContinuousTrigger(inputType, inputId, callback) {
+        const triggerKey = `${inputType}_${inputId}`;
+        
+        // Clear any existing timers for this input
+        this.clearContinuousTrigger(inputType, inputId);
+        
+        // Execute the callback immediately
+        callback();
+        
+        // Set a timer for the long press delay
+        this.longPressTimers[triggerKey] = setTimeout(() => {
+            // Mark as long press active
+            this.longPressActive[triggerKey] = true;
+            
+            // Start continuous triggering
+            this.continuousTriggers[triggerKey] = setInterval(() => {
+                callback();
+            }, this.inputConfig.longPressInterval);
+            
+            Logger.log(`Continuous trigger started for ${triggerKey}`);
+        }, this.inputConfig.longPressDelay);
+    }
+    
+    // Clear a continuous trigger
+    clearContinuousTrigger(inputType, inputId) {
+        const triggerKey = `${inputType}_${inputId}`;
+        
+        // Clear the long press timer
+        if (this.longPressTimers[triggerKey]) {
+            clearTimeout(this.longPressTimers[triggerKey]);
+            delete this.longPressTimers[triggerKey];
+        }
+        
+        // Clear the continuous trigger interval
+        if (this.continuousTriggers[triggerKey]) {
+            clearInterval(this.continuousTriggers[triggerKey]);
+            delete this.continuousTriggers[triggerKey];
+        }
+        
+        // Reset long press active state
+        if (this.longPressActive[triggerKey]) {
+            delete this.longPressActive[triggerKey];
+        }
+    }
+    
+    // Check if a continuous trigger is active
+    isContinuousTriggerActive(inputType, inputId) {
+        const triggerKey = `${inputType}_${inputId}`;
+        return !!this.longPressActive[triggerKey];
+    }
+    
     handleMouseDown(event) {
         event.preventDefault();
         
@@ -156,21 +226,42 @@ class InputManager {
         switch (event.button) {
             case 0: // Left button
                 this.mouseButtons.left = true;
-                this.handleAbilityClick(event); // Left click for targeted abilities
+                
+                // Start continuous trigger for left click
+                this.startContinuousTrigger('mouse', 'left', () => {
+                    this.handleAbilityClick(event); // Left click for targeted abilities
+                    
+                    // If hero is flying, maintain height
+                    if (window.game && window.game.hero && window.game.hero.isFlying) {
+                        window.game.hero.maintainFlightHeight();
+                    }
+                    
+                    // If hero is jumping, continue to hold jump
+                    if (window.game && window.game.hero && window.game.hero.isJumping) {
+                        window.game.hero.holdJump();
+                    }
+                });
                 break;
+                
             case 1: // Middle button
                 this.mouseButtons.middle = true;
                 break;
+                
             case 2: // Right button
                 this.mouseButtons.right = true;
-                this.handleGroundClick(event); // Right click to move (Dota 1 style)
+                
+                // Start continuous trigger for right click
+                this.startContinuousTrigger('mouse', 'right', () => {
+                    this.handleGroundClick(event); // Right click to move (Dota 1 style)
+                });
                 break;
         }
         
         // Emit mouse down event
         Events.emit('mouseDown', { 
             button: event.button,
-            position: this.mousePosition
+            position: this.mousePosition,
+            continuous: false
         });
     }
     

@@ -175,7 +175,8 @@ class Game {
                 cameraFovIncrease: 15, // How much to increase field of view at max height (increased for wider view)
                 cameraSkyViewFactor: 0.6, // How much to adjust camera to see more sky (0-1) (increased for better sky view)
                 cameraGroundViewEnhancement: 0.5, // How much to enhance ground visibility at height
-                cameraAlwaysCenterPlayer: true // Always keep player at center of screen
+                cameraAlwaysCenterPlayer: true, // Always keep player at center of screen
+                cameraLerpFactor: 0.1 // Lerp factor for smooth camera movement (0-1)
             };
             
             // Calculate normalized height (0-1 range)
@@ -229,13 +230,25 @@ class Game {
                 }
             }
             
-            // Always center the player in the screen
+            // Calculate the target camera position
+            const targetPosition = new THREE.Vector3().copy(hero.position).add(offset);
+            
+            // Always center the player in the screen using lerp for smooth transitions
             if (jumpConfig.cameraAlwaysCenterPlayer) {
-                // Reset the camera position to be centered on the hero
-                this.camera.position.copy(hero.position).add(offset);
+                // Use lerp for smooth camera movement
+                const lerpFactor = jumpConfig.cameraLerpFactor || 0.1;
+                
+                // Lerp the camera position to the target position
+                this.camera.position.lerp(targetPosition, lerpFactor);
+                
+                // Store the last target position for reference
+                if (!this.camera.lastTargetPosition) {
+                    this.camera.lastTargetPosition = new THREE.Vector3();
+                }
+                this.camera.lastTargetPosition.copy(targetPosition);
             } else {
-                // Update camera position with standard offset
-                this.camera.position.copy(hero.position).add(offset);
+                // Update camera position with standard offset (no lerp)
+                this.camera.position.copy(targetPosition);
             }
             
             // Create a look target that's adjusted based on height
@@ -249,16 +262,47 @@ class Game {
                 hero.position.z // Always look at player's z position
             );
             
-            // Look at the adjusted target
-            this.camera.lookAt(lookTarget);
+            // Store the last look target for lerping
+            if (!this.camera.lastLookTarget) {
+                this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
+            }
+            
+            // Lerp the look target for smooth transitions
+            this.camera.lastLookTarget.lerp(lookTarget, jumpConfig.cameraLerpFactor || 0.1);
+            
+            // Look at the lerped target
+            this.camera.lookAt(this.camera.lastLookTarget);
             
             // Enhanced camera roll effect based on height
             if (jumpConfig.cameraRollEnabled && hero.jumpHeight > 2) { // Lower threshold for earlier effect
                 // More dynamic roll effect that increases with height
                 const rollAmount = Math.sin(hero.jumpHeight * 0.15) * 0.03 * normalizedHeight;
-                this.camera.rotation.z = rollAmount;
+                
+                // Lerp the roll amount for smooth transitions
+                if (this.camera.lastRollAmount === undefined) {
+                    this.camera.lastRollAmount = 0;
+                }
+                
+                this.camera.lastRollAmount = THREE.MathUtils.lerp(
+                    this.camera.lastRollAmount,
+                    rollAmount,
+                    jumpConfig.cameraLerpFactor || 0.1
+                );
+                
+                this.camera.rotation.z = this.camera.lastRollAmount;
             } else {
-                this.camera.rotation.z = 0;
+                // Lerp back to zero
+                if (this.camera.lastRollAmount !== undefined && this.camera.lastRollAmount !== 0) {
+                    this.camera.lastRollAmount = THREE.MathUtils.lerp(
+                        this.camera.lastRollAmount,
+                        0,
+                        jumpConfig.cameraLerpFactor || 0.1
+                    );
+                    this.camera.rotation.z = this.camera.lastRollAmount;
+                } else {
+                    this.camera.rotation.z = 0;
+                    this.camera.lastRollAmount = 0;
+                }
             }
         };
         
@@ -487,10 +531,50 @@ class Game {
     updateCameraPosition() {
         if (!this.hero) return;
         
+        // Get camera configuration
+        const cameraConfig = window.configLoader?.getConfig('cameraConfig') || {
+            offset: new THREE.Vector3(10, 10, 10),
+            lerpFactor: 0.1, // Lerp factor for smooth camera movement (0-1)
+            alwaysCenterPlayer: true // Always keep player at center of screen
+        };
+        
         // Position camera in isometric view relative to hero
-        const offset = new THREE.Vector3(10, 10, 10);
-        this.camera.position.copy(this.hero.position).add(offset);
-        this.camera.lookAt(this.hero.position);
+        const offset = cameraConfig.offset || new THREE.Vector3(10, 10, 10);
+        
+        // Calculate the target camera position
+        const targetPosition = new THREE.Vector3().copy(this.hero.position).add(offset);
+        
+        // Use lerp for smooth camera movement
+        if (cameraConfig.alwaysCenterPlayer) {
+            const lerpFactor = cameraConfig.lerpFactor || 0.1;
+            
+            // Lerp the camera position to the target position
+            this.camera.position.lerp(targetPosition, lerpFactor);
+            
+            // Store the last target position for reference
+            if (!this.camera.lastTargetPosition) {
+                this.camera.lastTargetPosition = new THREE.Vector3();
+            }
+            this.camera.lastTargetPosition.copy(targetPosition);
+            
+            // Create a look target
+            const lookTarget = new THREE.Vector3().copy(this.hero.position);
+            
+            // Store the last look target for lerping
+            if (!this.camera.lastLookTarget) {
+                this.camera.lastLookTarget = new THREE.Vector3().copy(lookTarget);
+            }
+            
+            // Lerp the look target for smooth transitions
+            this.camera.lastLookTarget.lerp(lookTarget, lerpFactor);
+            
+            // Look at the lerped target
+            this.camera.lookAt(this.camera.lastLookTarget);
+        } else {
+            // Update camera position with standard offset (no lerp)
+            this.camera.position.copy(targetPosition);
+            this.camera.lookAt(this.hero.position);
+        }
     }
     
     createTestEnemies() {

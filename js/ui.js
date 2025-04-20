@@ -247,7 +247,7 @@ class UIManager {
         this.levelText.textContent = `Level ${level}`;
         
         // Show level up message
-        this.showMessage(`Level Up! You are now level ${level}`);
+        // this.showMessage(`Level Up! You are now level ${level}`);
     }
     
     showMessage(text, duration = 2000) {
