@@ -92,7 +92,7 @@ For detailed information, see [UI Elements](technical/ui_elements.md).
 ## Movement Mechanics
 
 ### Ground Movement
-- **Keyboard Movement**: WASD keys for directional movement
+- **Keyboard Movement**: Arrow keys for directional movement
 - **Mouse Movement**: Right-click on ground to set target position
 - **Virtual Joystick**: Touch control for mobile devices
 

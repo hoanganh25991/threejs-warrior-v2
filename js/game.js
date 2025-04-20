@@ -17,6 +17,9 @@ class Game {
         this.uiManager = null;
         this.combatSystem = null;
         this.audio = null; // Audio manager
+        this.questManager = null; // Quest system
+        this.inventory = null; // Inventory system
+        this.itemFactory = null; // Item factory
         
         // Game state
         this.isRunning = false;
@@ -68,6 +71,12 @@ class Game {
         // Create combat system
         this.combatSystem = new CombatSystem(this.scene);
         
+        // Initialize item system
+        this.initItemSystem();
+        
+        // Initialize quest system
+        this.initQuestSystem();
+        
         // Bind event listeners
         this.bindEvents();
         
@@ -78,7 +87,25 @@ class Game {
         // Start render loop
         this.animate();
         
-        Logger.log('Game initialized');
+        Logger.log('Game initialized with enhanced systems');
+    }
+    
+    initItemSystem() {
+        // Create item factory
+        this.itemFactory = new ItemFactory();
+        
+        // Create inventory
+        this.inventory = new Inventory(20); // 20 slots
+        
+        Logger.log('Item system initialized');
+    }
+    
+    initQuestSystem() {
+        // Create quest manager
+        this.questManager = new QuestManager();
+        this.questManager.init();
+        
+        Logger.log('Quest system initialized');
     }
     
     /**
@@ -392,6 +419,12 @@ class Game {
         this.uiManager.updateManaBar();
         this.uiManager.updateAbilityIcons(this.hero);
         
+        // Give hero starting items
+        this.giveStartingItems();
+        
+        // Activate initial quest
+        this.activateInitialQuest();
+        
         // Start the game
         this.isRunning = true;
         
@@ -403,6 +436,60 @@ class Game {
         
         // Log progress
         Logger.log(`Game started with hero: ${this.hero.name}`);
+    }
+    
+    giveStartingItems() {
+        if (!this.itemFactory || !this.inventory) return;
+        
+        // Give hero some starting items based on hero type
+        switch (this.selectedHeroType) {
+            case 'axe':
+                // Give axe a weapon and some health potions
+                this.inventory.addItem(this.itemFactory.createItem('sword_uncommon'));
+                this.inventory.addItem(this.itemFactory.createItem('armor_common'));
+                this.inventory.addItem(this.itemFactory.createItem('potion_health_small', 3));
+                break;
+                
+            case 'crystal-maiden':
+            case 'lich':
+                // Give mages some mana potions
+                this.inventory.addItem(this.itemFactory.createItem('armor_uncommon'));
+                this.inventory.addItem(this.itemFactory.createItem('potion_mana_small', 3));
+                this.inventory.addItem(this.itemFactory.createItem('potion_health_small', 2));
+                break;
+                
+            case 'storm-spirit':
+                // Give storm spirit some speed items
+                this.inventory.addItem(this.itemFactory.createItem('armor_common'));
+                this.inventory.addItem(this.itemFactory.createItem('potion_mana_medium', 2));
+                this.inventory.addItem(this.itemFactory.createItem('potion_health_small', 2));
+                break;
+                
+            default:
+                // Default items
+                this.inventory.addItem(this.itemFactory.createItem('sword_common'));
+                this.inventory.addItem(this.itemFactory.createItem('armor_common'));
+                this.inventory.addItem(this.itemFactory.createItem('potion_health_small', 2));
+        }
+        
+        // Give some gold
+        this.hero.gold = 100;
+        
+        Logger.log(`Gave starting items to ${this.hero.name}`);
+    }
+    
+    activateInitialQuest() {
+        if (!this.questManager) return;
+        
+        // Activate the main quest
+        this.questManager.activateQuest('main_quest_1');
+        
+        // Also activate a hero-specific quest if available
+        if (this.selectedHeroType === 'axe') {
+            this.questManager.activateQuest('hero_quest_axe_1');
+        }
+        
+        Logger.log(`Activated initial quests for ${this.hero.name}`);
     }
     
     handleGroundClick(data) {
@@ -619,6 +706,11 @@ class Game {
         // Update combat system
         if (this.combatSystem) {
             this.combatSystem.update(deltaTime);
+        }
+        
+        // Update quest system
+        if (this.questManager) {
+            this.questManager.update(deltaTime);
         }
         
         // Update skill UI manager

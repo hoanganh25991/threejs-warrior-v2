@@ -99,24 +99,384 @@ class World {
     }
     
     createEnvironment() {
-        // Create a simple skybox
-        const skyGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
-        const skyMaterials = [
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide }), // Right
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide }), // Left
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide }), // Top
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide }), // Bottom
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide }), // Front
-            new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide })  // Back
-        ];
+        // Create a more detailed skybox
+        this.createSkybox();
         
-        this.skybox = new THREE.Mesh(skyGeometry, skyMaterials);
-        this.scene.add(this.skybox);
+        // Add water to the environment
+        this.createWater();
         
         // Add some simple decorative elements
         this.addDecorations();
         
-        Logger.log('Environment created');
+        // Add environmental effects
+        this.createEnvironmentalEffects();
+        
+        Logger.log('Enhanced environment created');
+    }
+    
+    createSkybox() {
+        // Create a more detailed skybox with gradient
+        const skyGeometry = new THREE.BoxGeometry(1000, 1000, 1000);
+        
+        // Create gradient materials for a more realistic sky
+        const topColor = new THREE.Color(0x0077ff); // Blue
+        const bottomColor = new THREE.Color(0xffffff); // White/Light blue at horizon
+        
+        const skyMaterials = [];
+        
+        // Create materials for each side with appropriate gradients
+        for (let i = 0; i < 6; i++) {
+            // Create canvas for gradient
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const context = canvas.getContext('2d');
+            
+            // Create gradient
+            let gradient;
+            if (i === 2) { // Top
+                gradient = context.createLinearGradient(0, 0, 0, 512);
+                gradient.addColorStop(0, topColor.getStyle());
+                gradient.addColorStop(1, bottomColor.getStyle());
+            } else if (i === 3) { // Bottom
+                gradient = context.createLinearGradient(0, 0, 0, 512);
+                gradient.addColorStop(0, bottomColor.getStyle());
+                gradient.addColorStop(1, bottomColor.getStyle());
+            } else { // Sides
+                gradient = context.createLinearGradient(0, 0, 0, 512);
+                gradient.addColorStop(0, bottomColor.getStyle());
+                gradient.addColorStop(0.5, topColor.getStyle());
+                gradient.addColorStop(1, topColor.getStyle());
+            }
+            
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 512, 512);
+            
+            // Create texture from canvas
+            const texture = new THREE.CanvasTexture(canvas);
+            
+            // Create material with texture
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+            
+            skyMaterials.push(material);
+        }
+        
+        this.skybox = new THREE.Mesh(skyGeometry, skyMaterials);
+        this.scene.add(this.skybox);
+        
+        // Add sun
+        this.createSun();
+        
+        // Add clouds
+        this.createClouds();
+        
+        Logger.log('Enhanced skybox created');
+    }
+    
+    createSun() {
+        // Create a sun in the sky
+        const sunGeometry = new THREE.SphereGeometry(30, 32, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffff00,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        this.sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        this.sun.position.set(200, 200, -200);
+        this.scene.add(this.sun);
+        
+        // Add sun glow
+        const sunGlowGeometry = new THREE.SphereGeometry(40, 32, 32);
+        const sunGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffff00,
+            transparent: true,
+            opacity: 0.2
+        });
+        
+        this.sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+        this.sunGlow.position.copy(this.sun.position);
+        this.scene.add(this.sunGlow);
+        
+        Logger.log('Sun created');
+    }
+    
+    createClouds() {
+        // Create a cloud system
+        this.clouds = new THREE.Group();
+        this.scene.add(this.clouds);
+        
+        // Create several cloud clusters
+        for (let i = 0; i < 20; i++) {
+            const cloudCluster = this.createCloudCluster();
+            
+            // Position randomly in the sky
+            const x = Math.random() * 800 - 400;
+            const y = 100 + Math.random() * 50;
+            const z = Math.random() * 800 - 400;
+            
+            cloudCluster.position.set(x, y, z);
+            
+            // Add to cloud group
+            this.clouds.add(cloudCluster);
+        }
+        
+        Logger.log('Cloud system created');
+    }
+    
+    createCloudCluster() {
+        // Create a cluster of cloud puffs
+        const cluster = new THREE.Group();
+        
+        // Number of puffs in this cluster
+        const puffCount = 3 + Math.floor(Math.random() * 5);
+        
+        for (let i = 0; i < puffCount; i++) {
+            // Create a cloud puff
+            const puffGeometry = new THREE.SphereGeometry(
+                10 + Math.random() * 15, // Size
+                8, 8
+            );
+            
+            const puffMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.7 + Math.random() * 0.2
+            });
+            
+            const puff = new THREE.Mesh(puffGeometry, puffMaterial);
+            
+            // Position within cluster
+            const x = Math.random() * 30 - 15;
+            const y = Math.random() * 10 - 5;
+            const z = Math.random() * 30 - 15;
+            
+            puff.position.set(x, y, z);
+            
+            // Add to cluster
+            cluster.add(puff);
+        }
+        
+        return cluster;
+    }
+    
+    createWater() {
+        // Create a water plane
+        const waterGeometry = new THREE.PlaneGeometry(this.worldSize * this.gridSize * 2, this.worldSize * this.gridSize * 2);
+        
+        // Create a simple water material with color
+        const waterMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0077be,
+            transparent: true,
+            opacity: 0.8,
+            metalness: 0.1,
+            roughness: 0.2
+        });
+        
+        this.water = new THREE.Mesh(waterGeometry, waterMaterial);
+        this.water.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+        this.water.position.y = -5; // Position below ground level
+        this.water.receiveShadow = true;
+        
+        this.scene.add(this.water);
+        
+        // Store the initial water position for animation
+        this.waterInitialY = this.water.position.y;
+        
+        Logger.log('Water created');
+    }
+    
+    createEnvironmentalEffects() {
+        // Create particle systems for environmental effects
+        this.createParticleSystems();
+        
+        // Add ambient sounds
+        this.setupAmbientSounds();
+        
+        Logger.log('Environmental effects created');
+    }
+    
+    createParticleSystems() {
+        // Create particle container
+        this.particles = {
+            systems: [],
+            container: new THREE.Group()
+        };
+        
+        this.scene.add(this.particles.container);
+        
+        // Create different particle systems
+        this.createLeafParticles();
+        this.createDustParticles();
+        
+        Logger.log('Particle systems created');
+    }
+    
+    createLeafParticles() {
+        // Create falling leaves particle system
+        const particleCount = 100;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x00ff00,
+            size: 0.5,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        
+        // Create positions for particles
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Random position within world bounds
+            const x = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+            const y = 20 + Math.random() * 30; // Start above ground
+            const z = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+            
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+            
+            // Random velocity
+            velocities.push({
+                x: (Math.random() - 0.5) * 0.1,
+                y: -0.05 - Math.random() * 0.1,
+                z: (Math.random() - 0.5) * 0.1,
+                rotationSpeed: Math.random() * 0.02
+            });
+        }
+        
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        // Create particle system
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        
+        // Add to container
+        this.particles.container.add(particleSystem);
+        
+        // Store in systems array with update function
+        this.particles.systems.push({
+            system: particleSystem,
+            velocities: velocities,
+            update: (deltaTime) => {
+                const positions = particleSystem.geometry.attributes.position.array;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    // Update position based on velocity
+                    positions[i * 3] += velocities[i].x;
+                    positions[i * 3 + 1] += velocities[i].y;
+                    positions[i * 3 + 2] += velocities[i].z;
+                    
+                    // Add some swaying motion
+                    positions[i * 3] += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                    
+                    // Reset if below ground
+                    if (positions[i * 3 + 1] < 0) {
+                        positions[i * 3] = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+                        positions[i * 3 + 1] = 20 + Math.random() * 30;
+                        positions[i * 3 + 2] = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+                    }
+                }
+                
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+            }
+        });
+        
+        Logger.log('Leaf particle system created');
+    }
+    
+    createDustParticles() {
+        // Create dust particle system
+        const particleCount = 200;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xcccccc,
+            size: 0.2,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        });
+        
+        // Create positions for particles
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Random position near ground
+            const x = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+            const y = Math.random() * 5; // Near ground
+            const z = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+            
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+            
+            // Random velocity (slower than leaves)
+            velocities.push({
+                x: (Math.random() - 0.5) * 0.05,
+                y: 0.01 + Math.random() * 0.02,
+                z: (Math.random() - 0.5) * 0.05,
+                life: Math.random() * 5 + 5 // Lifetime in seconds
+            });
+        }
+        
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        // Create particle system
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        
+        // Add to container
+        this.particles.container.add(particleSystem);
+        
+        // Store in systems array with update function
+        this.particles.systems.push({
+            system: particleSystem,
+            velocities: velocities,
+            update: (deltaTime) => {
+                const positions = particleSystem.geometry.attributes.position.array;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    // Update position based on velocity
+                    positions[i * 3] += velocities[i].x;
+                    positions[i * 3 + 1] += velocities[i].y;
+                    positions[i * 3 + 2] += velocities[i].z;
+                    
+                    // Add some random movement
+                    positions[i * 3] += (Math.random() - 0.5) * 0.01;
+                    positions[i * 3 + 2] += (Math.random() - 0.5) * 0.01;
+                    
+                    // Update lifetime
+                    velocities[i].life -= deltaTime;
+                    
+                    // Reset if lifetime expired or too high
+                    if (velocities[i].life <= 0 || positions[i * 3 + 1] > 10) {
+                        positions[i * 3] = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+                        positions[i * 3 + 1] = Math.random() * 2; // Near ground
+                        positions[i * 3 + 2] = Math.random() * this.worldSize * this.gridSize - (this.worldSize * this.gridSize / 2);
+                        velocities[i].life = Math.random() * 5 + 5;
+                    }
+                }
+                
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+            }
+        });
+        
+        Logger.log('Dust particle system created');
+    }
+    
+    setupAmbientSounds() {
+        // Set up ambient sounds if audio manager exists
+        if (window.game && window.game.audio) {
+            // Add ambient background sounds
+            window.game.audio.playAmbientSound('wind', 0.2, true);
+            window.game.audio.playAmbientSound('birds', 0.1, true);
+            
+            Logger.log('Ambient sounds set up');
+        }
     }
     
     addDecorations() {
@@ -346,9 +706,61 @@ class World {
             this.skybox.position.copy(window.camera.position);
         }
         
+        // Update sun and clouds
+        this.updateSkyElements(deltaTime);
+        
+        // Update water animation
+        this.updateWater(deltaTime);
+        
+        // Update particle systems
+        this.updateParticleSystems(deltaTime);
+        
         // Check if we need to update terrain for infinite scrolling
         if (window.game && window.game.hero) {
             this.updateInfiniteTerrain(window.game.hero.position);
+        }
+    }
+    
+    updateSkyElements(deltaTime) {
+        // Animate clouds
+        if (this.clouds) {
+            // Slowly move clouds
+            this.clouds.children.forEach(cloud => {
+                cloud.position.x += 0.05 * deltaTime;
+                
+                // Wrap around when out of bounds
+                if (cloud.position.x > 400) {
+                    cloud.position.x = -400;
+                }
+            });
+        }
+        
+        // Animate sun glow
+        if (this.sunGlow) {
+            // Pulse the sun glow
+            const scale = 1 + 0.05 * Math.sin(Date.now() * 0.001);
+            this.sunGlow.scale.set(scale, scale, scale);
+        }
+    }
+    
+    updateWater(deltaTime) {
+        if (this.water) {
+            // Create gentle wave motion
+            const time = Date.now() * 0.001;
+            this.water.position.y = this.waterInitialY + Math.sin(time * 0.2) * 0.1;
+            
+            // Could add more complex water effects here
+        }
+    }
+    
+    updateParticleSystems(deltaTime) {
+        // Update all particle systems
+        if (this.particles && this.particles.systems) {
+            this.particles.systems.forEach(system => {
+                if (system.update) {
+                    system.update(deltaTime);
+                }
+            });
         }
     }
     
