@@ -964,8 +964,20 @@ class Hero {
     }
     
     moveInDirection(direction) {
+        // Validate input direction
+        if (!direction || isNaN(direction.x) || isNaN(direction.y) || isNaN(direction.z)) {
+            Logger.error('Invalid direction provided to moveInDirection:', direction);
+            return;
+        }
+        
         // Normalize direction
         const normalizedDirection = direction.clone().normalize();
+        
+        // Validate normalized direction
+        if (isNaN(normalizedDirection.x) || isNaN(normalizedDirection.y) || isNaN(normalizedDirection.z)) {
+            Logger.error('Normalization resulted in invalid direction:', normalizedDirection, 'Original:', direction);
+            return;
+        }
         
         // Set movement direction
         this.moveDirection.copy(normalizedDirection);
@@ -973,6 +985,13 @@ class Hero {
         
         // Set rotation to face movement direction
         const angle = Math.atan2(this.moveDirection.x, this.moveDirection.z);
+        
+        // Validate angle
+        if (isNaN(angle)) {
+            Logger.error('Invalid angle calculated from direction:', this.moveDirection);
+            return;
+        }
+        
         this.rotation.y = angle;
         this.model.rotation.y = angle;
         
@@ -3820,7 +3839,24 @@ class Hero {
             // Calculate movement distance this frame
             const moveDistance = this.stats.movementSpeed * deltaTime;
             
+            // Validate moveDirection to prevent NaN issues
+            if (isNaN(this.moveDirection.x) || isNaN(this.moveDirection.y) || isNaN(this.moveDirection.z)) {
+                Logger.error('Invalid moveDirection detected:', this.moveDirection);
+                // Reset to a safe value
+                this.moveDirection.set(0, 0, 0);
+                this.isMoving = false;
+                return;
+            }
+            
             if (this.targetPosition) {
+                // Validate targetPosition
+                if (isNaN(this.targetPosition.x) || isNaN(this.targetPosition.y) || isNaN(this.targetPosition.z)) {
+                    Logger.error('Invalid targetPosition detected:', this.targetPosition);
+                    this.targetPosition = null;
+                    this.isMoving = false;
+                    return;
+                }
+                
                 // Calculate distance to target
                 const distanceToTarget = this.position.distanceTo(this.targetPosition);
                 
@@ -3831,12 +3867,46 @@ class Hero {
                 } else {
                     // Move towards target
                     const movement = this.moveDirection.clone().multiplyScalar(moveDistance);
+                    
+                    // Validate movement vector
+                    if (isNaN(movement.x) || isNaN(movement.y) || isNaN(movement.z)) {
+                        Logger.error('Invalid movement vector calculated:', movement);
+                        return;
+                    }
+                    
+                    // Apply movement
                     this.position.add(movement);
+                    
+                    // Validate position after update
+                    if (isNaN(this.position.x) || isNaN(this.position.y) || isNaN(this.position.z)) {
+                        Logger.error('Position became NaN after movement update. Position:', this.position, 'Movement:', movement);
+                        // Reset to a safe position
+                        this.position.set(0, 0, 0);
+                        this.isMoving = false;
+                        return;
+                    }
                 }
             } else {
                 // Move in the current direction
                 const movement = this.moveDirection.clone().multiplyScalar(moveDistance);
+                
+                // Validate movement vector
+                if (isNaN(movement.x) || isNaN(movement.y) || isNaN(movement.z)) {
+                    Logger.error('Invalid movement vector calculated:', movement);
+                    return;
+                }
+                
+                // Apply movement
                 this.position.add(movement);
+                
+                // Validate position after update
+                if (isNaN(this.position.x) || isNaN(this.position.y) || isNaN(this.position.z)) {
+                    Logger.error('Position became NaN after movement update. Position:', this.position, 'Movement:', movement);
+                    // Reset to a safe position
+                    this.position.set(0, 0, 0);
+                    this.isMoving = false;
+                    return;
+                }
             }
             
             // Update model position (x and z only, y is handled by jump/flight)

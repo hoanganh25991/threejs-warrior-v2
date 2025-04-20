@@ -766,9 +766,21 @@ class World {
     
     // Handle infinite terrain by wrapping player position
     updateInfiniteTerrain(playerPosition) {
+        // Check if player position is valid
+        if (!playerPosition || isNaN(playerPosition.x) || isNaN(playerPosition.z)) {
+            Logger.error('Invalid player position detected:', playerPosition);
+            return;
+        }
+        
         // Calculate which chunk the player is in
         const chunkX = Math.floor(playerPosition.x / this.chunkSize);
         const chunkZ = Math.floor(playerPosition.z / this.chunkSize);
+        
+        // Validate chunk coordinates
+        if (isNaN(chunkX) || isNaN(chunkZ)) {
+            Logger.error(`Invalid chunk coordinates calculated: (${chunkX}, ${chunkZ}) from position:`, playerPosition);
+            return;
+        }
         
         // If player has moved to a new chunk, update the world
         if (chunkX !== this.currentChunk.x || chunkZ !== this.currentChunk.z) {

@@ -636,26 +636,55 @@ class Game {
     handleMovement(data) {
         if (!this.isRunning || !this.hero) return;
         
+        // Validate input data
+        if (!data || !data.direction) {
+            Logger.error('Invalid movement data received:', data);
+            return;
+        }
+        
         const { direction } = data;
         
-        // Convert direction from camera space to world space
-        const cameraDirection = new THREE.Vector3(0, 0, -1);
-        cameraDirection.applyQuaternion(this.camera.quaternion);
-        cameraDirection.y = 0;
-        cameraDirection.normalize();
+        // Validate direction vector
+        if (isNaN(direction.x) || isNaN(direction.y) || isNaN(direction.z)) {
+            Logger.error('Invalid direction vector in movement data:', direction);
+            return;
+        }
         
-        const cameraRight = new THREE.Vector3(1, 0, 0);
-        cameraRight.applyQuaternion(this.camera.quaternion);
-        cameraRight.y = 0;
-        cameraRight.normalize();
-        
-        const worldDirection = new THREE.Vector3();
-        worldDirection.addScaledVector(cameraDirection, -direction.z);
-        worldDirection.addScaledVector(cameraRight, direction.x);
-        worldDirection.normalize();
-        
-        // Move hero in the calculated direction
-        this.hero.moveInDirection(worldDirection);
+        try {
+            // Convert direction from camera space to world space
+            const cameraDirection = new THREE.Vector3(0, 0, -1);
+            cameraDirection.applyQuaternion(this.camera.quaternion);
+            cameraDirection.y = 0;
+            cameraDirection.normalize();
+            
+            const cameraRight = new THREE.Vector3(1, 0, 0);
+            cameraRight.applyQuaternion(this.camera.quaternion);
+            cameraRight.y = 0;
+            cameraRight.normalize();
+            
+            const worldDirection = new THREE.Vector3();
+            worldDirection.addScaledVector(cameraDirection, -direction.z);
+            worldDirection.addScaledVector(cameraRight, direction.x);
+            
+            // Validate world direction before normalization
+            if (worldDirection.length() === 0) {
+                Logger.warn('Zero-length world direction calculated, skipping movement');
+                return;
+            }
+            
+            worldDirection.normalize();
+            
+            // Final validation before passing to hero
+            if (isNaN(worldDirection.x) || isNaN(worldDirection.y) || isNaN(worldDirection.z)) {
+                Logger.error('Invalid world direction calculated:', worldDirection);
+                return;
+            }
+            
+            // Move hero in the calculated direction
+            this.hero.moveInDirection(worldDirection);
+        } catch (error) {
+            Logger.error('Error in handleMovement:', error);
+        }
     }
     
     handleAbilityActivated(data) {
