@@ -13,6 +13,9 @@ class AudioManager {
         // Store looping sounds
         this.loopingSounds = {};
         
+        // Store ambient sounds specifically
+        this.ambientSounds = {};
+        
         // Master volume control (0.0 to 1.0)
         this.masterVolume = 0.5;
         
@@ -193,6 +196,10 @@ class AudioManager {
         if (this.loopingSounds[instanceId]) {
             delete this.loopingSounds[instanceId];
         }
+        
+        if (this.ambientSounds[instanceId]) {
+            delete this.ambientSounds[instanceId];
+        }
     }
     
     /**
@@ -267,6 +274,39 @@ class AudioManager {
     }
     
     /**
+     * Play an ambient sound
+     * @param {string} id - ID of the sound to play
+     * @param {number} volume - Volume override (0.0 to 1.0)
+     * @param {boolean} loop - Whether to loop the sound (default true for ambient sounds)
+     * @returns {string} - Instance ID for the playing sound, or null if failed
+     */
+    playAmbientSound(id, volume = null, loop = true) {
+        // Use the existing playSound method with ambient category
+        const instanceId = this.playSound(id, volume, loop);
+        
+        // If successful, store in ambient sounds collection
+        if (instanceId) {
+            this.ambientSounds[instanceId] = this.activeSounds[instanceId];
+            Logger.log(`Ambient sound started: ${id}`);
+        }
+        
+        return instanceId;
+    }
+    
+    /**
+     * Stop all ambient sounds
+     */
+    stopAllAmbientSounds() {
+        Object.keys(this.ambientSounds).forEach(instanceId => {
+            this.stopSound(instanceId);
+        });
+        
+        // Clear the ambient sounds collection
+        this.ambientSounds = {};
+        Logger.log('All ambient sounds stopped');
+    }
+    
+    /**
      * Preload common game sounds
      */
     preloadCommonSounds() {
@@ -287,6 +327,10 @@ class AudioManager {
         // Combat sounds
         this.loadSound('hit', 'assets/sounds/hit.mp3', 'sfx');
         this.loadSound('spell', 'assets/sounds/spell.mp3', 'sfx');
+        
+        // Ambient sounds
+        this.loadSound('wind', 'assets/sounds/wind.mp3', 'ambient');
+        this.loadSound('birds', 'assets/sounds/birds.mp3', 'ambient');
         
         Logger.log('Common sounds preloaded');
     }

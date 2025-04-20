@@ -10,6 +10,9 @@ This document provides a comprehensive overview of all the implementation detail
 5. [Control Systems](#control-systems)
 6. [Configuration System](#configuration-system)
 7. [Mobile Development](#mobile-development)
+8. [Inventory System](#inventory-system)
+9. [Quest System](#quest-system)
+10. [World Environment](#world-environment)
 
 ## Hero Selection
 
@@ -175,6 +178,79 @@ For detailed information, see [Configuration System](technical/configuration_sys
 
 For detailed information, see [Mobile Development](technical/mobile_development.md).
 
+## Inventory System
+
+### Item Structure
+Each item in the game has the following properties:
+- **ID**: Unique identifier for the item
+- **Name**: Display name of the item
+- **Type**: Category of item (weapon, armor, accessory, consumable)
+- **Rarity**: Quality level (common, uncommon, rare, epic, legendary)
+- **Stats**: Attributes and effects the item provides
+- **Description**: Detailed description of the item
+
+### Inventory Management
+- **Slots**: Fixed number of inventory positions (default: 20)
+- **Equipment**: Special slots for equipped items (weapon, armor, helmet, etc.)
+- **Gold**: Currency for purchasing items
+- **Item Interaction**: Add, remove, use, equip, and move items
+
+### Implementation
+- Item class is defined in `js/inventory.js`
+- Inventory management is handled by the `Inventory` class
+- Item creation is managed by the `ItemFactory` class
+- Integration with hero stats through equipment system
+
+For detailed information, see [Inventory System](gameplay/inventory_system.md).
+
+## Quest System
+
+### Quest Structure
+Each quest contains:
+- **ID**: Unique identifier for the quest
+- **Title**: Display name of the quest
+- **Description**: Detailed description of what the quest involves
+- **Type**: Category of quest (main, side, hero, repeatable)
+- **Rewards**: Experience, gold, and items awarded upon completion
+- **Objectives**: List of objectives that must be completed
+
+### Quest Management
+- **Quest Manager**: Handles all quests in the game
+- **Objective Tracking**: Monitors progress toward completion
+- **Quest States**: Available, active, completed, failed
+- **Reward Distribution**: Provides rewards upon completion
+
+### Implementation
+- Quest system is defined in `js/quest.js`
+- Quest management is handled by the `QuestManager` class
+- Quest objectives are tracked through the `QuestObjective` class
+- Integration with game events for progress tracking
+
+For detailed information, see [Quest System](gameplay/quest_system.md).
+
+## World Environment
+
+### Core Components
+- **Skybox System**: Creates the illusion of a distant environment
+- **Terrain System**: Forms the foundation of the game world
+- **Environmental Objects**: Populate the world with visual interest
+- **Environmental Effects**: Add life and movement to the world
+
+### Visual Elements
+- **Gradient Sky**: Smooth transition from horizon to zenith
+- **Dynamic Clouds**: Moving cloud formations
+- **Sun and Glow**: Central light source with visual effects
+- **Water System**: Reflective surfaces with animation
+- **Particle Systems**: Leaves, dust, and other atmospheric elements
+
+### Implementation
+- Environment creation is handled in `js/world.js`
+- Skybox and visual effects are created in the `World` class
+- Particle systems are managed through dedicated update methods
+- Integration with game loop for continuous animation
+
+For detailed information, see [World Environment](world/environment.md).
+
 ## Conclusion
 
 This game implementation features a comprehensive set of systems designed to provide an engaging and accessible gaming experience across both desktop and mobile platforms. The modular architecture and extensive configuration options allow for easy customization and extension of game features.
@@ -185,5 +261,8 @@ Key strengths of the implementation include:
 - Multi-platform control systems supporting keyboard, mouse, and touch
 - Comprehensive configuration system for easy adjustment
 - Mobile-optimized interface with responsive design
+- Inventory and item system with equipment and consumables
+- Quest system for structured gameplay progression
+- Enhanced world environment with visual effects and atmosphere
 
 Future development can build upon this foundation to add more heroes, abilities, environments, and gameplay features while maintaining the core systems established in this implementation.
