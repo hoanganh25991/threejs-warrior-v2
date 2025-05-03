@@ -2,6 +2,10 @@
 
 An isometric action RPG built with Three.js that combines the quest-driven, dungeon-crawling gameplay of classic ARPGs with a diverse hero roster.
 
+![legends](screenshots/legends-of-the-ancient-realms-085325-20250503.jpg)
+![legends](screenshots/legends-of-the-ancient-realms-085359-20250503.jpg)
+![legends](screenshots/legends-of-the-ancient-realms-085337-20250503.jpg)
+
 ## Getting Started
 
 ### Prerequisites

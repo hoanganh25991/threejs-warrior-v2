@@ -9,8 +9,20 @@ class Hero {
         this.type = type;
         this.scene = scene;
         
-        // Stats
-        this.stats = window.HeroesConfig.defaultStats;
+        // Stats - safely access HeroesConfig or use default values
+        this.stats = window.HeroesConfig?.defaultStats || {
+            health: 100,
+            maxHealth: 100,
+            mana: 300,
+            maxMana: 300,
+            strength: 10,
+            agility: 10,
+            intelligence: 10,
+            movementSpeed: 5,
+            attackSpeed: 10,
+            attackDamage: 10,
+            attackRange: 3
+        };
         
         // Position and movement
         this.position = new THREE.Vector3(0, 0, 0);

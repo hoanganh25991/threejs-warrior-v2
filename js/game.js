@@ -546,6 +546,25 @@ class Game {
         // Store selected hero type
         this.selectedHeroType = heroType;
         
+        // Ensure config is loaded before creating hero
+        if (!window.HeroesConfig) {
+            Logger.log('HeroesConfig not loaded, loading configs...');
+            try {
+                // Try to load the config directly if not already loaded
+                if (!window.configLoader.loaded) {
+                    await window.configLoader.loadAllConfigs();
+                }
+                
+                // If still not loaded, try loading the heroes config specifically
+                if (!window.HeroesConfig) {
+                    await window.configLoader.loadConfig('hero/heroes', 'heroesConfig');
+                }
+            } catch (error) {
+                Logger.error('Failed to load hero configuration:', error);
+                // Will continue with fallback values in Hero constructor
+            }
+        }
+        
         // Create hero
         this.hero = HeroFactory.createHero(heroType, this.scene);
         await this.hero.init();

@@ -45,7 +45,8 @@ class ConfigLoader {
     async loadConfig(path, configName) {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = `/config/${path}.js`;
+            // Use relative path instead of absolute path
+            script.src = `config/${path}.js`;
             script.onload = () => {
                 // Get the config from the global scope based on the filename
                 const configVarName = path.split('/').pop().replace(/-([a-z])/g, (g) => g[1].toUpperCase());
